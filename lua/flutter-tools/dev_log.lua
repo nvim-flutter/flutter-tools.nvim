@@ -41,6 +41,12 @@ local function create(open_cmd)
   )
 end
 
+function M.get_content()
+  if M.buf then
+    return api.nvim_buf_get_lines(M.buf, 0, -1, false)
+  end
+end
+
 local function send(cmd)
   if M.job_id then
     vim.fn.chansend(M.job_id, cmd)
@@ -49,10 +55,7 @@ local function send(cmd)
   end
 end
 
-function M.open(job_id, data, name)
-  if name == "stderr" then
-    return
-  end
+function M.open(job_id, data)
   M.job_id = job_id
   if not exists() then
     create()
