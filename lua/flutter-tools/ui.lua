@@ -65,7 +65,22 @@ local function border_create(title, config)
   return config, buf
 end
 
+--- check if there is a single non empty line
+--- in the list of lines
+--- @param lines table
+local function invalid_lines(lines)
+  for _, line in pairs(lines) do
+    if line ~= "" then
+      return false
+    end
+  end
+  return true
+end
+
 function M.popup_create(title, lines, on_create)
+  if not lines or #lines < 1 or invalid_lines(lines) then
+    return
+  end
   local width = 50
   local height = 10
   local buf = api.nvim_create_buf(false, true)
@@ -95,7 +110,7 @@ function M.popup_create(title, lines, on_create)
   )
   vim.cmd(
     string.format(
-      [[autocmd! WinLeave <buffer> execute 'bw %d %d']],
+      [[autocmd! WinLeave <buffer> silent! execute 'bw %d %d']],
       buf,
       border
     )
