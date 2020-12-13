@@ -1,10 +1,10 @@
 local M = {}
 local api = vim.api
 
-local function format_title(title, width)
+local function format_title(title, fill, width)
   local remainder = width - 1 - string.len(title)
   local side_size = math.floor(remainder) - 1
-  local side = string.rep("═", side_size)
+  local side = string.rep(fill, side_size)
   return title .. side
 end
 
@@ -33,7 +33,8 @@ local function border_create(title, config)
   local height = config.height
   local width = config.width
   local border = border_chars.curved
-  local top = border.top_left .. format_title(title, width) .. border.top_right
+  title = format_title(title, border.fill, width)
+  local top = border.top_left .. title .. border.top_right
   local content = {top}
   local padding = string.rep(" ", width - 2)
   for _ = 1, height - 1 do
