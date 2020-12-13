@@ -25,7 +25,7 @@ end
 local function on_flutter_run_data(_)
   return function(job_id, data, name)
     if name == "stdout" then
-      dev_log.open(job_id, data)
+      dev_log.log(job_id, data)
     end
   end
 end

@@ -51,11 +51,11 @@ local function send(cmd)
   if M.job_id then
     vim.fn.chansend(M.job_id, cmd)
   else
-    vim.cmd [[Sorry couldn't find the correct ID for the command]]
+    vim.cmd [[Sorry! Flutter is not running]]
   end
 end
 
-function M.open(job_id, data)
+function M.log(job_id, data)
   M.job_id = job_id
   if not exists() then
     create()
