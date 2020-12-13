@@ -8,6 +8,12 @@ local M = {}
 -----------------------------------------------------------------------------//
 -- Emulators
 -----------------------------------------------------------------------------//
+-- Despite looking a lot like emulators be combined with the devices
+-- there are a few subtle difference that would need to be taken into account
+-- in a more generalised function, which frankly would be a little more complex,
+-- hard to follow and less versatile. Emulators and devices are not the same so
+-- they should be handled separately so it's easier to make changes to one
+-- without it affecting the other
 
 function _G.__flutter_tools_select_emulator()
   local emulators = vim.b.emulators
@@ -64,54 +70,71 @@ function M.parse(line)
   end
 end
 
----@param emulators table
-local function get_emulator(emulators)
+---@param result table
+local function get_emulator(result)
   return function(_, data, _)
     for _, line in pairs(data) do
       local parts = vim.split(line, "•")
       if #parts == 4 then
         local emulator = M.parse(line)
         if emulator then
-          table.insert(emulators, emulator)
+          table.insert(result.emulators, emulator)
         end
+        table.insert(result.data, line)
       end
     end
   end
 end
 
----@param emulators table
-local function show_emulators(emulators)
+local function setup_emulators_win(result)
+  return function(buf, _)
+    if #result.emulators > 0 then
+      api.nvim_buf_set_var(buf, "emulators", result.emulators)
+    end
+    api.nvim_buf_set_keymap(
+      buf,
+      "n",
+      "<CR>",
+      ":lua __flutter_tools_select_emulator()<CR>",
+      {silent = true, noremap = true}
+    )
+  end
+end
+
+---@param result table
+local function show_emulators(result)
   return function(_, _, _)
     local formatted = {}
-    for _, item in pairs(emulators) do
-      table.insert(formatted, " • " .. item.name .. " ")
+    local has_emulators = #result.emulators > 0
+    if has_emulators then
+      for _, item in pairs(result.emulators) do
+        table.insert(formatted, utils.display_name(item.name))
+      end
+    else
+      for _, line in pairs(result.data) do
+        table.insert(formatted, line)
+      end
     end
     if #formatted > 0 then
       ui.popup_create(
         "Flutter emulators",
         formatted,
-        function(buf, _)
-          api.nvim_buf_set_var(buf, "emulators", emulators)
-          api.nvim_buf_set_keymap(
-            buf,
-            "n",
-            "<CR>",
-            ":lua __flutter_tools_select_emulator()<CR>",
-            {silent = true, noremap = true}
-          )
-        end
+        setup_emulators_win(result)
       )
     end
   end
 end
 
 function M.list()
-  local emulators = {}
-  vim.fn.jobstart(
+  local result = {
+    data = {},
+    emulators = {}
+  }
+  jobstart(
     "flutter emulators",
     {
-      on_stdout = get_emulator(emulators),
-      on_exit = show_emulators(emulators),
+      on_stdout = get_emulator(result),
+      on_exit = show_emulators(result),
       on_stderr = function(_, data, _)
         if data and data[1] ~= "" then
           utils.echomsg(data[1])

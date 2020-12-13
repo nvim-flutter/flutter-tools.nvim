@@ -17,4 +17,10 @@ function M.autocommands_create(definitions)
   end
 end
 
+---@param name string
+---@return string
+function M.display_name(name)
+  return " • " .. name .. " "
+end
+
 return M

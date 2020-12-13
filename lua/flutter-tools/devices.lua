@@ -22,12 +22,6 @@ function M.parse(line)
   end
 end
 
----@param device table
----@return string
-function M.format(device)
-  return " • " .. device.name .. " "
-end
-
 ---@param result table
 local function get_device(result)
   return function(_, data, _)
@@ -63,7 +57,7 @@ local function show_devices(result)
     local has_devices = #result.devices > 0
     if has_devices then
       for _, item in pairs(result.devices) do
-        table.insert(formatted, M.format(item))
+        table.insert(formatted, utils.display_name(item.name))
       end
     else
       for _, item in pairs(result.data) do
