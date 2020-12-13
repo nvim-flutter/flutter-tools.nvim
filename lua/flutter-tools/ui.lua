@@ -77,7 +77,8 @@ local function border_create(title, config)
 
   local buf = api.nvim_create_buf(false, true)
   api.nvim_buf_set_lines(buf, 0, -1, false, content)
-  api.nvim_open_win(
+  local win =
+    api.nvim_open_win(
     buf,
     false,
     vim.tbl_extend(
@@ -86,6 +87,8 @@ local function border_create(title, config)
       {focusable = false, height = #content, width = width}
     )
   )
+  vim.wo[win].winblend = 5
+  api.nvim_win_set_option(win, "winhighlight", "NormalFloat:Normal")
 
   add_highlight(
     buf,
@@ -125,7 +128,11 @@ function M.popup_create(title, lines, on_create)
   local win = api.nvim_open_win(buf, true, config)
   vim.bo[buf].modifiable = false
   vim.wo[win].cursorline = true
-  api.nvim_win_set_option(win, "winhighlight", "CursorLine:Visual")
+  api.nvim_win_set_option(
+    win,
+    "winhighlight",
+    "CursorLine:Visual,NormalFloat:Normal"
+  )
   api.nvim_buf_set_keymap(
     buf,
     "n",
