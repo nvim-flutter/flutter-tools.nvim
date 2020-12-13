@@ -13,9 +13,12 @@ local state = {
 
 local function flutter_run_handler(result)
   return function(_, data, name)
-    if data and name == "stderr" then
+    if name == "stderr" then
+      result.has_error = true
+    end
+    if data then
       for _, value in pairs(data) do
-        table.insert(result, value)
+        table.insert(result.data, value)
       end
     end
   end
@@ -23,7 +26,9 @@ end
 
 local function flutter_run_exit(result)
   return function(_, _, name)
-    ui.popup_create("Flutter run (" .. name .. "): ", result)
+    if result.has_error then
+      ui.popup_create("Flutter run (" .. name .. "): ", result.data)
+    end
   end
 end
 
@@ -39,12 +44,16 @@ function M.run(device)
       cmd = cmd .. " -d " .. id
     end
   end
-  local result = {}
+  local result = {
+    has_error = false,
+    data = {}
+  }
   state.job_id =
     jobstart(
     cmd,
     {
       on_data = dev_log.open,
+      on_stdout = flutter_run_handler(result),
       on_stderr = flutter_run_handler(result),
       on_exit = flutter_run_exit(result)
     }
