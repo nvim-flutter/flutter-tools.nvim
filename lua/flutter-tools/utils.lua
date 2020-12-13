@@ -20,4 +20,9 @@ function M.shorten_lines(lines, max_width)
   return formatted
 end
 
+function M.echomsg(msg, hl)
+  hl = hl or "Title"
+  vim.cmd(string.format([[echomsg "%s"]], msg))
+end
+
 return M
