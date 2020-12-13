@@ -1,11 +1,40 @@
 local M = {}
 local api = vim.api
+local namespace_id = api.nvim_create_namespace("flutter_tools_popups")
 
 local function format_title(title, fill, width)
   local remainder = width - 1 - string.len(title)
   local side_size = math.floor(remainder) - 1
   local side = string.rep(fill, side_size)
   return title .. side
+end
+
+--- @param buf_id number
+--- @param hl string
+--- @param lines table
+local function add_highlight(buf_id, hl, lines)
+  for _, line in ipairs(lines) do
+    api.nvim_buf_add_highlight(
+      buf_id,
+      namespace_id,
+      hl,
+      line.number,
+      line.column_start,
+      line.column_end
+    )
+  end
+end
+
+--- check if there is a single non empty line
+--- in the list of lines
+--- @param lines table
+local function invalid_lines(lines)
+  for _, line in pairs(lines) do
+    if line ~= "" then
+      return false
+    end
+  end
+  return true
 end
 
 local border_chars = {
@@ -58,23 +87,19 @@ local function border_create(title, config)
     )
   )
 
+  add_highlight(
+    buf,
+    "Title",
+    {
+      {number = 0, column_end = #title + 3, column_start = 3}
+    }
+  )
+
   config.row = config.row + 1
   config.col = config.col + 2
   config.height = config.height - 2
   config.width = config.width - 4
   return config, buf
-end
-
---- check if there is a single non empty line
---- in the list of lines
---- @param lines table
-local function invalid_lines(lines)
-  for _, line in pairs(lines) do
-    if line ~= "" then
-      return false
-    end
-  end
-  return true
 end
 
 function M.popup_create(title, lines, on_create)
