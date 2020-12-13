@@ -1,4 +1,5 @@
 local ui = require "flutter-tools/ui"
+local utils = require "flutter-tools/utils"
 
 local api = vim.api
 local jobstart = vim.fn.jobstart
@@ -28,7 +29,7 @@ function M.format(device)
 end
 
 local function get_device(devices)
-  return function(data)
+  return function(_, data, _)
     for _, line in pairs(data) do
       local device = M.parse(line)
       if device then
@@ -71,9 +72,10 @@ function M.list()
     {
       on_stdout = get_device(devices),
       on_exit = show_devices(devices),
-      on_stderr = function(err, data, _)
-        print("get devices err: " .. vim.inspect(err))
-        print("get devices data: " .. vim.inspect(data))
+      on_stderr = function(_, data, _)
+        if data and data[1] ~= "" then
+          utils.echomsg(data[1])
+        end
       end
     }
   )
