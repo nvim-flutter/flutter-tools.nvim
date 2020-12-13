@@ -1,4 +1,5 @@
 local labels = require "flutter-tools/labels"
+local utils = require "flutter-tools/utils"
 local commands = require "flutter-tools/commands"
 local emulators = require "flutter-tools/emulators"
 local devices = require "flutter-tools/devices"
@@ -21,6 +22,13 @@ local M = {
 
 function M.setup(prefs)
   M.closing_tags = labels.closing_tags(prefs.closing_tags)
+  utils.autocommands_create(
+    {
+      FlutterToolsHotReload = {
+        {"BufWritePost", "*.dart", "lua require('flutter-tools').reload()"}
+      }
+    }
+  )
 end
 
 return M
