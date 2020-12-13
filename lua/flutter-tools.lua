@@ -1,5 +1,7 @@
 local labels = require "flutter-tools/labels"
 local commands = require "flutter-tools/commands"
+local emulators = require "flutter-tools/emulators"
+local devices = require "flutter-tools/devices"
 local dev_log = require "flutter-tools/dev_log"
 
 local defaults = {
@@ -8,8 +10,8 @@ local defaults = {
 
 local M = {
   closing_tags = labels.closing_tags(defaults.closing_tags),
-  devices = commands.get_devices,
-  emulators = commands.get_emulators,
+  devices = devices.list,
+  emulators = emulators.list,
   run = commands.run,
   reload = dev_log.reload,
   restart = dev_log.restart,

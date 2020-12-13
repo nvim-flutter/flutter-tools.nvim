@@ -86,6 +86,13 @@ function M.popup_create(title, lines, on_create)
   vim.bo[buf].modifiable = false
   vim.wo[win].cursorline = true
   api.nvim_win_set_option(win, "winhighlight", "CursorLine:Visual")
+  api.nvim_buf_set_keymap(
+    buf,
+    "n",
+    "<ESC>",
+    ":lua __flutter_tools_close(" .. buf .. ")<CR>",
+    {silent = true, noremap = true}
+  )
   vim.cmd(
     string.format(
       [[autocmd! WinLeave <buffer> execute 'bw %d %d']],
@@ -95,6 +102,23 @@ function M.popup_create(title, lines, on_create)
   )
   if on_create then
     on_create(buf, win)
+  end
+end
+
+function M.open_split(opts, on_open)
+  local open_cmd = opts.open_cmd or "botright vnew"
+  local name = opts.filename or "__Flutter_Tools_Unknown__"
+  local filetype = opts.filetype
+  vim.cmd(open_cmd)
+  vim.cmd("setfiletype " .. filetype)
+
+  local win = api.nvim_get_current_win()
+  local buf = api.nvim_get_current_buf()
+  api.nvim_buf_set_name(buf, name)
+  vim.bo[buf].swapfile = false
+  vim.bo[buf].buftype = "nofile"
+  if on_open then
+    on_open(buf, win)
   end
 end
 
