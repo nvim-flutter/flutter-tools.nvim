@@ -51,21 +51,29 @@ function M.launch_emulator(emulator)
   )
 end
 
+---@param line string
+function M.parse(line)
+  local parts = vim.split(line, "•")
+  if #parts == 4 then
+    return {
+      name = vim.trim(parts[2]),
+      id = vim.trim(parts[1]),
+      platform = vim.trim(parts[3]),
+      system = vim.trim(parts[4])
+    }
+  end
+end
+
 ---@param emulators table
 local function get_emulator(emulators)
   return function(_, data, _)
     for _, line in pairs(data) do
       local parts = vim.split(line, "•")
       if #parts == 4 then
-        table.insert(
-          emulators,
-          {
-            name = vim.trim(parts[1]),
-            id = vim.trim(parts[2]),
-            platform = vim.trim(parts[3]),
-            system = vim.trim(parts[4])
-          }
-        )
+        local emulator = M.parse(line)
+        if emulator then
+          table.insert(emulators, emulator)
+        end
       end
     end
   end
