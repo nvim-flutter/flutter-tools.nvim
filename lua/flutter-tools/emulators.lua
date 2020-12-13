@@ -71,6 +71,7 @@ local function get_emulator(emulators)
   end
 end
 
+---@param emulators table
 local function show_emulators(emulators)
   return function(_, _, _)
     local formatted = {}
@@ -103,10 +104,10 @@ function M.list()
     {
       on_stdout = get_emulator(emulators),
       on_exit = show_emulators(emulators),
-      on_stderr = function(err, data, _)
-        utils.echomsg(err)
-        print("emulators err: " .. vim.inspect(err))
-        print("emulators data: " .. vim.inspect(data))
+      on_stderr = function(_, data, _)
+        if data and data[1] ~= "" then
+          utils.echomsg(data[1])
+        end
       end
     }
   )

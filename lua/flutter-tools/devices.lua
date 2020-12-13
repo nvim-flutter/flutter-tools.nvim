@@ -9,34 +9,30 @@ local M = {}
 -- Devices
 -----------------------------------------------------------------------------//
 
-function _G.__flutter_tools_select_device()
-  local devices = vim.b.devices
-  if not devices then
-    vim.cmd [[echomsg "Sorry there is no device on this line"]]
-    return
+function M.parse(line)
+  local parts = vim.split(line, "•")
+  if #parts == 4 then
+    return {
+      name = vim.trim(parts[1]),
+      device_id = vim.trim(parts[2]),
+      platform = vim.trim(parts[3]),
+      system = vim.trim(parts[4])
+    }
   end
-  local lnum = vim.fn.line(".")
-  local device = devices[lnum]
-  if device then
-    M.run(device)
-  end
-  api.nvim_win_close(0, true)
+end
+
+---@param device table
+---@return string
+function M.format(device)
+  return " • " .. device.name .. " "
 end
 
 local function get_device(devices)
-  return function(_, data, _)
+  return function(data)
     for _, line in pairs(data) do
-      local parts = vim.split(line, "•")
-      if #parts == 4 then
-        table.insert(
-          devices,
-          {
-            name = vim.trim(parts[1]),
-            device_id = vim.trim(parts[2]),
-            platform = vim.trim(parts[3]),
-            system = vim.trim(parts[4])
-          }
-        )
+      local device = M.parse(line)
+      if device then
+        table.insert(devices, device)
       end
     end
   end
@@ -47,7 +43,7 @@ local function show_devices(devices)
   return function(_, _, _)
     local formatted = {}
     for _, item in pairs(devices) do
-      table.insert(formatted, " • " .. item.name .. " ")
+      table.insert(formatted, M.format(item))
     end
     if #formatted > 0 then
       ui.popup_create(

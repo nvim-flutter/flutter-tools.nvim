@@ -1,7 +1,9 @@
 local ui = require "flutter-tools/ui"
 local utils = require "flutter-tools/utils"
+local devices = require "flutter-tools/devices"
 local dev_log = require "flutter-tools/dev_log"
 
+local api = vim.api
 local jobstart = vim.fn.jobstart
 local jobstop = vim.fn.jobstop
 
@@ -11,25 +13,82 @@ local state = {
   job_id = nil
 }
 
-local function flutter_run_handler(result)
-  return function(_, data, name)
-    if name == "stderr" then
-      result.has_error = true
-    end
-    if data then
-      for _, value in pairs(data) do
-        table.insert(result.data, value)
-      end
+local function on_flutter_run_error(result)
+  return function(_, data, _)
+    result.has_error = true
+    for _, item in pairs(data) do
+      table.insert(result.data, item)
     end
   end
 end
 
-local function flutter_run_exit(result)
-  return function(_, _, name)
-    if result.has_error then
-      ui.popup_create("Flutter run (" .. name .. "): ", result.data)
+local function on_flutter_run_data(_)
+  return function(job_id, data, name)
+    if name == "stdout" then
+      dev_log.open(job_id, data)
     end
   end
+end
+
+--- Parse a list of lines looking for devices
+--- return the parsed list and the found devices if any
+---@param result table
+local function add_device_options(result)
+  local edited = {}
+  local win_devices = {}
+  for index, line in pairs(result.data) do
+    local device = devices.parse(line)
+    if device then
+      win_devices[tostring(index)] = device
+      table.insert(edited, devices.format(device))
+    else
+      table.insert(edited, line)
+    end
+  end
+  return edited, win_devices
+end
+
+local function on_flutter_run_exit(result)
+  return function(_, _, name)
+    if result.has_error then
+      if #result.data <= 1 and result.data[1] == "" then
+        local lines = dev_log.get_content()
+        result.data = lines
+      end
+      local edited, win_devices = add_device_options(result)
+      ui.popup_create(
+        "Flutter run (" .. name .. "): ",
+        edited,
+        function(buf, _)
+          vim.b.devices = win_devices
+          -- we have handled this error by giving the user a choice
+          -- of devices to select
+          result.has_error = false
+          api.nvim_buf_set_keymap(
+            buf,
+            "n",
+            "<CR>",
+            ":lua __flutter_tools_select_device()<CR>",
+            {silent = true, noremap = true}
+          )
+        end
+      )
+    end
+  end
+end
+
+function _G.__flutter_tools_select_device()
+  local win_devices = vim.b.devices
+  if not win_devices then
+    vim.cmd [[echomsg "Sorry there is no device on this line"]]
+    return
+  end
+  local lnum = vim.fn.line(".")
+  local device = win_devices[lnum] or win_devices[tostring(lnum)]
+  if device then
+    M.run(device)
+  end
+  api.nvim_win_close(0, true)
 end
 
 function M.run(device)
@@ -52,10 +111,9 @@ function M.run(device)
     jobstart(
     cmd,
     {
-      on_data = dev_log.open,
-      on_stdout = flutter_run_handler(result),
-      on_stderr = flutter_run_handler(result),
-      on_exit = flutter_run_exit(result)
+      on_stdout = on_flutter_run_data(result),
+      on_exit = on_flutter_run_exit(result),
+      on_stderr = on_flutter_run_error(result)
     }
   )
 end
