@@ -120,6 +120,7 @@ end
 
 function M.quit()
   jobstop(state.log.job_id)
+  state.log.job_id = nil
 end
 
 function _G.__flutter_tools_close(buf)
