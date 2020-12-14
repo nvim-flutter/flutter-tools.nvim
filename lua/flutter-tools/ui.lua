@@ -11,6 +11,17 @@ local function format_title(title, fill, width)
   return title .. side
 end
 
+local function calculate_width(lines)
+  local max_width = math.ceil(vim.o.columns * 0.8)
+  local max_length = 0
+  for _, line in pairs(lines) do
+    if #line > max_length then
+      max_length = #line
+    end
+  end
+  return max_length <= max_width and max_length or max_width
+end
+
 --- @param buf_id number
 --- @param hl string
 --- @param lines table
@@ -111,7 +122,7 @@ function M.popup_create(title, lines, on_create)
   if not lines or #lines < 1 or invalid_lines(lines) then
     return
   end
-  local width = 50
+  local width = calculate_width(lines)
   local height = 10
   local buf = api.nvim_create_buf(false, true)
   local config, border =
