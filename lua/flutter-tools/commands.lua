@@ -22,10 +22,10 @@ local function on_flutter_run_error(result)
   end
 end
 
-local function on_flutter_run_data(_)
+local function on_flutter_run_data(_, opts)
   return function(job_id, data, name)
     if name == "stdout" then
-      dev_log.log(job_id, data)
+      dev_log.log(job_id, data, opts)
     end
   end
 end
@@ -91,31 +91,37 @@ function _G.__flutter_tools_select_device()
   api.nvim_win_close(0, true)
 end
 
-function M.run(device)
-  local cmd = "flutter run"
-  if M.job_id then
-    utils.echomsg("A flutter process is already running")
+function M.run(opts)
+  if not opts then
+    utils.echomsg("Please run setup first!")
     return
   end
-  if device then
-    local id = device.id or device.device_id
-    if id then
-      cmd = cmd .. " -d " .. id
+  return function(device)
+    local cmd = "flutter run"
+    if M.job_id then
+      utils.echomsg("A flutter process is already running")
+      return
     end
-  end
-  local result = {
-    has_error = false,
-    data = {}
-  }
-  state.job_id =
-    jobstart(
-    cmd,
-    {
-      on_stdout = on_flutter_run_data(result),
-      on_exit = on_flutter_run_exit(result),
-      on_stderr = on_flutter_run_error(result)
+    if device then
+      local id = device.id or device.device_id
+      if id then
+        cmd = cmd .. " -d " .. id
+      end
+    end
+    local result = {
+      has_error = false,
+      data = {}
     }
-  )
+    state.job_id =
+      jobstart(
+      cmd,
+      {
+        on_stdout = on_flutter_run_data(result, opts),
+        on_exit = on_flutter_run_exit(result),
+        on_stderr = on_flutter_run_error(result)
+      }
+    )
+  end
 end
 
 function M.quit()

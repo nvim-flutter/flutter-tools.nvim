@@ -6,7 +6,8 @@ local devices = require "flutter-tools/devices"
 local dev_log = require "flutter-tools/dev_log"
 
 local defaults = {
-  closing_tags = {}
+  closing_tags = {},
+  open_cmd = "botright vnew"
 }
 
 local M = {
@@ -42,8 +43,20 @@ local function setup_autocommands()
   )
 end
 
+--- @param prefs table user preferences
+local function validate_prefs(prefs)
+  vim.validate {
+    open_cmd = {prefs.open_cmd, "string", true},
+    closing_tags = {prefs.closing_tags, "table", true}
+  }
+end
+
 function M.setup(prefs)
+  validate_prefs(prefs)
+  prefs = vim.tbl_deep_extend("keep", prefs, defaults)
+
   M.closing_tags = labels.closing_tags(prefs.closing_tags)
+  M.run = M.run(prefs)
   setup_commands()
   setup_autocommands()
 end

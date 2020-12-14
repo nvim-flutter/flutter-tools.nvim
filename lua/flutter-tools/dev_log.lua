@@ -55,10 +55,10 @@ local function send(cmd)
   end
 end
 
-function M.log(job_id, data)
+function M.log(job_id, data, opts)
   M.job_id = job_id
   if not exists() then
-    create()
+    create(opts.open_cmd)
   end
   vim.bo[M.buf].modifiable = true
   api.nvim_buf_set_lines(M.buf, -1, -1, true, data)

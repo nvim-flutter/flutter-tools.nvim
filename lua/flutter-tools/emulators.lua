@@ -37,7 +37,7 @@ local function emulator_launch_handler(_, data, name)
       print("emulator launch stdout: " .. vim.inspect(data))
     end
   elseif name == "stderr" then
-    print("emulator launch stdin: " .. vim.inspect(data))
+    print("emulator launch stderr: " .. vim.inspect(data))
   end
 end
 
