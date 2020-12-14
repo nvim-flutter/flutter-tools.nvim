@@ -47,10 +47,10 @@ function M.get_content()
   end
 end
 
-local function send(cmd)
+local function send(cmd, quiet)
   if M.job_id then
     vim.fn.chansend(M.job_id, cmd)
-  else
+  elseif not quiet then
     utils.echomsg [[Sorry! Flutter is not running]]
   end
 end
@@ -65,20 +65,20 @@ function M.log(job_id, data, opts)
   vim.bo[M.buf].modifiable = false
 end
 
-function M.reload()
-  send("r")
+function M.reload(quiet)
+  send("r", quiet)
 end
 
-function M.restart()
-  send("R")
+function M.restart(quiet)
+  send("R", quiet)
 end
 
-function M.quit()
-  send("q")
+function M.quit(quiet)
+  send("q", quiet)
 end
 
-function M.visual_debug()
-  send("p")
+function M.visual_debug(quiet)
+  send("p", quiet)
 end
 
 function _G.__flutter_tools_close_dev_log()

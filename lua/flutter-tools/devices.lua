@@ -53,19 +53,19 @@ end
 ---@param result table list of devices
 local function show_devices(result)
   return function(_, _, _)
-    local formatted = {}
+    local lines = {}
     local has_devices = #result.devices > 0
     if has_devices then
       for _, item in pairs(result.devices) do
-        table.insert(formatted, utils.display_name(item.name, item.platform))
+        table.insert(lines, utils.display_name(item.name, item.platform))
       end
     else
       for _, item in pairs(result.data) do
-        table.insert(formatted, item)
+        table.insert(lines, item)
       end
     end
-    if #formatted > 0 then
-      ui.popup_create("Flutter devices", formatted, setup_devices_win(result))
+    if #lines > 0 then
+      ui.popup_create("Flutter devices", lines, setup_devices_win(result))
     end
   end
 end

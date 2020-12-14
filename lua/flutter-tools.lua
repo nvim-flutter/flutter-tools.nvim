@@ -37,7 +37,7 @@ local function setup_autocommands()
   utils.autocommands_create(
     {
       FlutterToolsHotReload = {
-        {"BufWritePost", "*.dart", "lua require('flutter-tools').reload()"}
+        {"BufWritePost", "*.dart", "lua require('flutter-tools').reload(true)"}
       }
     }
   )
