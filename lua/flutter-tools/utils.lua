@@ -23,4 +23,8 @@ function M.display_name(name)
   return " • " .. name .. " "
 end
 
+function M.command(name, rhs)
+  vim.cmd("command! " .. name .. " " .. rhs)
+end
+
 return M

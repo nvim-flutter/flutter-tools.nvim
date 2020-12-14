@@ -20,8 +20,19 @@ local M = {
   visual_debug = dev_log.visual_debug
 }
 
-function M.setup(prefs)
-  M.closing_tags = labels.closing_tags(prefs.closing_tags)
+local function setup_commands()
+  utils.command("FlutterRun", [[lua require('flutter-tools').run()]])
+  utils.command("FlutterReload", [[lua require('flutter-tools').reload()]])
+  utils.command("FlutterRestart", [[lua require('flutter-tools').restart()]])
+  utils.command("FlutterQuit", [[lua require('flutter-tools').quit()]])
+  utils.command("FlutterDevices", [[lua require('flutter-tools').devices()]])
+  utils.command(
+    "FlutterEmulators",
+    [[lua require('flutter-tools').emulators()]]
+  )
+end
+
+local function setup_autocommands()
   utils.autocommands_create(
     {
       FlutterToolsHotReload = {
@@ -29,6 +40,12 @@ function M.setup(prefs)
       }
     }
   )
+end
+
+function M.setup(prefs)
+  M.closing_tags = labels.closing_tags(prefs.closing_tags)
+  setup_commands()
+  setup_autocommands()
 end
 
 return M
