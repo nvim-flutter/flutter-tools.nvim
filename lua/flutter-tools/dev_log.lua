@@ -51,7 +51,7 @@ local function send(cmd)
   if M.job_id then
     vim.fn.chansend(M.job_id, cmd)
   else
-    vim.cmd [[Sorry! Flutter is not running]]
+    utils.echomsg [[Sorry! Flutter is not running]]
   end
 end
 
