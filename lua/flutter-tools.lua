@@ -55,8 +55,13 @@ function M.setup(prefs)
   validate_prefs(prefs)
   prefs = vim.tbl_deep_extend("keep", prefs, defaults)
 
-  M.closing_tags = labels.closing_tags(prefs.closing_tags)
+  -- these functions need to be passed the users preferences so they wrap the
+  -- underlying functions so preferences are passed in and saved with a closure
+  -- this might not be the best approach so this won't change on the fly so
+  -- it might be better to use g:variables
   M.run = M.run(prefs)
+  M.closing_tags = labels.closing_tags(prefs.closing_tags)
+
   setup_commands()
   setup_autocommands()
 end

@@ -93,8 +93,7 @@ end
 
 function M.run(opts)
   if not opts then
-    utils.echomsg("Please run setup first!")
-    return
+    return utils.echomsg("Please run setup first!")
   end
   return function(device)
     local cmd = "flutter run"

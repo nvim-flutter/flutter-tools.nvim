@@ -83,6 +83,7 @@ end
 
 function _G.__flutter_tools_close_dev_log()
   M.buf = nil
+  M.win = nil
 end
 
 return M
