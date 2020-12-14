@@ -108,7 +108,7 @@ local function show_emulators(result)
     local has_emulators = #result.emulators > 0
     if has_emulators then
       for _, item in pairs(result.emulators) do
-        table.insert(formatted, utils.display_name(item.name))
+        table.insert(formatted, utils.display_name(item.name, item.platform))
       end
     else
       for _, line in pairs(result.data) do

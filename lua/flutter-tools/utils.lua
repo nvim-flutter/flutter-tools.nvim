@@ -19,8 +19,9 @@ end
 
 ---@param name string
 ---@return string
-function M.display_name(name)
-  return " • " .. name .. " "
+function M.display_name(name, platform)
+  local symbol = " • "
+  return symbol .. name .. symbol .. platform
 end
 
 function M.command(name, rhs)

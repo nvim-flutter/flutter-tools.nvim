@@ -2,6 +2,8 @@ local M = {}
 local api = vim.api
 local namespace_id = api.nvim_create_namespace("flutter_tools_popups")
 
+local WIN_BLEND = 5
+
 local function format_title(title, fill, width)
   local remainder = width - 1 - string.len(title)
   local side_size = math.floor(remainder) - 1
@@ -87,7 +89,7 @@ local function border_create(title, config)
       {focusable = false, height = #content, width = width}
     )
   )
-  vim.wo[win].winblend = 5
+  vim.wo[win].winblend = WIN_BLEND
   api.nvim_win_set_option(win, "winhighlight", "NormalFloat:Normal")
 
   add_highlight(
@@ -126,6 +128,7 @@ function M.popup_create(title, lines, on_create)
   )
   api.nvim_buf_set_lines(buf, 0, -1, true, lines)
   local win = api.nvim_open_win(buf, true, config)
+  vim.wo[win].winblend = WIN_BLEND
   vim.bo[buf].modifiable = false
   vim.wo[win].cursorline = true
   api.nvim_win_set_option(
