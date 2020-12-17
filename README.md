@@ -17,7 +17,7 @@ Functionality
 #### Start emulators or connected devices
 
 
-![device list](./.github/devices.png)
+![device list](./.github/emulators.png)
 
 #### Visualise logs
 
