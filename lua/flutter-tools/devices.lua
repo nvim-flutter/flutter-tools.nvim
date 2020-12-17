@@ -35,8 +35,9 @@ local function get_device(result)
   end
 end
 
-local function setup_devices_win(result)
+local function setup_devices_win(result, highlights)
   return function(buf, _)
+    ui.add_highlights(buf, highlights)
     if #result.devices > 0 then
       api.nvim_buf_set_var(buf, "devices", result.devices)
     end
@@ -54,10 +55,13 @@ end
 local function show_devices(result)
   return function(_, _, _)
     local lines = {}
+    local highlights = {}
     local has_devices = #result.devices > 0
     if has_devices then
-      for _, item in pairs(result.devices) do
-        table.insert(lines, utils.display_name(item.name, item.platform))
+      for lnum, item in pairs(result.devices) do
+        local name = utils.display_name(item.name, item.platform)
+        utils.add_device_highlights(highlights, name, lnum, item)
+        table.insert(lines, name)
       end
     else
       for _, item in pairs(result.data) do
@@ -65,7 +69,11 @@ local function show_devices(result)
       end
     end
     if #lines > 0 then
-      ui.popup_create("Flutter devices", lines, setup_devices_win(result))
+      ui.popup_create(
+        "Flutter devices",
+        lines,
+        setup_devices_win(result, highlights)
+      )
     end
   end
 end

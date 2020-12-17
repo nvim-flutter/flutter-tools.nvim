@@ -21,7 +21,44 @@ end
 ---@return string
 function M.display_name(name, platform)
   local symbol = " • "
-  return symbol .. name .. symbol .. platform
+  local result = symbol .. name .. symbol .. platform
+  return result
+end
+
+function M.add_device_highlights(highlights, line, lnum, device)
+  vim.list_extend(
+    highlights,
+    M.get_highlights(
+      line,
+      lnum,
+      {
+        word = device.name,
+        highlight = "Type"
+      },
+      {
+        word = device.platform,
+        highlight = "Comment"
+      }
+    )
+  )
+end
+
+function M.get_highlights(line, lnum, ...)
+  local highlights = {}
+  for i = 1, select("#", ...) do
+    local item = select(i, ...)
+    local s, e = line:find(item.word)
+    table.insert(
+      highlights,
+      {
+        highlight = item.highlight,
+        column_start = s,
+        column_end = e + 1,
+        number = lnum - 1
+      }
+    )
+  end
+  return highlights
 end
 
 function M.command(name, rhs)

@@ -33,14 +33,16 @@ local function calculate_width(lines)
 end
 
 --- @param buf_id number
---- @param hl string
 --- @param lines table
-local function add_highlight(buf_id, hl, lines)
+function M.add_highlights(buf_id, lines)
+  if not lines then
+    return
+  end
   for _, line in ipairs(lines) do
     api.nvim_buf_add_highlight(
       buf_id,
       namespace_id,
-      hl,
+      line.highlight,
       line.number,
       line.column_start,
       line.column_end
@@ -113,11 +115,15 @@ local function border_create(title, config)
   vim.wo[win].winblend = WIN_BLEND
   api.nvim_win_set_option(win, "winhighlight", "NormalFloat:Normal")
 
-  add_highlight(
+  M.add_highlights(
     buf,
-    "Title",
     {
-      {number = 0, column_end = #title + 3, column_start = 3}
+      {
+        highlight = "Title",
+        number = 0,
+        column_end = #title + 3,
+        column_start = 3
+      }
     }
   )
 
@@ -128,6 +134,9 @@ local function border_create(title, config)
   return config, buf
 end
 
+---@param title string
+---@param lines table
+---@param on_create function
 function M.popup_create(title, lines, on_create)
   if not lines or #lines < 1 or invalid_lines(lines) then
     return

@@ -86,8 +86,9 @@ local function get_emulator(result)
   end
 end
 
-local function setup_emulators_win(result)
+local function setup_emulators_win(result, highlights)
   return function(buf, _)
+    ui.add_highlights(buf, highlights)
     if #result.emulators > 0 then
       api.nvim_buf_set_var(buf, "emulators", result.emulators)
     end
@@ -106,9 +107,12 @@ local function show_emulators(result)
   return function(_, _, _)
     local formatted = {}
     local has_emulators = #result.emulators > 0
+    local highlights = {}
     if has_emulators then
-      for _, item in pairs(result.emulators) do
-        table.insert(formatted, utils.display_name(item.name, item.platform))
+      for lnum, item in pairs(result.emulators) do
+        local name = utils.display_name(item.name, item.platform)
+        utils.add_device_highlights(highlights, name, lnum, item)
+        table.insert(formatted, name)
       end
     else
       for _, line in pairs(result.data) do
@@ -119,7 +123,7 @@ local function show_emulators(result)
       ui.popup_create(
         "Flutter emulators",
         formatted,
-        setup_emulators_win(result)
+        setup_emulators_win(result, highlights)
       )
     end
   end
