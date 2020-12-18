@@ -1,4 +1,5 @@
 local labels = require "flutter-tools/labels"
+local outline = require "flutter-tools/outline"
 local utils = require "flutter-tools/utils"
 local commands = require "flutter-tools/commands"
 local emulators = require "flutter-tools/emulators"
@@ -7,11 +8,15 @@ local dev_log = require "flutter-tools/dev_log"
 
 local defaults = {
   closing_tags = {},
+  outline = {
+    open_cmd = "botright vnew"
+  },
   open_cmd = "botright vnew"
 }
 
 local M = {
   closing_tags = labels.closing_tags(defaults.closing_tags),
+  outline = outline.document_outline(defaults.outline),
   devices = devices.list,
   emulators = emulators.list,
   run = commands.run,
