@@ -74,14 +74,11 @@ end
 local function get_emulator(result)
   return function(_, data, _)
     for _, line in pairs(data) do
-      local parts = vim.split(line, "•")
-      if #parts == 4 then
-        local emulator = M.parse(line)
-        if emulator then
-          table.insert(result.emulators, emulator)
-        end
-        table.insert(result.data, line)
+      local emulator = M.parse(line)
+      if emulator then
+        table.insert(result.emulators, emulator)
       end
+      table.insert(result.data, line)
     end
   end
 end
