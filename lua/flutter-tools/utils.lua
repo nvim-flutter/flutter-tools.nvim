@@ -88,4 +88,9 @@ function M.list_is_empty(tbl)
   return table.concat(tbl) == ""
 end
 
+function M.buf_valid(bufnr, name)
+  local target = bufnr or name
+  return vim.fn.bufexists(target) > 0 and vim.fn.buflisted(target) > 0
+end
+
 return M

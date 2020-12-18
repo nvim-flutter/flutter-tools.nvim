@@ -13,19 +13,37 @@ local state = {
   job_id = nil
 }
 
+---@param lines table
+local function has_device_conflict(lines)
+  for _, line in pairs(lines) do
+    if line then
+      -- match the error string returned if multiple devices are matched
+      return line:match("More than one device connected") ~= nil
+    end
+  end
+  return false
+end
+
 local function on_flutter_run_error(result)
   return function(_, data, _)
-    result.has_error = true
     for _, item in pairs(data) do
       table.insert(result.data, item)
     end
   end
 end
 
-local function on_flutter_run_data(_, opts)
+local function on_flutter_run_data(result, opts)
   return function(job_id, data, name)
     if name == "stdout" then
-      dev_log.log(job_id, data, opts)
+      -- only check if there is a conflict if we haven't already seen this message
+      if not result.has_conflict then
+        result.has_conflict = has_device_conflict(data)
+      end
+      if result.has_conflict then
+        vim.list_extend(result.data, data)
+      else
+        dev_log.log(job_id, data, opts)
+      end
     end
   end
 end
@@ -36,34 +54,33 @@ end
 local function add_device_options(result)
   local edited = {}
   local win_devices = {}
+  local highlights = {}
   for index, line in pairs(result.data) do
     local device = devices.parse(line)
     if device then
       win_devices[tostring(index)] = device
-      table.insert(edited, utils.display_name(device.name, device.platform))
+      local name = utils.display_name(device.name, device.platform)
+      table.insert(edited, name)
+      utils.add_device_highlights(highlights, name, index, device)
     else
       table.insert(edited, line)
     end
   end
-  return edited, win_devices
+  return edited, win_devices, highlights
 end
 
 local function on_flutter_run_exit(result)
   return function(_, _, name)
-    if result.has_error then
-      if #result.data <= 1 and result.data[1] == "" then
-        local lines = dev_log.get_content()
-        result.data = lines
-      end
-      local edited, win_devices = add_device_options(result)
+    if result.has_conflict and result.data then
+      local edited, win_devices, highlights = add_device_options(result)
       ui.popup_create(
         "Flutter run (" .. name .. "): ",
         edited,
         function(buf, _)
           vim.b.devices = win_devices
-          -- we have handled this error by giving the user a choice
-          -- of devices to select
-          result.has_error = false
+          ui.add_highlights(buf, highlights)
+          -- we have handled this conflict by giving the user a
+          result.has_conflict = false
           api.nvim_buf_set_keymap(
             buf,
             "n",
@@ -92,6 +109,7 @@ function _G.__flutter_tools_select_device()
 end
 
 function M.run(device, opts)
+  opts = opts or {}
   local cmd = "flutter run"
   if M.job_id then
     utils.echomsg("A flutter process is already running")
@@ -104,7 +122,7 @@ function M.run(device, opts)
     end
   end
   local result = {
-    has_error = false,
+    has_conflict = false,
     data = {}
   }
   state.job_id =
