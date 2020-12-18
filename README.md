@@ -31,5 +31,5 @@ Functionality
 - [ ] Auto-scroll dev log
 - [ ] Connect + open devtools
 - [ ] LSP Outline window
-- [ ] Fix pop on `FlutterQuit`
+- [x] Fix pop on `FlutterQuit`
 - [ ] Close emulators and kill all processes on `VimLeave`
