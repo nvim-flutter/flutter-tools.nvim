@@ -33,17 +33,13 @@ local function on_flutter_run_error(result)
 end
 
 local function on_flutter_run_data(result, opts)
-  return function(job_id, data, name)
-    if name == "stdout" then
-      -- only check if there is a conflict if we haven't already seen this message
-      if not result.has_conflict then
-        result.has_conflict = has_device_conflict(data)
-      end
-      if result.has_conflict then
-        vim.list_extend(result.data, data)
-      else
-        dev_log.log(job_id, data, opts)
-      end
+  return function(job_id, data, _)
+    -- only check if there is a conflict if we haven't already seen this message
+    result.has_conflict = result.has_conflict or has_device_conflict(data)
+    if result.has_conflict then
+      vim.list_extend(result.data, data)
+    else
+      dev_log.log(job_id, data, opts)
     end
   end
 end
@@ -112,8 +108,7 @@ function M.run(device, opts)
   opts = opts or {}
   local cmd = "flutter run"
   if M.job_id then
-    utils.echomsg("A flutter process is already running")
-    return
+    return utils.echomsg("Flutter is already running!")
   end
   if device then
     local id = device.id or device.device_id

@@ -56,8 +56,7 @@ local function show_devices(result)
   return function(_, _, _)
     local lines = {}
     local highlights = {}
-    local has_devices = #result.devices > 0
-    if has_devices then
+    if #result.devices > 0 then
       for lnum, item in pairs(result.devices) do
         local name = utils.display_name(item.name, item.platform)
         utils.add_device_highlights(highlights, name, lnum, item)
