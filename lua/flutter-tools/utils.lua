@@ -20,34 +20,49 @@ end
 ---@param name string
 ---@return string
 function M.display_name(name, platform)
+  if not name then
+    return ""
+  end
   local symbol = " • "
-  local result = symbol .. name .. symbol .. platform
+  local result = symbol .. name .. (platform and symbol .. platform or "")
   return result
 end
 
 function M.add_device_highlights(highlights, line, lnum, device)
-  vim.list_extend(
-    highlights,
+  local locations =
     M.get_highlights(
-      line,
-      lnum,
-      {
-        word = device.name,
-        highlight = "Type"
-      },
-      {
-        word = device.platform,
-        highlight = "Comment"
-      }
-    )
+    line,
+    lnum,
+    {
+      word = device.name,
+      highlight = "Type"
+    },
+    {
+      word = device.platform,
+      highlight = "Comment"
+    }
   )
+  if locations then
+    vim.list_extend(highlights, locations)
+  end
+end
+
+--- escape any special characters in text
+--- source: https://stackoverflow.com/a/20778724
+---@param text string
+local function escape_pattern(text)
+  local pattern = "([" .. ("%^$().[]*+-?"):gsub("(.)", "%%%1") .. "])"
+  return text:gsub(pattern, "%%%1")
 end
 
 function M.get_highlights(line, lnum, ...)
   local highlights = {}
   for i = 1, select("#", ...) do
     local item = select(i, ...)
-    local s, e = line:find(item.word)
+    local s, e = line:find(escape_pattern(item.word))
+    if not s or not e then
+      return {}
+    end
     table.insert(
       highlights,
       {
@@ -63,6 +78,14 @@ end
 
 function M.command(name, rhs)
   vim.cmd("command! " .. name .. " " .. rhs)
+end
+
+--- if every item in a table is an empty value return true
+function M.list_is_empty(tbl)
+  if not tbl then
+    return true
+  end
+  return table.concat(tbl) == ""
 end
 
 return M

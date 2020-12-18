@@ -40,7 +40,7 @@ local function add_device_options(result)
     local device = devices.parse(line)
     if device then
       win_devices[tostring(index)] = device
-      table.insert(edited, devices.format(device))
+      table.insert(edited, utils.display_name(device.name, device.platform))
     else
       table.insert(edited, line)
     end
