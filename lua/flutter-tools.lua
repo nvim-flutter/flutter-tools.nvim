@@ -9,9 +9,9 @@ local dev_log = require "flutter-tools/dev_log"
 local defaults = {
   closing_tags = {},
   outline = {
-    open_cmd = "botright vnew"
+    open_cmd = "vnew"
   },
-  open_cmd = "botright vnew"
+  open_cmd = "vnew"
 }
 
 local M = {
