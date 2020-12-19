@@ -168,31 +168,40 @@ local function setup_outline_window(lines, highlights)
       "<Cmd>bw!<CR>",
       {noremap = true, nowait = true, silent = true}
     )
+    vim.cmd [[autocmd! User FlutterOutlineChanged lua __flutter_tools_draw_outline() ]]
+  end
+end
+
+function _G.__flutter_tools_draw_outline(options)
+  options = options or {}
+  local buf = api.nvim_get_current_buf()
+  local outline = M.outlines[vim.uri_from_bufnr(buf)]
+  if not outline then
+    return utils.echomsg [[Sorry! There is no outline for this file]]
+  end
+  local lines, highlights = get_display_props(outline)
+  local buf_loaded = utils.buf_valid(M.buf, outline_filename)
+  if not buf_loaded then
+    ui.open_split(
+      {
+        open_cmd = options.open_cmd,
+        filetype = "flutter_outline",
+        filename = outline_filename
+      },
+      setup_outline_window(lines, highlights)
+    )
+  else
+    local b = M.buf or vim.fn.bufnr(outline_filename)
+    vim.bo[b].modifiable = true
+    api.nvim_buf_set_lines(b, 0, -1, false, lines)
+    ui.add_highlights(M.buf, highlights)
+    vim.bo[b].modifiable = false
   end
 end
 
 function M.open(options)
   return function()
-    local buf = api.nvim_get_current_buf()
-    local outline = M.outlines[vim.uri_from_bufnr(buf)]
-    local lines, highlights = get_display_props(outline)
-    local buf_loaded = utils.buf_valid(M.buf, outline_filename)
-    if not buf_loaded then
-      ui.open_split(
-        {
-          open_cmd = options.open_cmd,
-          filetype = "flutter_outline",
-          filename = outline_filename
-        },
-        setup_outline_window(lines, highlights)
-      )
-    else
-      local b = M.buf or vim.fn.bufnr(outline_filename)
-      vim.bo[b].modifiable = true
-      api.nvim_buf_set_lines(b, 0, -1, false, lines)
-      ui.add_highlights(M.buf, highlights)
-      vim.bo[b].modifiable = false
-    end
+    __flutter_tools_draw_outline(options)
   end
 end
 
@@ -204,6 +213,9 @@ function M.document_outline()
       parse_outline(result, item, "", "")
     end
     M.outlines[data.uri] = result
+    if utils.buf_valid(M.buf, outline_filename) then
+      vim.cmd [[doautocmd User FlutterOutlineChanged]]
+    end
   end
 end
 
