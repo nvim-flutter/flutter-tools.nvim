@@ -12,6 +12,22 @@ M.buf = nil
 M.outlines = {}
 M.options = {}
 
+setmetatable(
+  M,
+  {
+    __index = function(_, k)
+      --- if the buffer of the outline file is nil but it *might* exist
+      --- we default to also checking if any file with a similar name exists
+      -- if so we return it's buffer number
+      if k == "buf" then
+        local buf = vim.fn.bufnr(outline_filename)
+        return buf >= 0 and buf or nil
+      end
+      return nil
+    end
+  }
+)
+
 local bottom_corner = "└"
 local middle_corner = "├"
 
@@ -168,40 +184,64 @@ local function setup_outline_window(lines, highlights)
       "<Cmd>bw!<CR>",
       {noremap = true, nowait = true, silent = true}
     )
-    vim.cmd [[autocmd! User FlutterOutlineChanged lua __flutter_tools_draw_outline() ]]
+    vim.cmd [[autocmd! User FlutterOutlineChanged lua __flutter_tools_refresh_outline() ]]
   end
 end
 
-function _G.__flutter_tools_draw_outline(options)
-  options = options or {}
+---@param buf integer the buf number
+---@param lines table the lines to append
+---@param highlights table the highlights to apply
+local function replace(buf, lines, highlights)
+  vim.bo[buf].modifiable = true
+  local ok = pcall(api.nvim_buf_set_lines, buf, 0, -1, false, lines)
+  if ok then
+    vim.bo[buf].modifiable = false
+    if highlights then
+      ui.add_highlights(M.buf, highlights)
+    end
+  end
+end
+
+local function get_buf_outline()
   local buf = api.nvim_get_current_buf()
   local outline = M.outlines[vim.uri_from_bufnr(buf)]
   if not outline then
-    return utils.echomsg [[Sorry! There is no outline for this file]]
+    return false, nil, nil
   end
   local lines, highlights = get_display_props(outline)
-  local buf_loaded = utils.buf_valid(M.buf, outline_filename)
-  if not buf_loaded then
-    ui.open_split(
-      {
-        open_cmd = options.open_cmd,
-        filetype = "flutter_outline",
-        filename = outline_filename
-      },
-      setup_outline_window(lines, highlights)
-    )
-  else
-    local b = M.buf or vim.fn.bufnr(outline_filename)
-    vim.bo[b].modifiable = true
-    api.nvim_buf_set_lines(b, 0, -1, false, lines)
-    ui.add_highlights(M.buf, highlights)
-    vim.bo[b].modifiable = false
+  return true, lines, highlights
+end
+
+function _G.__flutter_tools_refresh_outline()
+  if not utils.buf_valid(M.buf) then
+    return
+  end
+  local ok, lines, highlights = get_buf_outline()
+  if ok then
+    replace(M.buf, lines, highlights)
   end
 end
 
 function M.open(options)
   return function()
-    __flutter_tools_draw_outline(options)
+    options = options or {}
+    local ok, lines, highlights = get_buf_outline()
+    if not ok then
+      utils.echomsg [[Sorry! There is no outline for this file]]
+    end
+    local buf_loaded = utils.buf_valid(M.buf)
+    if not buf_loaded then
+      ui.open_split(
+        {
+          open_cmd = options.open_cmd,
+          filetype = "flutter_outline",
+          filename = outline_filename
+        },
+        setup_outline_window(lines, highlights)
+      )
+    else
+      replace(M.buf, lines, highlights)
+    end
   end
 end
 
@@ -213,9 +253,7 @@ function M.document_outline()
       parse_outline(result, item, "", "")
     end
     M.outlines[data.uri] = result
-    if utils.buf_valid(M.buf, outline_filename) then
-      vim.cmd [[doautocmd User FlutterOutlineChanged]]
-    end
+    vim.cmd [[doautocmd User FlutterOutlineChanged]]
   end
 end
 
