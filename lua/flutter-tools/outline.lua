@@ -4,7 +4,14 @@ local utils = require "flutter-tools/utils"
 local M = {}
 local api = vim.api
 local outline_filename = "Flutter outline"
+
+-----------------------------------------------------------------------------//
+-- State
+-----------------------------------------------------------------------------//
 M.buf = nil
+M.outlines = {}
+M.options = {}
+
 local bottom_corner = "└"
 local middle_corner = "├"
 
@@ -164,14 +171,11 @@ local function setup_outline_window(lines, highlights)
   end
 end
 
-function M.document_outline(options)
-  return function(_, _, data, _)
-    local outline = data.outline or {}
-    local result = {}
-    for _, item in pairs(outline.children) do
-      parse_outline(result, item, "", "")
-    end
-    local lines, highlights = get_display_props(result)
+function M.open(options)
+  return function()
+    local buf = api.nvim_get_current_buf()
+    local outline = M.outlines[vim.uri_from_bufnr(buf)]
+    local lines, highlights = get_display_props(outline)
     local buf_loaded = utils.buf_valid(M.buf, outline_filename)
     if not buf_loaded then
       ui.open_split(
@@ -189,6 +193,17 @@ function M.document_outline(options)
       ui.add_highlights(M.buf, highlights)
       vim.bo[b].modifiable = false
     end
+  end
+end
+
+function M.document_outline()
+  return function(_, _, data, _)
+    local outline = data.outline or {}
+    local result = {}
+    for _, item in pairs(outline.children) do
+      parse_outline(result, item, "", "")
+    end
+    M.outlines[data.uri] = result
   end
 end
 

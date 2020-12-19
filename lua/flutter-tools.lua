@@ -16,7 +16,8 @@ local defaults = {
 
 local M = {
   closing_tags = labels.closing_tags(defaults.closing_tags),
-  outline = outline.document_outline(defaults.outline),
+  outline = outline.document_outline(),
+  open_outline = outline.open(defaults.outline),
   devices = devices.list,
   emulators = emulators.list,
   run = commands.run,
@@ -35,6 +36,10 @@ local function setup_commands()
   utils.command(
     "FlutterEmulators",
     [[lua require('flutter-tools').emulators()]]
+  )
+  utils.command(
+    "FlutterOutline",
+    [[lua require('flutter-tools').open_outline()]]
   )
 end
 
