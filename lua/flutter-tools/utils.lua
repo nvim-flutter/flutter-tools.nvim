@@ -1,4 +1,5 @@
 local M = {}
+local api = vim.api
 
 function M.echomsg(msg, hl)
   hl = hl or "Title"
@@ -90,6 +91,9 @@ end
 
 function M.buf_valid(bufnr, name)
   local target = bufnr or name
+  if bufnr then
+    return api.nvim_buf_is_loaded(bufnr)
+  end
   return vim.fn.bufexists(target) > 0 and vim.fn.buflisted(target) > 0
 end
 
