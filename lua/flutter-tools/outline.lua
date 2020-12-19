@@ -5,7 +5,8 @@ local M = {}
 local api = vim.api
 local outline_filename = "__FLUTTER_OUTLINE__"
 M.buf = nil
-
+local bottom_corner = "└"
+local middle_corner = "├"
 local icons = {
   TOP_LEVEL_VARIABLE = "\u{f435}",
   CLASS = "\u{f0e8}",
@@ -28,12 +29,11 @@ setmetatable(
   }
 )
 
-local function parse_outline(result, node, prefix)
+local function parse_outline(result, node, prefix, marker)
   if not node then
     return
   end
   local element = node.element or {}
-  local display_str = {}
   local text = element.name
   if element.returnType then
     text = text .. element.returnType
@@ -44,26 +44,34 @@ local function parse_outline(result, node, prefix)
   if element.parameters then
     text = text .. element.parameters
   end
+  local lnum = ""
   if element.range then
-    text = text .. ":" .. element.range.start.line
+    lnum = lnum .. ":" .. element.range.start.line
   end
-  table.insert(display_str, prefix)
-  table.insert(display_str, icons[element.kind])
-  table.insert(display_str, text)
+  local icon = icons[element.kind]
+  local display_str = {prefix, marker, icon, text, lnum}
+  local column_start = #prefix + #marker + #icon
   table.insert(
     result,
     {
+      hl = {
+        highlight = "Title",
+        column_start = column_start,
+        column_end = column_start + #text
+      },
       name = element.name,
       text = table.concat(display_str, " ")
     }
   )
-  if not node.children or vim.tbl_isempty(node.children) then
+  local children = node.children
+  if not children or vim.tbl_isempty(children) then
     return
   end
 
-  prefix = prefix .. " "
-  for _, child in pairs(node.children) do
-    parse_outline(result, child, prefix)
+  local child_prefix = prefix .. " "
+  for i, child in pairs(children) do
+    local child_marker = #children == i and bottom_corner or middle_corner
+    parse_outline(result, child, child_prefix, child_marker)
   end
 end
 
@@ -72,26 +80,35 @@ function M.document_outline(options)
     local outline = data.outline or {}
     local result = {}
     for _, item in pairs(outline.children) do
-      parse_outline(result, item, "")
+      parse_outline(result, item, "", "")
     end
     local lines = {}
-    for _, item in pairs(result) do
+    local highlights = {}
+    for index, item in pairs(result) do
+      table.insert(
+        highlights,
+        vim.tbl_extend("force", item.hl, {number = index - 1})
+      )
       table.insert(lines, item.text)
     end
     if not utils.buf_valid(M.buf, outline_filename) then
       ui.open_split(
         {
           open_cmd = options.open_cmd,
-          filetype = "flutter_outline",
+          filetype = "Flutter Outline",
           filename = outline_filename
         },
         function(buf, win)
           vim.wo[win].number = false
           vim.wo[win].relativenumber = false
           vim.wo[win].wrap = false
+          vim.bo[buf].buflisted = false
+          vim.bo[buf].bufhidden = "wipe"
+          vim.bo[buf].buftype = "nofile"
           M.buf = buf
           api.nvim_buf_set_lines(buf, 0, -1, false, lines)
           vim.bo[buf].modifiable = false
+          ui.add_highlights(M.buf, highlights)
         end
       )
     else
