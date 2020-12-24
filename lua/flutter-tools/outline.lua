@@ -19,7 +19,7 @@ local markers = {
 local icons = {
   TOP_LEVEL_VARIABLE = "\u{f435}",
   CLASS = "\u{f0e8}",
-  FIELD = "\u{f93}",
+  FIELD = "\u{f93d}",
   CONSTRUCTOR = "\u{e624}",
   CONSTRUCTOR_INVOCATION = "\u{fc2a}",
   FUNCTION = "\u{0192}",
@@ -185,6 +185,7 @@ local function setup_outline_window(lines, highlights)
     vim.bo[buf].buflisted = false
     vim.bo[buf].bufhidden = "wipe"
     vim.bo[buf].buftype = "nofile"
+    vim.wo[win].winfixwidth = true
 
     api.nvim_buf_set_lines(buf, 0, -1, false, lines)
     vim.bo[buf].modifiable = false
