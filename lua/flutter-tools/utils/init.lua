@@ -3,7 +3,9 @@ local api = vim.api
 
 function M.echomsg(msg, hl)
   hl = hl or "Title"
+  vim.cmd("echohl " .. hl)
   vim.cmd(string.format([[echomsg "%s"]], msg))
+  vim.cmd("echohl clear")
 end
 
 function M.autocommands_create(definitions)

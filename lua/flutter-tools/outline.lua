@@ -266,7 +266,7 @@ function M.open(options)
     options = options or {}
     local ok, lines, highlights = get_buf_outline()
     if not ok then
-      utils.echomsg [[Sorry! There is no outline for this file]]
+      return utils.echomsg [[Sorry! There is no outline for this file]]
     end
     local buf_loaded = utils.buf_valid(M.buf)
     if not buf_loaded and not vim.tbl_isempty(lines) then
