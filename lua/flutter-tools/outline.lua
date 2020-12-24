@@ -6,8 +6,6 @@ local api = vim.api
 local outline_filename = "Flutter outline"
 local outline_filetype = "flutterToolsOutline"
 
-local last_char_pattern = "[^\128-\191][\128-\191]*$"
-
 -----------------------------------------------------------------------------//
 -- Icons
 -----------------------------------------------------------------------------//
@@ -95,12 +93,6 @@ setmetatable(
   }
 )
 
----@param str string
----@param replacement string
-local function replace_last(str, replacement)
-  return str:gsub(last_char_pattern, replacement)
-end
-
 local function highlight_item(name, value, group)
   vim.cmd(string.format([[syntax match %s /%s/]], name, value))
   vim.cmd("highlight default link " .. name .. " " .. group)
@@ -115,28 +107,13 @@ local function set_outline_highlights()
   end
 end
 
----@param indent string the indentation prefix
----@param index number the current index
----@param no_of_children number the number of children
-local function get_child_prefix(indent, index, no_of_children)
-  local prefix = indent
-  local prev_marker = indent:match(last_char_pattern)
-  if prev_marker == markers.bottom then
-    prefix = replace_last(prefix, " ")
-  end
-  if index == no_of_children then
-    prefix = replace_last(prefix, markers.bottom)
-  else
-    prefix = replace_last(prefix, markers.middle)
-  end
-  prefix = " " .. prefix
-  return prefix
-end
-
 ---@param result table
 ---@param node table
----@param prefix string
-local function parse_outline(result, node, prefix)
+---@param indent string
+---@param marker string
+local function parse_outline(result, node, indent, marker)
+  indent = indent or ""
+  marker = marker or ""
   if not node then
     return
   end
@@ -176,9 +153,11 @@ local function parse_outline(result, node, prefix)
     return
   end
 
+  local parent_marker = marker == markers.middle and markers.vertical or " "
+  indent = indent .. " " .. parent_marker
   for index, child in pairs(children) do
-    local child_prefix = get_child_prefix(prefix, index, #children)
-    parse_outline(result, child, child_prefix)
+    local new_marker = index == #children and markers.bottom or markers.middle
+    parse_outline(result, child, indent, new_marker)
   end
 end
 
@@ -289,7 +268,7 @@ function M.document_outline()
     local outline = data.outline or {}
     local result = {}
     for _, item in pairs(outline.children) do
-      parse_outline(result, item, "")
+      parse_outline(result, item)
     end
     M.outlines[data.uri] = result
     vim.cmd [[doautocmd User FlutterOutlineChanged]]
