@@ -4,32 +4,19 @@ local utils = require "flutter-tools/utils"
 local M = {}
 local api = vim.api
 local outline_filename = "Flutter outline"
+local outline_filetype = "flutterToolsOutline"
+
+local last_char_pattern = "[^\128-\191][\128-\191]*$"
 
 -----------------------------------------------------------------------------//
--- State
+-- Icons
 -----------------------------------------------------------------------------//
-M.buf = nil
-M.outlines = {}
-M.options = {}
 
-setmetatable(
-  M,
-  {
-    __index = function(_, k)
-      --- if the buffer of the outline file is nil but it *might* exist
-      --- we default to also checking if any file with a similar name exists
-      -- if so we return it's buffer number
-      if k == "buf" then
-        local buf = vim.fn.bufnr(outline_filename)
-        return buf >= 0 and buf or nil
-      end
-      return nil
-    end
-  }
-)
-
-local bottom_corner = "└"
-local middle_corner = "├"
+local markers = {
+  bottom = "└",
+  middle = "├",
+  vertical = "│"
+}
 
 local icons = {
   TOP_LEVEL_VARIABLE = "\u{f435}",
@@ -85,23 +72,78 @@ local icon_highlights = {
   }
 }
 
-function _G.flutter_tools_set_outline_highlights()
-  for _, hl in pairs(icon_highlights) do
-    vim.cmd("highlight default link " .. hl.name .. " " .. hl.link)
+-----------------------------------------------------------------------------//
+-- State
+-----------------------------------------------------------------------------//
+M.buf = nil
+M.outlines = {}
+M.options = {}
+
+setmetatable(
+  M,
+  {
+    __index = function(_, k)
+      --- if the buffer of the outline file is nil but it *might* exist
+      --- we default to also checking if any file with a similar name exists
+      -- if so we return it's buffer number
+      if k == "buf" then
+        local buf = vim.fn.bufnr(outline_filename)
+        return buf >= 0 and buf or nil
+      end
+      return nil
+    end
+  }
+)
+
+---@param str string
+---@param replacement string
+local function replace_last(str, replacement)
+  return str:gsub(last_char_pattern, replacement)
+end
+
+local function highlight_item(name, value, group)
+  vim.cmd(string.format([[syntax match %s /%s/]], name, value))
+  vim.cmd("highlight default link " .. name .. " " .. group)
+end
+
+local function set_outline_highlights()
+  for key, value in pairs(markers) do
+    highlight_item(hl_prefix .. key, value, "NonText")
+  end
+  for icon, hl in pairs(icon_highlights) do
+    highlight_item(hl.name, icon, hl.link)
   end
 end
 
-vim.cmd [[augroup FlutterToolsOutline]]
-vim.cmd [[au!]]
-vim.cmd [[autocmd VimEnter,ColorScheme * lua flutter_tools_set_outline_highlights()]]
-vim.cmd [[augroup END]]
+---@param indent string the indentation prefix
+---@param index number the current index
+---@param no_of_children number the number of children
+local function get_child_prefix(indent, index, no_of_children)
+  local prefix = indent
+  local prev_marker = indent:match(last_char_pattern)
+  if prev_marker == markers.bottom then
+    prefix = replace_last(prefix, " ")
+  end
+  if index == no_of_children then
+    prefix = replace_last(prefix, markers.bottom)
+  else
+    prefix = replace_last(prefix, markers.middle)
+  end
+  prefix = " " .. prefix
+  return prefix
+end
 
-local function parse_outline(result, node, prefix, marker)
+---@param result table
+---@param node table
+---@param prefix string
+local function parse_outline(result, node, prefix)
   if not node then
     return
   end
+  local range = node.codeRange
   local element = node.element or {}
   local text = element.name
+
   if element.returnType then
     text = text .. element.returnType
   end
@@ -116,37 +158,27 @@ local function parse_outline(result, node, prefix, marker)
     lnum = lnum .. ":" .. element.range.start.line
   end
   local icon = icons[element.kind]
-  local display_str = {prefix, marker, icon, text, lnum}
-  local column_start = #prefix + #marker + 1
-  local column_end = column_start + #icon + 1
+  local display_str = {prefix, icon, text, lnum}
+  -- local column_start = vim.fn.strwidth(prefix) + 1
+  -- local column_end = column_start + #icon + 1
   table.insert(
     result,
     {
-      hl = {
-        {
-          highlight = icon_highlights[icon].name,
-          column_start = column_start,
-          column_end = column_end
-        },
-        {
-          highlight = "Comment",
-          column_start = #prefix + 1,
-          column_end = #prefix + #marker + 1
-        }
-      },
+      lnum = range.start.line + 1,
+      col = range.start.character + 1,
       name = element.name,
       text = table.concat(display_str, " ")
     }
   )
+
   local children = node.children
   if not children or vim.tbl_isempty(children) then
     return
   end
 
-  local child_prefix = prefix .. " "
-  for i, child in pairs(children) do
-    local child_marker = #children == i and bottom_corner or middle_corner
-    parse_outline(result, child, child_prefix, child_marker)
+  for index, child in pairs(children) do
+    local child_prefix = get_child_prefix(prefix, index, #children)
+    parse_outline(result, child, child_prefix)
   end
 end
 
@@ -154,9 +186,11 @@ local function get_display_props(items)
   local lines = {}
   local highlights = {}
   for index, item in pairs(items) do
-    for _, hl in pairs(item.hl) do
-      hl.number = index - 1
-      table.insert(highlights, hl)
+    if item.hl then
+      for _, hl in pairs(item.hl) do
+        hl.number = index - 1
+        table.insert(highlights, hl)
+      end
     end
     table.insert(lines, item.text)
   end
@@ -176,7 +210,12 @@ local function setup_outline_window(lines, highlights)
     api.nvim_buf_set_lines(buf, 0, -1, false, lines)
     vim.bo[buf].modifiable = false
 
-    ui.add_highlights(M.buf, highlights)
+    set_outline_highlights()
+
+    if highlights and not vim.tbl_isempty(highlights) then
+      ui.add_highlights(M.buf, highlights)
+    end
+
     api.nvim_buf_set_keymap(
       buf,
       "n",
@@ -205,7 +244,7 @@ end
 local function get_buf_outline()
   local buf = api.nvim_get_current_buf()
   local outline = M.outlines[vim.uri_from_bufnr(buf)]
-  if not outline then
+  if not outline or vim.tbl_isempty(outline) then
     return false, nil, nil
   end
   local lines, highlights = get_display_props(outline)
@@ -230,11 +269,11 @@ function M.open(options)
       utils.echomsg [[Sorry! There is no outline for this file]]
     end
     local buf_loaded = utils.buf_valid(M.buf)
-    if not buf_loaded then
+    if not buf_loaded and not vim.tbl_isempty(lines) then
       ui.open_split(
         {
           open_cmd = options.open_cmd,
-          filetype = "flutter_outline",
+          filetype = outline_filetype,
           filename = outline_filename
         },
         setup_outline_window(lines, highlights)
@@ -250,7 +289,7 @@ function M.document_outline()
     local outline = data.outline or {}
     local result = {}
     for _, item in pairs(outline.children) do
-      parse_outline(result, item, "", "")
+      parse_outline(result, item, "")
     end
     M.outlines[data.uri] = result
     vim.cmd [[doautocmd User FlutterOutlineChanged]]
