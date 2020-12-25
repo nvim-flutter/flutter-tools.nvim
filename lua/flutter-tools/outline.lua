@@ -368,7 +368,11 @@ function _G.__flutter_tools_set_current_item()
   if curbuf == M.buf then
     return
   end
-  local outline = M.outlines[vim.uri_from_bufnr(0)]
+  local uri = vim.uri_from_bufnr(curbuf)
+  local outline = M.outlines[uri]
+  if vim.tbl_isempty(outline) then
+    return
+  end
   local cursor = api.nvim_win_get_cursor(0)
   local lnum = cursor[1] - 1
   local column = cursor[2] - 1
