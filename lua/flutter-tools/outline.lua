@@ -210,10 +210,12 @@ local function get_display_props(items)
   local lines = {}
   local highlights = {}
   for index, item in ipairs(items) do
-    item.number = index - 1
+    -- this number might be required to be 1 or 0 based
+    -- based on the api call using it
+    item.lnum = index - 1
     if item.hl then
       for _, hl in ipairs(item.hl) do
-        hl.number = item.number
+        hl.number = item.lnum
         table.insert(highlights, hl)
       end
     end
@@ -285,6 +287,7 @@ local function replace(buf, lines, highlights)
   end
 end
 
+---@return boolean, table|nil, table|nil, table|nil
 local function get_outline_content()
   local buf = api.nvim_get_current_buf()
   local outline = M.outlines[vim.uri_from_bufnr(buf)]
@@ -333,7 +336,7 @@ local function highlight_current_item(item)
     {
       {
         highlight = hl_prefix .. "SelectedOutlineItem",
-        number = item.number,
+        number = item.lnum,
         column_start = item.buf_start,
         column_end = item.buf_end + 1 -- add one for padding
       }
@@ -344,6 +347,10 @@ end
 
 function _G.__flutter_tools_set_current_item()
   if not utils.buf_valid(M.buf) then
+    return
+  end
+  local curbuf = api.nvim_get_current_buf()
+  if curbuf == M.buf then
     return
   end
   local outline = M.outlines[vim.uri_from_bufnr(0)]
@@ -368,7 +375,12 @@ function _G.__flutter_tools_set_current_item()
   if current_item then
     highlight_current_item(current_item)
     local win = vim.fn.bufwinid(M.buf)
-    api.nvim_win_set_cursor(win, {current_item.number, current_item.buf_start})
+    -- nvim_win_set_cursor is a 1,0 based method i.e.
+    -- the row should be one based and the column 0 based
+    api.nvim_win_set_cursor(
+      win,
+      {current_item.lnum + 1, current_item.buf_start}
+    )
   end
 end
 

@@ -44,6 +44,9 @@ end
 --- @param buf_id number
 --- @param lines table
 function M.add_highlights(buf_id, lines, ns_id)
+  if not buf_id then
+    return
+  end
   ns_id = ns_id or namespace_id
   if not lines then
     return
