@@ -21,7 +21,7 @@ local function exists()
 end
 
 local function create(options)
-  local cmd = options and options.open_cmd or "botright vnew"
+  local cmd = options and options.open_cmd or "vnew"
   local opts = {
     filename = log_filename,
     open_cmd = cmd,
