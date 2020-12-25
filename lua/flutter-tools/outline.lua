@@ -149,11 +149,12 @@ local function add_segment(list, highlights, item, hl, length, pos)
   return length
 end
 
+---@param fname string
 ---@param result table
 ---@param node table
 ---@param indent string
 ---@param marker string
-local function parse_outline(result, node, indent, marker)
+local function parse_outline(fname, result, node, indent, marker)
   indent = indent or ""
   marker = marker or ""
   if not node then
@@ -182,6 +183,7 @@ local function parse_outline(result, node, indent, marker)
   table.insert(
     result,
     {
+      fname = fname,
       hl = hl,
       -- this number might be required to be 1 or 0 based
       -- based on the api call using it as row, col api functions
@@ -209,7 +211,7 @@ local function parse_outline(result, node, indent, marker)
   indent = indent .. " " .. parent_marker
   for index, child in ipairs(children) do
     local new_marker = index == #children and markers.bottom or markers.middle
-    parse_outline(result, child, indent, new_marker)
+    parse_outline(fname, result, child, indent, new_marker)
   end
 end
 
@@ -393,6 +395,10 @@ function _G.__flutter_tools_set_current_item()
     end
   end
   if current_item then
+    local item_buf = fn.bufnr(current_item.fname)
+    if item_buf ~= curbuf then
+      return
+    end
     highlight_current_item(current_item)
     local win = fn.bufwinid(M.buf)
     -- nvim_win_set_cursor is a 1,0 based method i.e.
@@ -432,8 +438,9 @@ function M.document_outline()
   return function(_, _, data, _)
     local outline = data.outline or {}
     local result = {}
+    local fname = vim.uri_to_fname(data.uri)
     for _, item in ipairs(outline.children) do
-      parse_outline(result, item)
+      parse_outline(fname, result, item)
     end
     result.uri = data.uri
     M.outlines[data.uri] = result
