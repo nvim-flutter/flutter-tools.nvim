@@ -23,13 +23,17 @@ Functionality
 
 ![dev log](./.github/dev_log.png)
 
-- [ ] Enhance native neovim lsp's dart support:
-  - [x] closing tags
-  - [ ] outline
+#### Outline window
+![Outline window](./.github/outline.gif)
+
+#### Closing Tags
+![closing tags](./.github/closing_tags.png)
 
 ### TODO
 - [ ] Auto-scroll dev log
 - [ ] Connect + open devtools
-- [ ] LSP Outline window
-- [x] Fix pop on `FlutterQuit`
 - [ ] Close emulators and kill all processes on `VimLeave`
+
+- [x] LSP Outline window
+- [x] LSP Closing Tags
+- [x] Fix pop on `FlutterQuit`
