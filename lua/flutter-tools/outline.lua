@@ -99,7 +99,6 @@ M.outlines =
   }
 )
 M.options = {}
-M.current_outline_item = nil
 
 ---@param name string
 ---@param value string
@@ -110,6 +109,9 @@ local function highlight_item(name, value, group)
 end
 
 local function set_outline_highlights()
+  vim.cmd(
+    "highlight default link " .. hl_prefix .. "SelectedOutlineItem Search"
+  )
   for key, value in pairs(markers) do
     highlight_item(hl_prefix .. key, value, "Whitespace")
   end
@@ -165,7 +167,8 @@ local function parse_outline(result, node, indent, marker)
   local hl = {}
   local length = #table.concat(display_str, " ")
 
-  --- NOTE highlights are byte indexed so use "#" operator to get the byte count
+  --- NOTE highlights are byte indexed
+  --- so use "#" operator to get the byte count
   local return_type = element.returnType and element.returnType .. " "
   length = add_segment(text, hl, return_type, "Comment", length)
   length = add_segment(text, hl, element.name, "None", length)
@@ -173,17 +176,20 @@ local function parse_outline(result, node, indent, marker)
   length = add_segment(text, hl, element.parameters, "Bold", length)
 
   table.insert(display_str, table.concat(text, ""))
+  local content = table.concat(display_str, " ")
 
   table.insert(
     result,
     {
       hl = hl,
+      buf_start = #indent,
+      buf_end = #content,
       start_line = range.start.line + 1,
       start_col = range.start.character + 1,
       end_line = range["end"].line + 1,
       end_col = range["end"].character + 1,
       name = element.name,
-      text = table.concat(display_str, " ")
+      text = content
     }
   )
 
@@ -313,6 +319,28 @@ function _G.__flutter_tools_select_outline_item()
   vim.fn.cursor(item.start_line, item.start_col)
 end
 
+local outline_ns_id =
+  api.nvim_create_namespace("flutter_tools_outline_selected_item")
+
+local function highlight_current_item(item)
+  if not utils.buf_valid(M.buf) then
+    return
+  end
+  ui.clear_highlights(M.buf, outline_ns_id)
+  ui.add_highlights(
+    M.buf,
+    {
+      {
+        highlight = hl_prefix .. "SelectedOutlineItem",
+        number = item.hl[1].number,
+        column_start = item.buf_start,
+        column_end = item.buf_end + 1 -- add one for padding
+      }
+    },
+    outline_ns_id
+  )
+end
+
 function _G.__flutter_tools_set_current_item()
   if not utils.buf_valid(M.buf) then
     return
@@ -321,6 +349,7 @@ function _G.__flutter_tools_set_current_item()
   local cursor = api.nvim_win_get_cursor(0)
   local lnum = cursor[1] - 1
   local column = cursor[2] - 1
+  local current_item
   if not lnum or not column then
     return
   end
@@ -332,8 +361,11 @@ function _G.__flutter_tools_set_current_item()
         (lnum < item.end_line or
           (lnum == item.end_line and column < item.end_col))
      then
-      M.current_outline_item = item
+      current_item = item
     end
+  end
+  if current_item then
+    highlight_current_item(current_item)
   end
 end
 

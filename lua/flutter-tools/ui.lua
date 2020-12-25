@@ -35,16 +35,23 @@ local function calculate_width(lines)
   return max_length <= max_width and max_length or max_width
 end
 
+function M.clear_highlights(buf_id, ns_id, line_start, line_end)
+  line_start = line_start or 0
+  line_end = line_end or -1
+  api.nvim_buf_clear_namespace(buf_id, ns_id, line_start, line_end)
+end
+
 --- @param buf_id number
 --- @param lines table
-function M.add_highlights(buf_id, lines)
+function M.add_highlights(buf_id, lines, ns_id)
+  ns_id = ns_id or namespace_id
   if not lines then
     return
   end
   for _, line in ipairs(lines) do
     api.nvim_buf_add_highlight(
       buf_id,
-      namespace_id,
+      ns_id,
       line.highlight,
       line.number,
       line.column_start,
