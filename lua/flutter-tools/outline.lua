@@ -100,6 +100,9 @@ M.outlines =
 )
 M.options = {}
 
+---@param name string
+---@param value string
+---@param group string
 local function highlight_item(name, value, group)
   vim.cmd(string.format([[syntax match %s /%s/]], name, value))
   vim.cmd("highlight default link " .. name .. " " .. group)
@@ -107,7 +110,7 @@ end
 
 local function set_outline_highlights()
   for key, value in pairs(markers) do
-    highlight_item(hl_prefix .. key, value, "NonText")
+    highlight_item(hl_prefix .. key, value, "Whitespace")
   end
   for icon, hl in pairs(icon_highlights) do
     highlight_item(hl.name, icon, hl.link)
@@ -167,7 +170,6 @@ local function parse_outline(result, node, indent, marker)
   length = add_segment(text, hl, element.name, "None", length)
   length = add_segment(text, hl, element.typeParameters, "Type", length)
   length = add_segment(text, hl, element.parameters, "Bold", length)
-  length = add_segment(text, hl, ":" .. range.start.line, "Statement", length)
 
   table.insert(display_str, table.concat(text, ""))
 
