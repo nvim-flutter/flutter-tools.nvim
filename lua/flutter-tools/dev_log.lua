@@ -20,11 +20,9 @@ local function exists()
   return is_valid
 end
 
-local function create(options)
-  local cmd = options and options.open_cmd or "vnew"
+local function create(_)
   local opts = {
     filename = log_filename,
-    open_cmd = cmd,
     filetype = "log"
   }
   ui.open_split(
