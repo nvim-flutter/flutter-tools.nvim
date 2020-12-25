@@ -210,9 +210,10 @@ local function get_display_props(items)
   local lines = {}
   local highlights = {}
   for index, item in ipairs(items) do
+    item.number = index - 1
     if item.hl then
       for _, hl in ipairs(item.hl) do
-        hl.number = index - 1
+        hl.number = item.number
         table.insert(highlights, hl)
       end
     end
@@ -332,7 +333,7 @@ local function highlight_current_item(item)
     {
       {
         highlight = hl_prefix .. "SelectedOutlineItem",
-        number = item.hl[1].number,
+        number = item.number,
         column_start = item.buf_start,
         column_end = item.buf_end + 1 -- add one for padding
       }
@@ -366,6 +367,8 @@ function _G.__flutter_tools_set_current_item()
   end
   if current_item then
     highlight_current_item(current_item)
+    local win = vim.fn.bufwinid(M.buf)
+    api.nvim_win_set_cursor(win, {current_item.number, current_item.buf_start})
   end
 end
 
