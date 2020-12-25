@@ -107,6 +107,34 @@ local function set_outline_highlights()
   end
 end
 
+---@param list table
+---@param highlights table
+---@param item string
+---@param hl string
+---@param length number
+local function append_segment(list, highlights, item, hl, length, pos)
+  if item and item ~= "" then
+    local item_length = #item
+    local new_length = item_length + length
+    table.insert(
+      highlights,
+      {
+        value = item,
+        highlight = hl,
+        column_start = length + 1,
+        column_end = new_length + 1
+      }
+    )
+    if pos then
+      table.insert(list, pos, item)
+    else
+      table.insert(list, item)
+    end
+    length = new_length
+  end
+  return length
+end
+
 ---@param result table
 ---@param node table
 ---@param indent string
@@ -119,28 +147,28 @@ local function parse_outline(result, node, indent, marker)
   end
   local range = node.codeRange
   local element = node.element or {}
-  local text = element.name
-
-  if element.returnType then
-    text = text .. element.returnType
-  end
-  if element.typeParameters then
-    text = text .. element.typeParameters
-  end
-  if element.parameters then
-    text = text .. element.parameters
-  end
-  local lnum = ""
-  if element.range then
-    lnum = lnum .. ":" .. element.range.start.line
-  end
+  local text = {}
   local icon = icons[element.kind]
-  local display_str = {prefix, icon, text, lnum}
-  -- local column_start = vim.fn.strwidth(prefix) + 1
-  -- local column_end = column_start + #icon + 1
+  local display_str = {indent, marker, icon}
+
+  local hl = {}
+  local length = #table.concat(display_str, " ")
+
+  --- NOTE highlights are byte indexed so use "#" operator to get the byte count
+  local return_type = element.returnType and element.returnType .. " "
+  length = append_segment(text, hl, return_type, "Comment", length)
+  length = append_segment(text, hl, element.name, "None", length)
+  length = append_segment(text, hl, element.typeParameters, "Type", length)
+  length = append_segment(text, hl, element.parameters, "Bold", length)
+  length =
+    append_segment(text, hl, ":" .. range.start.line, "Statement", length)
+
+  table.insert(display_str, table.concat(text, ""))
+
   table.insert(
     result,
     {
+      hl = hl,
       lnum = range.start.line + 1,
       col = range.start.character + 1,
       name = element.name,
