@@ -1,10 +1,26 @@
 local ui = require "flutter-tools/ui"
 local utils = require "flutter-tools/utils"
 
-local M = {}
 local api = vim.api
-local outline_filename = "Flutter outline"
+local outline_filename = "Flutter Outline"
 local outline_filetype = "flutterToolsOutline"
+
+local M =
+  setmetatable(
+  {},
+  {
+    __index = function(_, k)
+      --- if the buffer of the outline file is nil but it *might* exist
+      --- we default to also checking if any file with a similar name exists
+      -- if so we return it's buffer number
+      if k == "buf" then
+        local buf = vim.fn.bufnr(outline_filename)
+        return buf >= 0 and buf or nil
+      end
+      return nil
+    end
+  }
+)
 
 -----------------------------------------------------------------------------//
 -- Icons
@@ -16,25 +32,24 @@ local markers = {
   vertical = "│"
 }
 
-local icons = {
-  TOP_LEVEL_VARIABLE = "\u{f435}",
-  CLASS = "\u{f0e8}",
-  FIELD = "\u{f93d}",
-  CONSTRUCTOR = "\u{e624}",
-  CONSTRUCTOR_INVOCATION = "\u{fc2a}",
-  FUNCTION = "\u{0192}",
-  METHOD = "\u{f6a6}",
-  GETTER = "\u{f9f}",
-  ENUM = "\u{f779}",
-  ENUM_CONSTANT = "\u{f02b}",
-  DEFAULT = "\u{e612}"
-}
-
-setmetatable(
-  icons,
+local icons =
+  setmetatable(
   {
-    __index = function(_, _)
-      return icons.default
+    TOP_LEVEL_VARIABLE = "\u{f435}",
+    CLASS = "\u{f0e8}",
+    FIELD = "\u{f93d}",
+    CONSTRUCTOR = "\u{e624}",
+    CONSTRUCTOR_INVOCATION = "\u{fc2a}",
+    FUNCTION = "\u{0192}",
+    METHOD = "\u{f6a6}",
+    GETTER = "\u{f9f}",
+    ENUM = "\u{f779}",
+    ENUM_CONSTANT = "\u{f02b}",
+    DEFAULT = "\u{e612}"
+  },
+  {
+    __index = function(t, _)
+      return t.DEFAULT
     end
   }
 )
@@ -74,24 +89,16 @@ local icon_highlights = {
 -- State
 -----------------------------------------------------------------------------//
 M.buf = nil
-M.outlines = {}
-M.options = {}
-
-setmetatable(
-  M,
+M.outlines =
+  setmetatable(
+  {},
   {
-    __index = function(_, k)
-      --- if the buffer of the outline file is nil but it *might* exist
-      --- we default to also checking if any file with a similar name exists
-      -- if so we return it's buffer number
-      if k == "buf" then
-        local buf = vim.fn.bufnr(outline_filename)
-        return buf >= 0 and buf or nil
-      end
-      return nil
+    __index = function()
+      return {}
     end
   }
 )
+M.options = {}
 
 local function highlight_item(name, value, group)
   vim.cmd(string.format([[syntax match %s /%s/]], name, value))
@@ -112,7 +119,7 @@ end
 ---@param item string
 ---@param hl string
 ---@param length number
-local function append_segment(list, highlights, item, hl, length, pos)
+local function add_segment(list, highlights, item, hl, length, pos)
   if item and item ~= "" then
     local item_length = #item
     local new_length = item_length + length
@@ -156,12 +163,11 @@ local function parse_outline(result, node, indent, marker)
 
   --- NOTE highlights are byte indexed so use "#" operator to get the byte count
   local return_type = element.returnType and element.returnType .. " "
-  length = append_segment(text, hl, return_type, "Comment", length)
-  length = append_segment(text, hl, element.name, "None", length)
-  length = append_segment(text, hl, element.typeParameters, "Type", length)
-  length = append_segment(text, hl, element.parameters, "Bold", length)
-  length =
-    append_segment(text, hl, ":" .. range.start.line, "Statement", length)
+  length = add_segment(text, hl, return_type, "Comment", length)
+  length = add_segment(text, hl, element.name, "None", length)
+  length = add_segment(text, hl, element.typeParameters, "Type", length)
+  length = add_segment(text, hl, element.parameters, "Bold", length)
+  length = add_segment(text, hl, ":" .. range.start.line, "Statement", length)
 
   table.insert(display_str, table.concat(text, ""))
 
@@ -204,6 +210,8 @@ local function get_display_props(items)
   return lines, highlights
 end
 
+---@param lines table
+---@param highlights table
 local function setup_outline_window(lines, highlights)
   return function(buf, win)
     M.buf = buf
@@ -231,6 +239,14 @@ local function setup_outline_window(lines, highlights)
       "<Cmd>bw!<CR>",
       {noremap = true, nowait = true, silent = true}
     )
+
+    api.nvim_buf_set_keymap(
+      buf,
+      "n",
+      "<CR>",
+      [[<Cmd>lua __flutter_tools_select_outline_item()<CR>]],
+      {noremap = true, nowait = true, silent = true}
+    )
     vim.cmd [[autocmd! User FlutterOutlineChanged lua __flutter_tools_refresh_outline() ]]
   end
 end
@@ -249,30 +265,45 @@ local function replace(buf, lines, highlights)
   end
 end
 
-local function get_buf_outline()
+local function get_outline_content()
   local buf = api.nvim_get_current_buf()
   local outline = M.outlines[vim.uri_from_bufnr(buf)]
   if not outline or vim.tbl_isempty(outline) then
-    return false, nil, nil
+    return false
   end
   local lines, highlights = get_display_props(outline)
-  return true, lines, highlights
+  return true, lines, highlights, outline
 end
 
 function _G.__flutter_tools_refresh_outline()
   if not utils.buf_valid(M.buf) then
     return
   end
-  local ok, lines, highlights = get_buf_outline()
+  local ok, lines, highlights = get_outline_content()
   if ok then
     replace(M.buf, lines, highlights)
   end
 end
 
+function _G.__flutter_tools_select_outline_item()
+  local line = vim.fn.line(".")
+  local uri = vim.b.outline_uri
+  if not uri then
+    return utils.echomsg [[Sorry! this item can't be opened]]
+  end
+  local outline = M.outlines[uri]
+  local item = outline[line]
+  if not item then
+    return utils.echomsg [[Sorry! this item can't be opened]]
+  end
+  vim.cmd("drop " .. vim.uri_to_fname(uri))
+  vim.fn.cursor(item.lnum, item.col)
+end
+
 function M.open(options)
   return function()
     options = options or {}
-    local ok, lines, highlights = get_buf_outline()
+    local ok, lines, highlights, outline = get_outline_content()
     if not ok then
       return utils.echomsg [[Sorry! There is no outline for this file]]
     end
@@ -289,6 +320,7 @@ function M.open(options)
     else
       replace(M.buf, lines, highlights)
     end
+    vim.b.outline_uri = outline.uri
   end
 end
 
@@ -299,6 +331,7 @@ function M.document_outline()
     for _, item in pairs(outline.children) do
       parse_outline(result, item)
     end
+    result.uri = data.uri
     M.outlines[data.uri] = result
     vim.cmd [[doautocmd User FlutterOutlineChanged]]
   end
