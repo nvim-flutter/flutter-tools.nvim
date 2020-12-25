@@ -2,6 +2,7 @@ local ui = require "flutter-tools/ui"
 local utils = require "flutter-tools/utils"
 
 local api = vim.api
+local fn = vim.fn
 local outline_filename = "Flutter Outline"
 local outline_filetype = "flutterToolsOutline"
 
@@ -14,7 +15,7 @@ local M =
       --- we default to also checking if any file with a similar name exists
       -- if so we return it's buffer number
       if k == "buf" then
-        local buf = vim.fn.bufnr(outline_filename)
+        local buf = fn.bufnr(outline_filename)
         return buf >= 0 and buf or nil
       end
       return nil
@@ -312,7 +313,7 @@ function _G.__flutter_tools_refresh_outline()
 end
 
 function _G.__flutter_tools_select_outline_item()
-  local line = vim.fn.line(".")
+  local line = fn.line(".")
   local uri = vim.b.outline_uri
   if not uri then
     return utils.echomsg [[Sorry! this item can't be opened]]
@@ -323,7 +324,7 @@ function _G.__flutter_tools_select_outline_item()
     return utils.echomsg [[Sorry! this item can't be opened]]
   end
   vim.cmd("drop " .. vim.uri_to_fname(uri))
-  vim.fn.cursor(item.start_line, item.start_col)
+  fn.cursor(item.start_line, item.start_col)
 end
 
 local outline_ns_id =
@@ -393,7 +394,7 @@ function _G.__flutter_tools_set_current_item()
   end
   if current_item then
     highlight_current_item(current_item)
-    local win = vim.fn.bufwinid(M.buf)
+    local win = fn.bufwinid(M.buf)
     -- nvim_win_set_cursor is a 1,0 based method i.e.
     -- the row should be one based and the column 0 based
     api.nvim_win_set_cursor(
