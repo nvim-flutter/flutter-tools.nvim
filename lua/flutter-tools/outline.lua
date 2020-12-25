@@ -149,12 +149,11 @@ local function add_segment(list, highlights, item, hl, length, pos)
   return length
 end
 
----@param fname string
 ---@param result table
 ---@param node table
 ---@param indent string
 ---@param marker string
-local function parse_outline(fname, result, node, indent, marker)
+local function parse_outline(result, node, indent, marker)
   indent = indent or ""
   marker = marker or ""
   if not node then
@@ -183,7 +182,6 @@ local function parse_outline(fname, result, node, indent, marker)
   table.insert(
     result,
     {
-      fname = fname,
       hl = hl,
       -- this number might be required to be 1 or 0 based
       -- based on the api call using it as row, col api functions
@@ -211,7 +209,7 @@ local function parse_outline(fname, result, node, indent, marker)
   indent = indent .. " " .. parent_marker
   for index, child in ipairs(children) do
     local new_marker = index == #children and markers.bottom or markers.middle
-    parse_outline(fname, result, child, indent, new_marker)
+    parse_outline(result, child, indent, new_marker)
   end
 end
 
@@ -364,11 +362,8 @@ local function is_outline_open()
 end
 
 function _G.__flutter_tools_set_current_item()
-  if not utils.buf_valid(M.buf) or not is_outline_open() then
-    return
-  end
   local curbuf = api.nvim_get_current_buf()
-  if curbuf == M.buf then
+  if not utils.buf_valid(M.buf) or not is_outline_open() or curbuf == M.buf then
     return
   end
   local uri = vim.uri_from_bufnr(curbuf)
@@ -395,7 +390,7 @@ function _G.__flutter_tools_set_current_item()
     end
   end
   if current_item then
-    local item_buf = fn.bufnr(current_item.fname)
+    local item_buf = vim.uri_to_bufnr(outline.uri)
     if item_buf ~= curbuf then
       return
     end
@@ -438,9 +433,8 @@ function M.document_outline()
   return function(_, _, data, _)
     local outline = data.outline or {}
     local result = {}
-    local fname = vim.uri_to_fname(data.uri)
     for _, item in ipairs(outline.children) do
-      parse_outline(fname, result, item)
+      parse_outline(result, item)
     end
     result.uri = data.uri
     M.outlines[data.uri] = result
