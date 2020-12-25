@@ -263,7 +263,7 @@ local function setup_outline_window(lines, highlights, outline)
     local b = vim.uri_to_bufnr(outline.uri)
     vim.cmd(
       string.format(
-        [[autocmd! CursorMoved <buffer=%d> lua __flutter_tools_set_current_item()]],
+        [[autocmd! CursorHold <buffer=%d> lua __flutter_tools_set_current_item()]],
         b
       )
     )
