@@ -99,6 +99,7 @@ M.outlines =
   }
 )
 M.options = {}
+M.current_outline_item = nil
 
 ---@param name string
 ---@param value string
@@ -177,8 +178,10 @@ local function parse_outline(result, node, indent, marker)
     result,
     {
       hl = hl,
-      lnum = range.start.line + 1,
-      col = range.start.character + 1,
+      start_line = range.start.line + 1,
+      start_col = range.start.character + 1,
+      end_line = range["end"].line + 1,
+      end_col = range["end"].character + 1,
       name = element.name,
       text = table.concat(display_str, " ")
     }
@@ -191,7 +194,7 @@ local function parse_outline(result, node, indent, marker)
 
   local parent_marker = marker == markers.middle and markers.vertical or " "
   indent = indent .. " " .. parent_marker
-  for index, child in pairs(children) do
+  for index, child in ipairs(children) do
     local new_marker = index == #children and markers.bottom or markers.middle
     parse_outline(result, child, indent, new_marker)
   end
@@ -200,9 +203,9 @@ end
 local function get_display_props(items)
   local lines = {}
   local highlights = {}
-  for index, item in pairs(items) do
+  for index, item in ipairs(items) do
     if item.hl then
-      for _, hl in pairs(item.hl) do
+      for _, hl in ipairs(item.hl) do
         hl.number = index - 1
         table.insert(highlights, hl)
       end
@@ -214,7 +217,8 @@ end
 
 ---@param lines table
 ---@param highlights table
-local function setup_outline_window(lines, highlights)
+---@param outline table
+local function setup_outline_window(lines, highlights, outline)
   return function(buf, win)
     M.buf = buf
     vim.wo[win].number = false
@@ -250,6 +254,13 @@ local function setup_outline_window(lines, highlights)
       {noremap = true, nowait = true, silent = true}
     )
     vim.cmd [[autocmd! User FlutterOutlineChanged lua __flutter_tools_refresh_outline() ]]
+    local b = vim.uri_to_bufnr(outline.uri)
+    vim.cmd(
+      string.format(
+        [[autocmd! CursorMoved <buffer=%d> lua __flutter_tools_set_current_item()]],
+        b
+      )
+    )
   end
 end
 
@@ -299,7 +310,31 @@ function _G.__flutter_tools_select_outline_item()
     return utils.echomsg [[Sorry! this item can't be opened]]
   end
   vim.cmd("drop " .. vim.uri_to_fname(uri))
-  vim.fn.cursor(item.lnum, item.col)
+  vim.fn.cursor(item.start_line, item.start_col)
+end
+
+function _G.__flutter_tools_set_current_item()
+  if not utils.buf_valid(M.buf) then
+    return
+  end
+  local outline = M.outlines[vim.uri_from_bufnr(0)]
+  local cursor = api.nvim_win_get_cursor(0)
+  local lnum = cursor[1] - 1
+  local column = cursor[2] - 1
+  if not lnum or not column then
+    return
+  end
+  for _, item in ipairs(outline) do
+    if
+      item and not vim.tbl_isempty(item) and
+        (lnum > item.start_line or
+          (lnum == item.start_line and column >= item.start_col)) and
+        (lnum < item.end_line or
+          (lnum == item.end_line and column < item.end_col))
+     then
+      M.current_outline_item = item
+    end
+  end
 end
 
 function M.open(options)
@@ -317,7 +352,7 @@ function M.open(options)
           filetype = outline_filetype,
           filename = outline_filename
         },
-        setup_outline_window(lines, highlights)
+        setup_outline_window(lines, highlights, outline)
       )
     else
       replace(M.buf, lines, highlights)
@@ -330,7 +365,7 @@ function M.document_outline()
   return function(_, _, data, _)
     local outline = data.outline or {}
     local result = {}
-    for _, item in pairs(outline.children) do
+    for _, item in ipairs(outline.children) do
       parse_outline(result, item)
     end
     result.uri = data.uri
