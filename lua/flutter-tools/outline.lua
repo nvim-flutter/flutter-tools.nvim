@@ -182,6 +182,12 @@ local function parse_outline(result, node, indent, marker)
     result,
     {
       hl = hl,
+      -- this number might be required to be 1 or 0 based
+      -- based on the api call using it as row, col api functions
+      -- can be (1, 0) based. It is stored as 0 based as this is the
+      -- most common requirement but must be one based when manipulating
+      -- the cursor
+      lnum = #result,
       buf_start = #indent,
       buf_end = #content,
       start_line = range.start.line + 1,
@@ -209,10 +215,7 @@ end
 local function get_display_props(items)
   local lines = {}
   local highlights = {}
-  for index, item in ipairs(items) do
-    -- this number might be required to be 1 or 0 based
-    -- based on the api call using it
-    item.lnum = index - 1
+  for _, item in ipairs(items) do
     if item.hl then
       for _, hl in ipairs(item.hl) do
         hl.number = item.lnum
@@ -266,7 +269,7 @@ local function setup_outline_window(lines, highlights, outline)
     local b = vim.uri_to_bufnr(outline.uri)
     vim.cmd(
       string.format(
-        [[autocmd! CursorHold <buffer=%d> lua __flutter_tools_set_current_item()]],
+        [[autocmd! CursorHold *.dart lua __flutter_tools_set_current_item()]],
         b
       )
     )
@@ -345,8 +348,20 @@ local function highlight_current_item(item)
   )
 end
 
+local function is_outline_open()
+  local is_open = false
+  local wins = api.nvim_tabpage_list_wins(0)
+  for _, win in ipairs(wins) do
+    if M.buf == api.nvim_win_get_buf(win) then
+      is_open = true
+      break
+    end
+  end
+  return is_open
+end
+
 function _G.__flutter_tools_set_current_item()
-  if not utils.buf_valid(M.buf) then
+  if not utils.buf_valid(M.buf) or not is_outline_open() then
     return
   end
   local curbuf = api.nvim_get_current_buf()

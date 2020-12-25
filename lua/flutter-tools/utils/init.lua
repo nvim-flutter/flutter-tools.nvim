@@ -93,6 +93,9 @@ end
 
 function M.buf_valid(bufnr, name)
   local target = bufnr or name
+  if not target then
+    return false
+  end
   if bufnr then
     return api.nvim_buf_is_loaded(bufnr)
   end
