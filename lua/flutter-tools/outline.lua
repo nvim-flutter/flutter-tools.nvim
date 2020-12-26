@@ -274,6 +274,7 @@ local function setup_outline_window(lines, highlights, outline)
         b
       )
     )
+    vim.cmd [[autocmd! BufEnter *.dart doautocmd User FlutterOutlineChanged]]
   end
 end
 
