@@ -44,10 +44,13 @@ local function setup_commands()
 end
 
 local function setup_autocommands()
-  utils.autocommands_create(
+  utils.augroup(
+    "FlutterToolsHotReload",
     {
-      FlutterToolsHotReload = {
-        {"BufWritePost", "*.dart", "lua require('flutter-tools').reload(true)"}
+      {
+        events = {"BufWritePost"},
+        targets = {"*.dart"},
+        command = "lua require('flutter-tools').reload(true)"
       }
     }
   )
