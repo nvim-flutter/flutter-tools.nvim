@@ -102,15 +102,21 @@ function M.buf_valid(bufnr, name)
   return vim.fn.bufexists(target) > 0 and vim.fn.buflisted(target) > 0
 end
 
-local last_char_pattern = "[^\128-\191][\128-\191]*$"
-
---- Replace the last item in a string by character
---- this works around the fact that string.sub operates
---- on bytes not on full ascii characters
----@param str string
----@param replacement string
-function M.replace_last(str, replacement)
-  return str:gsub(last_char_pattern, replacement)
+function M.augroup(name, commands)
+  vim.cmd("augroup " .. name)
+  vim.cmd("autocmd!")
+  for _, c in ipairs(commands) do
+    vim.cmd(
+      string.format(
+        "autocmd %s %s %s %s",
+        table.concat(c.events, ","),
+        table.concat(c.targets or {}, ","),
+        table.concat(c.modifiers or {}, " "),
+        c.command
+      )
+    )
+  end
+  vim.cmd("augroup END")
 end
 
 function M.fold(accumulator, fn, list)

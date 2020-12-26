@@ -228,10 +228,31 @@ local function get_display_props(items)
   return lines, highlights
 end
 
+local function setup_autocommands()
+  utils.augroup(
+    "FlutterToolsOutline",
+    {
+      {
+        events = {"User FlutterOutlineChanged"},
+        command = [[lua __flutter_tools_refresh_outline()]]
+      },
+      {
+        events = {"CursorHold"},
+        targets = {"*.dart"},
+        command = [[lua __flutter_tools_set_current_item()]]
+      },
+      {
+        events = {"BufEnter"},
+        targets = {"*.dart"},
+        command = [[doautocmd User FlutterOutlineChanged]]
+      }
+    }
+  )
+end
+
 ---@param lines table
 ---@param highlights table
----@param outline table
-local function setup_outline_window(lines, highlights, outline)
+local function setup_outline_window(lines, highlights)
   return function(buf, win)
     M.buf = buf
     vim.wo[win].number = false
@@ -266,15 +287,7 @@ local function setup_outline_window(lines, highlights, outline)
       [[<Cmd>lua __flutter_tools_select_outline_item()<CR>]],
       {noremap = true, nowait = true, silent = true}
     )
-    vim.cmd [[autocmd! User FlutterOutlineChanged lua __flutter_tools_refresh_outline() ]]
-    local b = vim.uri_to_bufnr(outline.uri)
-    vim.cmd(
-      string.format(
-        [[autocmd! CursorHold *.dart lua __flutter_tools_set_current_item()]],
-        b
-      )
-    )
-    vim.cmd [[autocmd! BufEnter *.dart doautocmd User FlutterOutlineChanged]]
+    setup_autocommands()
   end
 end
 
@@ -421,7 +434,7 @@ function M.open(options)
           filetype = outline_filetype,
           filename = outline_filename
         },
-        setup_outline_window(lines, highlights, outline)
+        setup_outline_window(lines, highlights)
       )
     else
       replace(M.buf, lines, highlights)
