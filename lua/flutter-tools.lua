@@ -21,6 +21,7 @@ local M = {
   devices = devices.list,
   emulators = emulators.list,
   run = commands.run,
+  pub_get = commands.pub_get,
   reload = dev_log.reload,
   restart = dev_log.restart,
   quit = dev_log.quit,
@@ -33,14 +34,8 @@ local function setup_commands()
   utils.command("FlutterRestart", [[lua require('flutter-tools').restart()]])
   utils.command("FlutterQuit", [[lua require('flutter-tools').quit()]])
   utils.command("FlutterDevices", [[lua require('flutter-tools').devices()]])
-  utils.command(
-    "FlutterEmulators",
-    [[lua require('flutter-tools').emulators()]]
-  )
-  utils.command(
-    "FlutterOutline",
-    [[lua require('flutter-tools').open_outline()]]
-  )
+  utils.command("FlutterEmulators", [[lua require('flutter-tools').emulators()]])
+  utils.command("FlutterOutline", [[lua require('flutter-tools').open_outline()]])
 end
 
 local function setup_autocommands()
@@ -51,6 +46,11 @@ local function setup_autocommands()
         events = {"BufWritePost"},
         targets = {"*.dart"},
         command = "lua require('flutter-tools').reload(true)"
+      },
+      {
+        events = {"BufWritePost"},
+        targets = {"*/pubspec.yaml"},
+        command = "lua require('flutter-tools').pub_get()"
       }
     }
   )

@@ -131,6 +131,46 @@ function M.run(device, opts)
   )
 end
 
+local function on_pub_get(result)
+  return function(_, data, channel)
+    if not channel == "stderr" and result.error then
+      result.error = true
+    end
+    if data then
+      table.insert(result.data, table.concat(data, ""))
+    end
+  end
+end
+
+local function on_pub_get_exit(result)
+  ui.notify(result.data)
+end
+
+local pub_get_job = nil
+
+function M.pub_get()
+  local result = {
+    error = false,
+    data = {}
+  }
+  if not pub_get_job then
+    pub_get_job =
+      jobstart(
+      "flutter pub get",
+      {
+        stdout_buffered = true,
+        stderr_buffered = true,
+        on_stdout = on_pub_get(result),
+        on_stderr = on_pub_get(result),
+        on_exit = function()
+          pub_get_job = nil
+          on_pub_get_exit(result)
+        end
+      }
+    )
+  end
+end
+
 function M.quit()
   jobstop(state.log.job_id)
   state.log.job_id = nil

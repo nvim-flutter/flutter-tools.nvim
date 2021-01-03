@@ -107,9 +107,7 @@ local function border_create(title, config)
   for _ = 1, height - 1 do
     table.insert(content, border.middle_left .. padding .. border.middle_right)
   end
-  local bot =
-    border.bottom_left ..
-    string.rep(border.fill, width - 2) .. border.bottom_right
+  local bot = border.bottom_left .. string.rep(border.fill, width - 2) .. border.bottom_right
 
   table.insert(content, bot)
 
@@ -119,11 +117,7 @@ local function border_create(title, config)
     api.nvim_open_win(
     buf,
     false,
-    vim.tbl_extend(
-      "force",
-      config,
-      {focusable = false, height = #content, width = width}
-    )
+    vim.tbl_extend("force", config, {focusable = false, height = #content, width = width})
   )
   vim.wo[win].winblend = WIN_BLEND
   api.nvim_win_set_option(win, "winhighlight", "NormalFloat:Normal")
@@ -145,6 +139,38 @@ local function border_create(title, config)
   config.height = config.height - 2
   config.width = config.width - 4
   return config, buf
+end
+
+function M.notify(lines)
+  if #lines < 1 or vim.tbl_isempty(lines) then
+    return
+  end
+  lines = pad_lines(lines)
+  local buf = api.nvim_create_buf(false, true)
+  local win =
+    api.nvim_open_win(
+    buf,
+    false,
+    {
+      row = 1,
+      col = vim.o.columns - 1,
+      relative = "editor",
+      style = "minimal",
+      width = calculate_width(lines),
+      height = #lines,
+      anchor = "NE",
+      focusable = false
+    }
+  )
+  api.nvim_buf_set_lines(buf, 0, -1, true, lines)
+  vim.wo[win].winblend = WIN_BLEND
+  vim.bo[buf].modifiable = false
+  vim.fn.timer_start(
+    3000,
+    function()
+      api.nvim_win_close(win, true)
+    end
+  )
 end
 
 ---@param title string
@@ -175,11 +201,7 @@ function M.popup_create(title, lines, on_create)
   vim.wo[win].winblend = WIN_BLEND
   vim.bo[buf].modifiable = false
   vim.wo[win].cursorline = true
-  api.nvim_win_set_option(
-    win,
-    "winhighlight",
-    "CursorLine:Visual,NormalFloat:Normal"
-  )
+  api.nvim_win_set_option(win, "winhighlight", "CursorLine:Visual,NormalFloat:Normal")
   api.nvim_buf_set_keymap(
     buf,
     "n",
@@ -187,13 +209,7 @@ function M.popup_create(title, lines, on_create)
     ":lua __flutter_tools_close(" .. buf .. ")<CR>",
     {silent = true, noremap = true}
   )
-  vim.cmd(
-    string.format(
-      [[autocmd! WinLeave <buffer> silent! execute 'bw %d %d']],
-      buf,
-      border
-    )
-  )
+  vim.cmd(string.format([[autocmd! WinLeave <buffer> silent! execute 'bw %d %d']], buf, border))
   if on_create then
     on_create(buf, win)
   end
