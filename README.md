@@ -9,6 +9,39 @@ Tools to help create flutter apps in neovim using the native lsp
 This plugin draws inspiration from [`coc-flutter`](https://github.com/iamcco/coc-flutter) and [`nvim-metals`](https://github.com/scalameta/nvim-metals), the idea being
 to allow users to easily develop flutter apps using neovim.
 
+## Installation
+using `vim-plug`
+```vim
+Plug "neovim/nvim-lspconfig"
+Plug "akinsho/flutter-tools.nvim"
+```
+or using `packer.nvim`
+
+```lua
+use {"akinsho/flutter-tools.nvim", requires = {"neovim/nvim-lspconfig"}}
+```
+
+Currently this plugin depends on `nvim-lspconfig` for some default setup this might change.
+You can then override handlers using
+
+```lua
+local lspconfig = require('lspconfig')
+local flutter = require('flutter-tools')
+lspconfig.dartls.setup {
+    flags = {allow_incremental_sync = true},
+    init_options = {
+    closingLabels = true,
+    outline = true,
+    flutterOutline = true
+  },
+  on_attach = on_attach,
+  handlers = {
+    ['dart/textDocument/publishClosingLabels'] = flutter.closing_tags,
+    ['dart/textDocument/publishOutline'] = flutter.outline
+  }
+}
+```
+
 # Functionality
 
 #### Run flutter app with hot reloading
@@ -44,9 +77,10 @@ to allow users to easily develop flutter apps using neovim.
 ### TODO
 
 - [ ] Auto-scroll dev log
-- [ ] Add notification when restarting or reloading
 - [ ] Connect + open devtools
 - [ ] Close emulators and kill all processes on `VimLeave`
+- [ ] Integrate with `nvim-dap`
 
+- [x] Add notification when restarting or reloading
 - [x] LSP Outline window
 - [x] LSP Closing Tags
