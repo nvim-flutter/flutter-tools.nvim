@@ -29,16 +29,12 @@ local function create(_)
     opts,
     function(buf, win)
       if not buf then
-        utils.echomsg(
-          "Failed to open the dev log as the buffer could not be found"
-        )
+        utils.echomsg("Failed to open the dev log as the buffer could not be found")
         return
       end
       M.buf = buf
       M.win = win
-      vim.cmd(
-        "autocmd! BufWipeout <buffer> lua __flutter_tools_close_dev_log()"
-      )
+      vim.cmd("autocmd! BufWipeout <buffer> lua __flutter_tools_close_dev_log()")
     end
   )
 end
@@ -72,10 +68,12 @@ function M.reload(quiet)
 end
 
 function M.restart(quiet)
+  ui.notify({"Restarting..."}, 1500)
   send("R", quiet)
 end
 
 function M.quit(quiet)
+  ui.notify({"Closing flutter application..."}, 1500)
   send("q", quiet)
 end
 

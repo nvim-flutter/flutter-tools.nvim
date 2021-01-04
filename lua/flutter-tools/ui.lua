@@ -141,7 +141,8 @@ local function border_create(title, config)
   return config, buf
 end
 
-function M.notify(lines)
+function M.notify(lines, duration)
+  duration = duration or 3000
   if not lines or #lines < 1 or invalid_lines(lines) then
     return
   end
@@ -162,7 +163,7 @@ function M.notify(lines)
   vim.wo[win].winblend = WIN_BLEND
   vim.bo[buf].modifiable = false
   vim.fn.timer_start(
-    3000,
+    duration,
     function()
       api.nvim_win_close(win, true)
     end
@@ -227,6 +228,7 @@ function M.open_split(opts, on_open)
   end
   vim.bo[buf].swapfile = false
   vim.bo[buf].buftype = "nofile"
+  vim.wo[win].signcolumn = "no"
   if on_open then
     on_open(buf, win)
   end
