@@ -142,26 +142,22 @@ local function border_create(title, config)
 end
 
 function M.notify(lines)
-  if #lines < 1 or vim.tbl_isempty(lines) then
+  if not lines or #lines < 1 or invalid_lines(lines) then
     return
   end
   lines = pad_lines(lines)
+  local opts = {
+    row = 1,
+    col = vim.o.columns,
+    relative = "editor",
+    style = "minimal",
+    width = calculate_width(lines),
+    height = #lines,
+    anchor = "NE",
+    focusable = false
+  }
   local buf = api.nvim_create_buf(false, true)
-  local win =
-    api.nvim_open_win(
-    buf,
-    false,
-    {
-      row = 1,
-      col = vim.o.columns,
-      relative = "editor",
-      style = "minimal",
-      width = calculate_width(lines),
-      height = #lines,
-      anchor = "NE",
-      focusable = false
-    }
-  )
+  local win = api.nvim_open_win(buf, false, opts)
   api.nvim_buf_set_lines(buf, 0, -1, true, lines)
   vim.wo[win].winblend = WIN_BLEND
   vim.bo[buf].modifiable = false
