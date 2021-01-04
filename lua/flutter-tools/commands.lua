@@ -136,8 +136,9 @@ local function on_pub_get(result)
     if not channel == "stderr" and result.error then
       result.error = true
     end
-    if data then
-      table.insert(result.data, table.concat(data, ""))
+    local str =  table.concat(data, "")
+    if data and (str and str:len() > 0) then
+      table.insert(result.data, str)
     end
   end
 end

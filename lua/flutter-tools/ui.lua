@@ -153,7 +153,7 @@ function M.notify(lines)
     false,
     {
       row = 1,
-      col = vim.o.columns - 1,
+      col = vim.o.columns,
       relative = "editor",
       style = "minimal",
       width = calculate_width(lines),
