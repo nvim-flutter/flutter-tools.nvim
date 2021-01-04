@@ -8,8 +8,8 @@ local M = {}
 -----------------------------------------------------------------------------//
 -- Emulators
 -----------------------------------------------------------------------------//
--- Despite looking a lot like emulators be combined with the devices
--- there are a few subtle difference that would need to be taken into account
+-- Despite looking a lot like emulators can be combined with the devices
+-- there are a few subtle differences that would need to be taken into account
 -- in a more generalised function, which frankly would be a little more complex,
 -- hard to follow and less versatile. Emulators and devices are not the same so
 -- they should be handled separately so it's easier to make changes to one
@@ -117,11 +117,7 @@ local function show_emulators(result)
       end
     end
     if #formatted > 0 then
-      ui.popup_create(
-        "Flutter emulators",
-        formatted,
-        setup_emulators_win(result, highlights)
-      )
+      ui.popup_create("Flutter emulators", formatted, setup_emulators_win(result, highlights))
     end
   end
 end

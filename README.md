@@ -44,6 +44,7 @@ to allow users to easily develop flutter apps using neovim.
 ### TODO
 
 - [ ] Auto-scroll dev log
+- [ ] Add notification when restarting or reloading
 - [ ] Connect + open devtools
 - [ ] Close emulators and kill all processes on `VimLeave`
 
