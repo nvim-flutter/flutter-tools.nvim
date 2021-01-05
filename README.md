@@ -25,7 +25,19 @@ use {"akinsho/flutter-tools.nvim", requires = {"neovim/nvim-lspconfig"}}
 ```
 
 Currently this plugin depends on `nvim-lspconfig` for some default setup this might change.
-You can then override handlers using
+To set it up
+
+```lua
+flutter.setup_lsp {
+  on_attach = my_custom_on_attach,
+  capabilities = my_custom_capabilities -- e.g. lsp_status capabilities
+}
+```
+
+You can override any options available in the `lspconfig` setup, this call essentially wraps
+it and adds some extra `flutter` specific handlers and utilisation options.
+
+You can also manually initialise the client and only and some handlers or options yourself.
 
 ```lua
 local lspconfig = require('lspconfig')

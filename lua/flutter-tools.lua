@@ -5,13 +5,13 @@ local commands = require "flutter-tools/commands"
 local emulators = require "flutter-tools/emulators"
 local devices = require "flutter-tools/devices"
 local dev_log = require "flutter-tools/dev_log"
+local lsp = require "flutter-tools/lsp"
 
 local defaults = {
   closing_tags = {},
   outline = {
     open_cmd = "vnew"
   },
-  open_cmd = "vnew"
 }
 
 local M = {
@@ -25,7 +25,8 @@ local M = {
   reload = dev_log.reload,
   restart = dev_log.restart,
   quit = dev_log.quit,
-  visual_debug = dev_log.visual_debug
+  visual_debug = dev_log.visual_debug,
+  setup_lsp = lsp.setup,
 }
 
 local function setup_commands()
