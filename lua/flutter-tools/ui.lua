@@ -228,7 +228,6 @@ function M.open_split(opts, on_open)
   end
   vim.bo[buf].swapfile = false
   vim.bo[buf].buftype = "nofile"
-  vim.wo[win].signcolumn = "no"
   if on_open then
     on_open(buf, win)
   end

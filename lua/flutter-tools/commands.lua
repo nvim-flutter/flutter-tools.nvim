@@ -116,6 +116,7 @@ function M.run(device, opts)
       cmd = cmd .. " -d " .. id
     end
   end
+  ui.notify {"Starting flutter project..."}
   local result = {
     has_conflict = false,
     data = {}

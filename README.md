@@ -91,11 +91,11 @@ lspconfig.dartls.setup {
 
 ### TODO
 
-- [ ] Auto-scroll dev log
 - [ ] Connect + open devtools
 - [ ] Close emulators and kill all processes on `VimLeave`
 - [ ] Integrate with `nvim-dap`
 
+- [x] Auto-scroll dev log
 - [x] Add notification when restarting or reloading
 - [x] LSP Outline window
 - [x] LSP Closing Tags
