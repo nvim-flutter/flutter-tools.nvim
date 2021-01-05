@@ -8,21 +8,21 @@ M.buf = nil
 M.win = nil
 M.job_id = nil
 
-local log_filename = "__FLUTTER_DEV_LOG__"
+M.filename = "__FLUTTER_DEV_LOG__"
 
 --- check if the buffer exists if does and we
 --- lost track of it's buffer number re-assign it
 local function exists()
-  local is_valid = utils.buf_valid(M.buf, log_filename)
+  local is_valid = utils.buf_valid(M.buf, M.filename)
   if is_valid and not M.buf then
-    M.buf = vim.fn.bufnr(log_filename)
+    M.buf = vim.fn.bufnr(M.filename)
   end
   return is_valid
 end
 
 local function create(_)
   local opts = {
-    filename = log_filename,
+    filename = M.filename,
     filetype = "log"
   }
   ui.open_split(
@@ -61,6 +61,14 @@ function M.log(job_id, data, opts)
   vim.bo[M.buf].modifiable = true
   api.nvim_buf_set_lines(M.buf, -1, -1, true, data)
   vim.bo[M.buf].modifiable = false
+end
+
+function M.resurrect()
+  local buf = api.nvim_get_current_buf()
+  vim.cmd [[setfiletype log]]
+  vim.bo[buf].modifiable = false
+  vim.bo[buf].modified = false
+  vim.bo[buf].buftype = "nofile"
 end
 
 function M.reload(quiet)

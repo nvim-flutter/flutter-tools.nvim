@@ -11,7 +11,7 @@ local defaults = {
   closing_tags = {},
   outline = {
     open_cmd = "vnew"
-  },
+  }
 }
 
 local M = {
@@ -27,6 +27,7 @@ local M = {
   quit = dev_log.quit,
   visual_debug = dev_log.visual_debug,
   setup_lsp = lsp.setup,
+  _resurrect_log = dev_log.resurrect
 }
 
 local function setup_commands()
@@ -52,6 +53,11 @@ local function setup_autocommands()
         events = {"BufWritePost"},
         targets = {"*/pubspec.yaml"},
         command = "lua require('flutter-tools').pub_get()"
+      },
+      {
+        events = {"BufEnter"},
+        targets = {dev_log.filename},
+        command = "lua require('flutter-tools')._resurrect_log()"
       }
     }
   )
