@@ -29,15 +29,25 @@ function _G.__flutter_tools_select_emulator()
   api.nvim_win_close(0, true)
 end
 
----@param data table
----@param name string stdout, stderr, stdin
-local function emulator_launch_handler(_, data, name)
-  if name == "stdout" then
-    if data then
-      print("emulator launch stdout: " .. vim.inspect(data))
+local function emulator_launch_handler(result)
+  ---@param data table
+  ---@param name string stdout, stderr, stdin
+  return function(_, data, name)
+    if name ~= "stdout" and name ~= "stderr" then
+      if result.error and vim.tbl_isempty(result.data) then
+        ui.notify(result.data)
+      end
+    else
+      if name == "stderr" and not result.error then
+        result.error = true
+      end
+      if data then
+        local str = table.concat(data, "")
+        if str ~= "" then
+          table.insert(result.data, str)
+        end
+      end
     end
-  elseif name == "stderr" then
-    print("emulator launch stderr: " .. vim.inspect(data))
   end
 end
 
@@ -46,13 +56,14 @@ function M.launch_emulator(emulator)
   if not emulator then
     return
   end
+  local result = {error = true, data = {}}
   local _ =
     jobstart(
     "flutter emulators --launch " .. emulator.id,
     {
-      on_exit = emulator_launch_handler,
-      on_stderr = emulator_launch_handler,
-      on_stdin = emulator_launch_handler
+      on_exit = emulator_launch_handler(result),
+      on_stderr = emulator_launch_handler(result),
+      on_stdin = emulator_launch_handler(result)
     }
   )
 end
