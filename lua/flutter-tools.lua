@@ -5,6 +5,7 @@ local commands = require "flutter-tools/commands"
 local emulators = require "flutter-tools/emulators"
 local devices = require "flutter-tools/devices"
 local dev_log = require "flutter-tools/dev_log"
+local dev_tools = require "flutter-tools/dev_tools"
 local lsp = require "flutter-tools/lsp"
 
 local defaults = {
@@ -27,6 +28,7 @@ local M = {
   quit = dev_log.quit,
   visual_debug = dev_log.visual_debug,
   setup_lsp = lsp.setup,
+  dev_tools = dev_tools.start,
   _resurrect_log = dev_log.resurrect
 }
 
@@ -38,6 +40,7 @@ local function setup_commands()
   utils.command("FlutterDevices", [[lua require('flutter-tools').devices()]])
   utils.command("FlutterEmulators", [[lua require('flutter-tools').emulators()]])
   utils.command("FlutterOutline", [[lua require('flutter-tools').open_outline()]])
+  utils.command("FlutterDevTools", [[lua require('flutter-tools').dev_tools()]])
 end
 
 local function setup_autocommands()
