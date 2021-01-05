@@ -2,7 +2,7 @@
 
 Tools to help create flutter apps in neovim using the native lsp
 
-**This plugin is Very WIP at the moment**
+**Status: WIP**
 
 # Inspiration
 
@@ -10,11 +10,14 @@ This plugin draws inspiration from [`coc-flutter`](https://github.com/iamcco/coc
 to allow users to easily develop flutter apps using neovim.
 
 ## Installation
+
 using `vim-plug`
+
 ```vim
 Plug "neovim/nvim-lspconfig"
 Plug "akinsho/flutter-tools.nvim"
 ```
+
 or using `packer.nvim`
 
 ```lua
