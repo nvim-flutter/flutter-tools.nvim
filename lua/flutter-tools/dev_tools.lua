@@ -5,17 +5,24 @@ local fn = vim.fn
 
 local start_id = nil
 
-local function handle_start(result)
-  return function(_, data, name)
-    if name == "stderr" and not result.error then
-      result.error = true
-    end
-    if data then
-      for _, str in ipairs(data) do
-        if #str > 0 then
+local activate_cmd = {"flutter", "pub", "global", "activate", "devtools"}
+
+local function handle_start(_, data, name)
+  if data then
+    for _, str in ipairs(data) do
+      if #str > 0 then
+        if name == "stderr" then
+          if str:match("No active package devtools") then
+            ui.notify(
+              {
+                "Flutter pub global devtools has not been activated.",
+                "Run " .. table.concat(activate_cmd, "").. " to activate it."
+              }
+            )
+          end
+        else
           local json = fn.json_decode(str)
           if json and json.params then
-            result.data = json
             -- {
             --   event = "server.started",
             --   method = "server.started",
@@ -37,10 +44,6 @@ local function handle_start(result)
 end
 
 function M.start()
-  local result = {
-    error = false,
-    data = nil
-  }
   ui.notify {"Starting dev tools..."}
   if not start_id then
     start_id =
@@ -59,8 +62,8 @@ function M.start()
         " "
       ),
       {
-        on_stdout = handle_start(result),
-        on_stderr = handle_start(result),
+        on_stdout = handle_start,
+        on_stderr = handle_start,
         on_exit = function(...)
           start_id = nil
           handle_start(...)
@@ -68,7 +71,7 @@ function M.start()
       }
     )
   else
-    utils.echomsg("DevTools are already running!")
+    utils.echomsg "DevTools are already running!"
   end
 end
 
