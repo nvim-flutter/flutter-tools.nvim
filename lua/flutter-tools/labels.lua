@@ -1,3 +1,5 @@
+local config = require "flutter-tools/config"
+
 local api = vim.api
 
 local M = {}
@@ -25,20 +27,19 @@ local function render_labels(labels, opts)
 end
 
 --- returns a function which handles rendering floating labels
----@param opts table
-function M.closing_tags(opts)
-  return function(err, _, response)
-    if err then
-      return
-    end
-    local uri = response.uri
-    -- This check is meant to prevent stray events from over-writing labels that
-    -- don't match the current buffer.
-    if uri ~= vim.uri_from_bufnr(0) then
-      return
-    end
-    render_labels(response.labels, opts)
+function M.closing_tags(err, _, response)
+  local cfg = config.get()
+  local opts = cfg.closing_tags
+  if err then
+    return
   end
+  local uri = response.uri
+  -- This check is meant to prevent stray events from over-writing labels that
+  -- don't match the current buffer.
+  if uri ~= vim.uri_from_bufnr(0) then
+    return
+  end
+  render_labels(response.labels, opts)
 end
 
 return M

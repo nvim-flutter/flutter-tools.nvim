@@ -7,18 +7,12 @@ local devices = require "flutter-tools/devices"
 local dev_log = require "flutter-tools/dev_log"
 local dev_tools = require "flutter-tools/dev_tools"
 local lsp = require "flutter-tools/lsp"
-
-local defaults = {
-  closing_tags = {},
-  outline = {
-    open_cmd = "vnew"
-  }
-}
+local config = require "flutter-tools/config"
 
 local M = {
-  closing_tags = labels.closing_tags(defaults.closing_tags),
-  outline = outline.document_outline(),
-  open_outline = outline.open(defaults.outline),
+  closing_tags = labels.closing_tags,
+  outline = outline.document_outline,
+  open_outline = outline.open,
   devices = devices.list,
   emulators = emulators.list,
   run = commands.run,
@@ -66,20 +60,8 @@ local function setup_autocommands()
   )
 end
 
---- @param prefs table user preferences
-local function validate_prefs(prefs)
-  vim.validate {
-    open_cmd = {prefs.open_cmd, "string", true},
-    closing_tags = {prefs.closing_tags, "table", true}
-  }
-end
-
 function M.setup(prefs)
-  validate_prefs(prefs)
-  prefs = vim.tbl_deep_extend("keep", prefs, defaults)
-  -- TODO figure out how to pass down user preferences
-  M.closing_tags = labels.closing_tags(prefs.closing_tags)
-
+  config.set(prefs)
   setup_commands()
   setup_autocommands()
 end

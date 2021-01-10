@@ -11,7 +11,6 @@ function M.setup(config)
     return
   end
 
-  local options = config.options or {}
   local cfg = {
     flags = {allow_incremental_sync = true},
     init_options = {
@@ -20,12 +19,10 @@ function M.setup(config)
       flutterOutline = true
     },
     handlers = {
-      ["dart/textDocument/publishClosingLabels"] = labels.closing_tags(options.closing_tags),
-      ["dart/textDocument/publishOutline"] = outline.document_outline(options.outline)
+      ["dart/textDocument/publishClosingLabels"] = labels.closing_tags,
+      ["dart/textDocument/publishOutline"] = outline.document_outline
     }
   }
-
-  cfg.options = nil
 
   config = vim.tbl_deep_extend("force", cfg, config)
   lspconfig.dartls.setup(config)

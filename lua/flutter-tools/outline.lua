@@ -1,5 +1,6 @@
 local ui = require "flutter-tools/ui"
 local utils = require "flutter-tools/utils"
+local config = require "flutter-tools/config"
 
 local api = vim.api
 local fn = vim.fn
@@ -412,48 +413,42 @@ function _G.__flutter_tools_set_current_item()
     local win = fn.bufwinid(M.buf)
     -- nvim_win_set_cursor is a 1,0 based method i.e.
     -- the row should be one based and the column 0 based
-    api.nvim_win_set_cursor(
-      win,
-      {current_item.lnum + 1, current_item.buf_start}
+    api.nvim_win_set_cursor(win, {current_item.lnum + 1, current_item.buf_start})
+  end
+end
+
+function M.open()
+  local cfg = config.get()
+  local options = cfg.outline
+  local ok, lines, highlights, outline = get_outline_content()
+  if not ok then
+    return utils.echomsg [[Sorry! There is no outline for this file]]
+  end
+  local buf_loaded = utils.buf_valid(M.buf)
+  if not buf_loaded and not vim.tbl_isempty(lines) then
+    ui.open_split(
+      {
+        open_cmd = options.open_cmd,
+        filetype = outline_filetype,
+        filename = outline_filename
+      },
+      setup_outline_window(lines, highlights)
     )
+  else
+    replace(M.buf, lines, highlights)
   end
+  vim.b.outline_uri = outline.uri
 end
 
-function M.open(options)
-  return function()
-    options = options or {}
-    local ok, lines, highlights, outline = get_outline_content()
-    if not ok then
-      return utils.echomsg [[Sorry! There is no outline for this file]]
-    end
-    local buf_loaded = utils.buf_valid(M.buf)
-    if not buf_loaded and not vim.tbl_isempty(lines) then
-      ui.open_split(
-        {
-          open_cmd = options.open_cmd,
-          filetype = outline_filetype,
-          filename = outline_filename
-        },
-        setup_outline_window(lines, highlights)
-      )
-    else
-      replace(M.buf, lines, highlights)
-    end
-    vim.b.outline_uri = outline.uri
+function M.document_outline(_, _, data, _)
+  local outline = data.outline or {}
+  local result = {}
+  for _, item in ipairs(outline.children) do
+    parse_outline(result, item)
   end
-end
-
-function M.document_outline()
-  return function(_, _, data, _)
-    local outline = data.outline or {}
-    local result = {}
-    for _, item in ipairs(outline.children) do
-      parse_outline(result, item)
-    end
-    result.uri = data.uri
-    M.outlines[data.uri] = result
-    vim.cmd [[doautocmd User FlutterOutlineChanged]]
-  end
+  result.uri = data.uri
+  M.outlines[data.uri] = result
+  vim.cmd [[doautocmd User FlutterOutlineChanged]]
 end
 
 return M
