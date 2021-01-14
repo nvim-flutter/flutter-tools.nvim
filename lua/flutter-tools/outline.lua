@@ -111,9 +111,7 @@ local function highlight_item(name, value, group)
 end
 
 local function set_outline_highlights()
-  vim.cmd(
-    "highlight default link " .. hl_prefix .. "SelectedOutlineItem Search"
-  )
+  vim.cmd("highlight default link " .. hl_prefix .. "SelectedOutlineItem Search")
   for key, value in pairs(markers) do
     highlight_item(hl_prefix .. key, value, "Whitespace")
   end
@@ -342,8 +340,7 @@ function _G.__flutter_tools_select_outline_item()
   fn.cursor(item.start_line, item.start_col)
 end
 
-local outline_ns_id =
-  api.nvim_create_namespace("flutter_tools_outline_selected_item")
+local outline_ns_id = api.nvim_create_namespace("flutter_tools_outline_selected_item")
 
 local function highlight_current_item(item)
   if not utils.buf_valid(M.buf) then
@@ -396,10 +393,8 @@ function _G.__flutter_tools_set_current_item()
   for _, item in ipairs(outline) do
     if
       item and not vim.tbl_isempty(item) and
-        (lnum > item.start_line or
-          (lnum == item.start_line and column >= item.start_col)) and
-        (lnum < item.end_line or
-          (lnum == item.end_line and column < item.end_col))
+        (lnum > item.start_line or (lnum == item.start_line and column >= item.start_col)) and
+        (lnum < item.end_line or (lnum == item.end_line and column < item.end_col))
      then
       current_item = item
     end
