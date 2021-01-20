@@ -28,19 +28,19 @@ Currently this plugin depends on `nvim-lspconfig` for some default setup this mi
 To set it up
 
 ```lua
+require("flutter-tools").setup{} -- use defaults
+
+-- alternatively you can override the default configs
 require("flutter-tools").setup {
-  -- this is the default config and does not need to be set normally
   closing_tags = {
-    highlight = "Comment",
-    prefix = "//"
+    highlight = "ErrorMsg",
+    prefix = ">"
   },
   dev_log = {
-    open_cmd = "vnew",
-    size = 50
+    open_cmd = "tabedit",
   },
   outline = {
-    open_cmd = "vnew",
-    size = 30
+    open_cmd = "30vnew",
   }
   lsp = {
     on_attach = my_custom_on_attach,

@@ -15,12 +15,10 @@ local defaults = {
     prefix = "//"
   },
   dev_log = {
-    open_cmd = "vnew",
-    size = 50
+    open_cmd = "botright 50vnew"
   },
   outline = {
-    open_cmd = "vnew",
-    size = 30
+    open_cmd = "botright 30vnew"
   }
 }
 
