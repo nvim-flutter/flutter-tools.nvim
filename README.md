@@ -28,34 +28,29 @@ Currently this plugin depends on `nvim-lspconfig` for some default setup this mi
 To set it up
 
 ```lua
-flutter.setup_lsp {
-  on_attach = my_custom_on_attach,
-  capabilities = my_custom_capabilities -- e.g. lsp_status capabilities
+require("flutter-tools").setup {
+  -- this is the default config and does not need to be set normally
+  closing_tags = {
+    highlight = "Comment",
+    prefix = "//"
+  },
+  dev_log = {
+    open_cmd = "vnew",
+    size = 50
+  },
+  outline = {
+    open_cmd = "vnew",
+    size = 30
+  }
+  lsp = {
+    on_attach = my_custom_on_attach,
+    capabilities = my_custom_capabilities -- e.g. lsp_status capabilities
+  }
 }
 ```
 
 You can override any options available in the `lspconfig` setup, this call essentially wraps
 it and adds some extra `flutter` specific handlers and utilisation options.
-
-You can also manually initialise the client and only and some handlers or options yourself.
-
-```lua
-local lspconfig = require('lspconfig')
-local flutter = require('flutter-tools')
-lspconfig.dartls.setup {
-    flags = {allow_incremental_sync = true},
-    init_options = {
-    closingLabels = true,
-    outline = true,
-    flutterOutline = true
-  },
-  on_attach = on_attach,
-  handlers = {
-    ['dart/textDocument/publishClosingLabels'] = flutter.closing_tags,
-    ['dart/textDocument/publishOutline'] = flutter.outline
-  }
-}
-```
 
 # Functionality
 

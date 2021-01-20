@@ -34,7 +34,16 @@ local function create(_)
       end
       M.buf = buf
       M.win = win
-      vim.cmd("autocmd! BufWipeout <buffer> lua __flutter_tools_close_dev_log()")
+      utils.augroup(
+        "FlutterToolsBuffer" .. buf,
+        {
+          {
+            events = {"BufWipeout"},
+            targets = {"<buffer>"},
+            command = "lua __flutter_tools_close_dev_log()"
+          }
+        }
+      )
     end
   )
 end

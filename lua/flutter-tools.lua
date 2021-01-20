@@ -21,7 +21,6 @@ local M = {
   restart = dev_log.restart,
   quit = dev_log.quit,
   visual_debug = dev_log.visual_debug,
-  setup_lsp = lsp.setup,
   dev_tools = dev_tools.start,
   _resurrect_log = dev_log.resurrect
 }
@@ -60,8 +59,12 @@ local function setup_autocommands()
   )
 end
 
-function M.setup(prefs)
-  config.set(prefs)
+function M.setup(user_config)
+  if user_config.lsp then
+    lsp.setup(user_config.lsp)
+    user_config.lsp = nil
+  end
+  config.set(user_config)
   setup_commands()
   setup_autocommands()
 end

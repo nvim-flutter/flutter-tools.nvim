@@ -31,6 +31,7 @@ function M.get()
 end
 
 function M.set(user_config)
+  user_config = user_config or {}
   validate_prefs(user_config)
   config = vim.tbl_deep_extend("keep", user_config, defaults)
 end
