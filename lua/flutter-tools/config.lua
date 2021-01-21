@@ -9,19 +9,6 @@ local function validate_prefs(prefs)
   }
 end
 
-local defaults = {
-  closing_tags = {
-    highlight = "Comment",
-    prefix = "//"
-  },
-  dev_log = {
-    open_cmd = "botright 50vnew"
-  },
-  outline = {
-    open_cmd = "botright 30vnew"
-  }
-}
-
 local config = {}
 
 function M.get()
@@ -29,6 +16,21 @@ function M.get()
 end
 
 function M.set(user_config)
+  -- we setup the defaults here so that dynamic values
+  -- can be calculated as close as possible to usage
+  local defaults = {
+    closing_tags = {
+      highlight = "Comment",
+      prefix = "//"
+    },
+    dev_log = {
+      open_cmd = string.format("botright %dvnew", math.max(vim.o.columns * 0.4, 50))
+    },
+    outline = {
+      open_cmd = string.format("botright %dvnew", math.max(vim.o.columns * 0.3, 40))
+    }
+  }
+
   user_config = user_config or {}
   validate_prefs(user_config)
   config = vim.tbl_deep_extend("keep", user_config, defaults)
