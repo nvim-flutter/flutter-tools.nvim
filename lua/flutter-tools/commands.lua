@@ -2,6 +2,7 @@ local ui = require "flutter-tools/ui"
 local utils = require "flutter-tools/utils"
 local devices = require "flutter-tools/devices"
 local dev_log = require "flutter-tools/dev_log"
+local config = require "flutter-tools/config"
 
 local api = vim.api
 local jobstart = vim.fn.jobstart
@@ -104,8 +105,8 @@ function _G.__flutter_tools_select_device()
   api.nvim_win_close(0, true)
 end
 
-function M.run(device, opts)
-  opts = opts or {}
+function M.run(device)
+  local cfg = config.get()
   local cmd = "flutter run"
   if M.job_id then
     return utils.echomsg("Flutter is already running!")
@@ -125,7 +126,7 @@ function M.run(device, opts)
     jobstart(
     cmd,
     {
-      on_stdout = on_flutter_run_data(result, opts),
+      on_stdout = on_flutter_run_data(result, cfg.dev_log),
       on_exit = on_flutter_run_exit(result),
       on_stderr = on_flutter_run_error(result)
     }

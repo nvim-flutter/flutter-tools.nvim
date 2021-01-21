@@ -20,10 +20,11 @@ local function exists()
   return is_valid
 end
 
-local function create(_)
+local function create(config)
   local opts = {
     filename = M.filename,
-    filetype = "log"
+    filetype = "log",
+    open_cmd = config.open_cmd
   }
   ui.open_split(
     opts,
