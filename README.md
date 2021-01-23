@@ -41,7 +41,7 @@ require("flutter-tools").setup {
   },
   outline = {
     open_cmd = "30vnew",
-  }
+  },
   lsp = {
     on_attach = my_custom_on_attach,
     capabilities = my_custom_capabilities -- e.g. lsp_status capabilities
