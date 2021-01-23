@@ -24,7 +24,8 @@ or using `packer.nvim`
 use {"akinsho/flutter-tools.nvim", requires = {"neovim/nvim-lspconfig"}}
 ```
 
-Currently this plugin depends on `nvim-lspconfig` for some default setup this might change.
+Currently this plugin depends on `nvim-lspconfig` mainly on the setup of the `dartls`. Therefore, it assumes that `dartls` has already been configured according to the instructions in [`nvim-lspconfig CONFIG.md`](https://github.com/neovim/nvim-lspconfig/blob/master/CONFIG.md) (including the `cmd` parameter to specify the language server executable).
+
 To set it up
 
 ```lua
