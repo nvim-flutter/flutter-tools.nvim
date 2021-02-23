@@ -20,7 +20,8 @@ function M.set(user_config)
   -- can be calculated as close as possible to usage
   local defaults = {
     flutter_outline = {
-      highlight = "NonText"
+      highlight = "NonText",
+      enabled = false
     },
     closing_tags = {
       highlight = "Comment",

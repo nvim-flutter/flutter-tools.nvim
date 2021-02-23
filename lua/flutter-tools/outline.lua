@@ -524,13 +524,15 @@ local function collect_outlines(lines, data, result)
 end
 
 function M.flutter_outline(_, _, data, _)
-  M.flutter_outlines = data
-  local outlines = {}
-  local bufnum = vim.uri_to_bufnr(data.uri)
-  local lines = vim.api.nvim_buf_get_lines(bufnum, 0, -1, false)
   local outline_config = config.get().flutter_outline
-  collect_outlines(lines, data.outline, outlines)
-  flutter_outline_guides(bufnum, outlines, outline_config)
+  if outline_config.enabled then
+    M.flutter_outlines = data
+    local outlines = {}
+    local bufnum = vim.uri_to_bufnr(data.uri)
+    local lines = vim.api.nvim_buf_get_lines(bufnum, 0, -1, false)
+    collect_outlines(lines, data.outline, outlines)
+    flutter_outline_guides(bufnum, outlines, outline_config)
+  end
 end
 
 return M

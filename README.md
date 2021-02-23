@@ -33,7 +33,8 @@ require("flutter-tools").setup{} -- use defaults
 -- alternatively you can override the default configs
 require("flutter-tools").setup {
   flutter_outline = {
-    highlight = "NonText"
+    highlight = "NonText",
+    enabled = false,
   },
   closing_tags = {
     highlight = "ErrorMsg",
