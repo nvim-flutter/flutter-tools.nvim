@@ -520,9 +520,10 @@ end
 function M.flutter_outline(_, _, data, _)
   M.flutter_outlines = data
   local outlines = {}
-  local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
+  local bufnum = vim.uri_to_bufnr(data.uri)
+  local lines = vim.api.nvim_buf_get_lines(bufnum, 0, -1, false)
   collect_outlines(lines, data.outline, outlines)
-  flutter_outline_guides(0, outlines)
+  flutter_outline_guides(bufnum, outlines)
 end
 
 return M
