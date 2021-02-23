@@ -26,7 +26,8 @@ function M.setup(config)
     },
     handlers = {
       ["dart/textDocument/publishClosingLabels"] = labels.closing_tags,
-      ["dart/textDocument/publishOutline"] = outline.document_outline
+      ["dart/textDocument/publishOutline"] = outline.document_outline,
+      ["dart/textDocument/publishFlutterOutline"] = outline.flutter_outline
     }
   }
 

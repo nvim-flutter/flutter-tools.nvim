@@ -446,4 +446,83 @@ function M.document_outline(_, _, data, _)
   vim.cmd [[doautocmd User FlutterOutlineChanged]]
 end
 
+local widget_outline_ns_id = api.nvim_create_namespace("flutter_tools_outline_guides")
+
+local function render_guide(bufnum, item)
+  local range = item.range
+  local item_start = range.start
+  local item_end = range["end"]
+  local height = item_end.line - item_start.line
+  if height < 1 then
+    return
+  end
+  for line = item_start.line, item_end.line, 1 do
+    local character =
+    line ~= item_end.line and "|" or markers.bottom .. string.rep("─", item.indent_size)
+    api.nvim_buf_set_extmark(
+      bufnum,
+      widget_outline_ns_id,
+      line,
+      range.start.character - 1,
+      {virt_text = {{character, "Normal"}}, virt_text_pos = "overlay"}
+    )
+  end
+end
+
+---Parse and render the widget outline guides
+---@param bufnum number
+---@param data table
+local function flutter_outline_guides(bufnum, data)
+  for _, node in ipairs(data) do
+    render_guide(bufnum, node)
+  end
+end
+
+local function first_character_index(lines, lnum)
+  local line = lines[lnum]
+  if not line then
+    return -1
+  end
+  return line:find("%S")
+end
+
+local function collect_outlines(lines, data, result)
+  if not data.children or vim.tbl_isempty(data.children) then
+    return
+  end
+  if data.kind == "NEW_INSTANCE" then
+    local start_lnum = data.range.start.line + 1
+    local end_lnum = data.children[1].range.start.line
+    local start_index = first_character_index(lines, start_lnum)
+    local end_index = first_character_index(lines, end_lnum)
+    local indent_size = end_index - start_index - 1
+    table.insert(
+      result,
+      {
+        name = data.className,
+        end_index = end_index,
+        indent_size = indent_size,
+        range = {
+          start = {
+            character = start_index,
+            line = start_lnum
+          },
+          ["end"] = data.children[1].range.start
+        }
+      }
+    )
+  end
+  for _, item in ipairs(data.children) do
+    collect_outlines(lines, item, result)
+  end
+end
+
+function M.flutter_outline(_, _, data, _)
+  M.flutter_outlines = data
+  local outlines = {}
+  local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
+  collect_outlines(lines, data.outline, outlines)
+  flutter_outline_guides(0, outlines)
+end
+
 return M

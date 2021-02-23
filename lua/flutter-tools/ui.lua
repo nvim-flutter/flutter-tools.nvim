@@ -171,7 +171,7 @@ function M.notify(lines, duration)
 end
 
 ---@param title string
----@param lines table
+---@param lines string[]
 ---@param on_create function
 function M.popup_create(title, lines, on_create)
   if not lines or #lines < 1 or invalid_lines(lines) then
