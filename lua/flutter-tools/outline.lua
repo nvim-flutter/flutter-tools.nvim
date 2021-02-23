@@ -458,7 +458,7 @@ local function render_guide(bufnum, item)
   end
   for line = item_start.line, item_end.line, 1 do
     local character =
-    line ~= item_end.line and "|" or markers.bottom .. string.rep("─", item.indent_size)
+      line ~= item_end.line and "|" or markers.bottom .. string.rep("─", item.indent_size)
     api.nvim_buf_set_extmark(
       bufnum,
       widget_outline_ns_id,
@@ -495,7 +495,8 @@ local function collect_outlines(lines, data, result)
     local end_lnum = data.children[1].range.start.line
     local start_index = first_character_index(lines, start_lnum)
     local end_index = first_character_index(lines, end_lnum)
-    local indent_size = end_index - start_index - 1
+    local indent_size = end_index - start_index
+    indent_size = indent_size > 0 and indent_size - 1 or indent_size
     table.insert(
       result,
       {
