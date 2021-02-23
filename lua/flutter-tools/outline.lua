@@ -448,7 +448,7 @@ end
 
 local widget_outline_ns_id = api.nvim_create_namespace("flutter_tools_outline_guides")
 
-local function render_guide(bufnum, item)
+local function render_guide(bufnum, item, outline_config)
   local range = item.range
   local item_start = range.start
   local item_end = range["end"]
@@ -464,7 +464,7 @@ local function render_guide(bufnum, item)
       widget_outline_ns_id,
       line,
       range.start.character - 1,
-      {virt_text = {{character, "Normal"}}, virt_text_pos = "overlay"}
+      {virt_text = {{character, outline_config.highlight}}, virt_text_pos = "overlay"}
     )
   end
 end
@@ -472,9 +472,10 @@ end
 ---Parse and render the widget outline guides
 ---@param bufnum number
 ---@param data table
-local function flutter_outline_guides(bufnum, data)
+---@param outline_config table
+local function flutter_outline_guides(bufnum, data, outline_config)
   for _, node in ipairs(data) do
-    render_guide(bufnum, node)
+    render_guide(bufnum, node, outline_config)
   end
 end
 
@@ -486,6 +487,10 @@ local function first_character_index(lines, lnum)
   return line:find("%S")
 end
 
+---Marshal the lsp flutter outline into a flat list of items and ranges
+---@param lines string[]
+---@param data table
+---@param result table[]
 local function collect_outlines(lines, data, result)
   if not data.children or vim.tbl_isempty(data.children) then
     return
@@ -523,8 +528,9 @@ function M.flutter_outline(_, _, data, _)
   local outlines = {}
   local bufnum = vim.uri_to_bufnr(data.uri)
   local lines = vim.api.nvim_buf_get_lines(bufnum, 0, -1, false)
+  local outline_config = config.get().flutter_outline
   collect_outlines(lines, data.outline, outlines)
-  flutter_outline_guides(bufnum, outlines)
+  flutter_outline_guides(bufnum, outlines, outline_config)
 end
 
 return M

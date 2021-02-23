@@ -19,6 +19,9 @@ function M.set(user_config)
   -- we setup the defaults here so that dynamic values
   -- can be calculated as close as possible to usage
   local defaults = {
+    flutter_outline = {
+      highlight = "NonText"
+    },
     closing_tags = {
       highlight = "Comment",
       prefix = "//"

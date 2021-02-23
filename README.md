@@ -32,6 +32,9 @@ require("flutter-tools").setup{} -- use defaults
 
 -- alternatively you can override the default configs
 require("flutter-tools").setup {
+  flutter_outline = {
+    highlight = "NonText"
+  },
   closing_tags = {
     highlight = "ErrorMsg",
     prefix = ">"
@@ -65,6 +68,10 @@ it and adds some extra `flutter` specific handlers and utilisation options.
 #### Visualise logs
 
 ![dev log](./.github/dev_log.png)
+
+#### Widget outlines
+
+![Widget outlines](./.github/outline_guide.png)
 
 #### Outline window
 
