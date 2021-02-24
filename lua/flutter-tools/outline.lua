@@ -6,6 +6,7 @@ local api = vim.api
 local fn = vim.fn
 local outline_filename = "Flutter Outline"
 local outline_filetype = "flutterToolsOutline"
+local widget_kind = "NEW_INSTANCE"
 
 local M =
   setmetatable(
@@ -495,7 +496,7 @@ local function collect_outlines(lines, data, result)
   if not data.children or vim.tbl_isempty(data.children) then
     return
   end
-  if data.kind == "NEW_INSTANCE" then
+  if data.kind == widget_kind then
     local start_lnum = data.range.start.line + 1
     local end_lnum = data.children[1].range.start.line + 1
     local start_index = first_character_index(lines, start_lnum)
