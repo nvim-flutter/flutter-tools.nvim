@@ -2,12 +2,16 @@
 
 Tools to help create flutter apps in neovim using the native lsp
 
-**Status: WIP**
+**Status: Alpha**
 
 # Inspiration
 
-This plugin draws inspiration from [`coc-flutter`](https://github.com/iamcco/coc-flutter) and [`nvim-metals`](https://github.com/scalameta/nvim-metals), the idea being
+This plugin draws inspiration from [`emacs-lsp/lsp-dart`](https://github.com/emacs-lsp/lsp-dart), [`coc-flutter`](https://github.com/iamcco/coc-flutter) and [`nvim-metals`](https://github.com/scalameta/nvim-metals), the idea being
 to allow users to easily develop flutter apps using neovim.
+
+## Prerequisites
+
+* `neovim 0.5+` (nightly)
 
 ## Installation
 
@@ -70,7 +74,7 @@ it and adds some extra `flutter` specific handlers and utilisation options.
 
 ![dev log](./.github/dev_log.png)
 
-#### Widget outlines
+#### Widget outlines (experimental, default: disabled)
 
 ![Widget outlines](./.github/outline_guide.png)
 
