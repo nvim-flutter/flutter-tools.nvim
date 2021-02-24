@@ -497,7 +497,7 @@ local function collect_outlines(lines, data, result)
   end
   if data.kind == "NEW_INSTANCE" then
     local start_lnum = data.range.start.line + 1
-    local end_lnum = data.children[1].range.start.line
+    local end_lnum = data.children[1].range.start.line + 1
     local start_index = first_character_index(lines, start_lnum)
     local end_index = first_character_index(lines, end_lnum)
     local indent_size = end_index - start_index
