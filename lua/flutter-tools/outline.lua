@@ -26,13 +26,20 @@ local M =
 )
 
 -----------------------------------------------------------------------------//
+-- Namespaces
+-----------------------------------------------------------------------------//
+local widget_outline_ns_id = api.nvim_create_namespace("flutter_tools_outline_guides")
+local outline_ns_id = api.nvim_create_namespace("flutter_tools_outline_selected_item")
+
+-----------------------------------------------------------------------------//
 -- Icons
 -----------------------------------------------------------------------------//
 
 local markers = {
   bottom = "└",
   middle = "├",
-  vertical = "│"
+  vertical = "│",
+  horizontal = "─"
 }
 
 local icons =
@@ -341,8 +348,6 @@ function _G.__flutter_tools_select_outline_item()
   fn.cursor(item.start_line, item.start_col)
 end
 
-local outline_ns_id = api.nvim_create_namespace("flutter_tools_outline_selected_item")
-
 local function highlight_current_item(item)
   if not utils.buf_valid(M.buf) then
     return
@@ -447,45 +452,53 @@ function M.document_outline(_, _, data, _)
   vim.cmd [[doautocmd User FlutterOutlineChanged]]
 end
 
-local widget_outline_ns_id = api.nvim_create_namespace("flutter_tools_outline_guides")
+-- These offsets represent the points at which each character
+-- should should be added relative to the symbol it is for
+--
+-- remove 1 because lua is 1 based,
+-- remove another 1 because the character should appear before the first character
+-- remove another 1 to add visual padding
+local START_OFFSET = 3
 
-local function render_guide(bufnum, item, outline_config)
-  local range = item.range
-  local item_start = range.start
-  local item_end = range["end"]
-  local height = item_end.line - item_start.line
-  if height < 1 then
-    return
-  end
-  for line = item_start.line, item_end.line, 1 do
-    local character =
-      line ~= item_end.line and "|" or markers.bottom .. string.rep("─", item.indent_size)
-    api.nvim_buf_set_extmark(
-      bufnum,
-      widget_outline_ns_id,
-      line,
-      range.start.character - 1,
-      {virt_text = {{character, outline_config.highlight}}, virt_text_pos = "overlay"}
-    )
-  end
-end
+local MIDDLE_OFFSET = 2
 
----Parse and render the widget outline guides
----@param bufnum number
----@param data table
----@param outline_config table
-local function flutter_outline_guides(bufnum, data, outline_config)
-  for _, node in ipairs(data) do
-    render_guide(bufnum, node, outline_config)
-  end
-end
+local END_OFFSET = 1
 
-local function first_character_index(lines, lnum)
-  local line = lines[lnum]
+---find the index of the first character in a line
+---@param lines string[]
+---@param lnum number
+---@param offset number
+---@return integer
+local function first_marker_index(lines, lnum, offset)
+  -- the lnum passed in is 0 based from the range
+  -- so this function makes it one based to correctly
+  -- access the line
+  local line = lines[lnum + 1]
   if not line then
     return -1
   end
-  return line:find("%S")
+  local index = line:find("%S")
+  return index - offset
+end
+
+---get the correct indent character
+---@param lnum number
+---@param end_line number
+---@param parent_start number
+---@param indent_size number
+---@param children table[]
+---@return string
+local function get_guide_character(lnum, end_line, parent_start, indent_size, children, lines)
+  for index, child in ipairs(children) do
+    -- if the child is within the parent range i.e. not at the start or the end
+    local child_lnum = child.range.start.line
+    if index ~= #children and index ~= 1 and lnum == child_lnum then
+      local child_indent = first_marker_index(lines, child_lnum, MIDDLE_OFFSET) - parent_start
+      return markers.middle .. markers.horizontal:rep(child_indent)
+    end
+  end
+  return lnum ~= end_line and markers.vertical or
+    markers.bottom .. markers.horizontal:rep(indent_size)
 end
 
 ---Marshal the lsp flutter outline into a flat list of items and ranges
@@ -497,30 +510,66 @@ local function collect_outlines(lines, data, result)
     return
   end
   if data.kind == widget_kind then
+    -- add one to the start line number because we want each marker to start beneath the symbol
     local start_lnum = data.range.start.line + 1
-    local end_lnum = data.children[1].range.start.line + 1
-    local start_index = first_character_index(lines, start_lnum)
-    local end_index = first_character_index(lines, end_lnum)
-    local indent_size = end_index - start_index
-    indent_size = indent_size > 0 and indent_size - 1 or indent_size
-    table.insert(
-      result,
-      {
-        name = data.className,
-        end_index = end_index,
-        indent_size = indent_size,
-        range = {
-          start = {
-            character = start_index,
-            line = start_lnum
-          },
-          ["end"] = data.children[1].range.start
+    -- Don't add one to the end line number because we want each
+    -- marker to end *at the level* of the symbol
+    local end_lnum = data.children[#data.children].range.start.line
+
+    local start_index = first_marker_index(lines, start_lnum, START_OFFSET)
+    -- Construct a list of lists each item in this list being each line of a given
+    -- outline marker indent
+    local line = {}
+    for lnum = start_lnum, end_lnum, 1 do
+      local end_index = first_marker_index(lines, lnum, END_OFFSET)
+      local indent_size = end_index - start_index
+      indent_size = indent_size > 0 and indent_size - 1 or indent_size
+      table.insert(
+        line,
+        {
+          lnum = lnum,
+          start_index = start_index,
+          character = get_guide_character(
+            lnum,
+            end_lnum,
+            start_index,
+            indent_size,
+            data.children,
+            lines
+          )
         }
-      }
-    )
+      )
+    end
+    table.insert(result, line)
   end
   for _, item in ipairs(data.children) do
     collect_outlines(lines, item, result)
+  end
+end
+
+---Append a single guide to the buffer across a particular range
+---@param bufnum number
+---@param line table
+---@param outline_config table
+local function render_guide(bufnum, line, outline_config)
+  for _, marker in ipairs(line) do
+    api.nvim_buf_set_extmark(
+      bufnum,
+      widget_outline_ns_id,
+      marker.lnum,
+      marker.start_index,
+      {virt_text = {{marker.character, outline_config.highlight}}, virt_text_pos = "overlay"}
+    )
+  end
+end
+
+---Parse and render the widget outline guides
+---@param bufnum number
+---@param outlines table
+---@param outline_config table
+local function flutter_outline_guides(bufnum, outlines, outline_config)
+  for _, line in ipairs(outlines) do
+    render_guide(bufnum, line, outline_config)
   end
 end
 
