@@ -444,6 +444,9 @@ end
 function M.document_outline(_, _, data, _)
   local outline = data.outline or {}
   local result = {}
+  if not outline.children or #outline.children == 0 then
+    return
+  end
   for _, item in ipairs(outline.children) do
     parse_outline(result, item)
   end
