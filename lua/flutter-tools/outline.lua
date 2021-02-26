@@ -524,6 +524,11 @@ local function collect_outlines(lines, data, result)
     -- outline marker indent
     local line = {}
     for lnum = start_lnum, end_lnum, 1 do
+      -- TODO skip empty lines since currently extmarks
+      -- cannot set where there is no existing text
+      if lines[lnum + 1] == "" then
+        goto continue
+      end
       local end_index = first_marker_index(lines, lnum, END_OFFSET)
       local indent_size = end_index - start_index
       indent_size = indent_size > 0 and indent_size - 1 or indent_size
@@ -544,6 +549,7 @@ local function collect_outlines(lines, data, result)
       )
     end
     table.insert(result, line)
+    ::continue::
   end
   for _, item in ipairs(data.children) do
     collect_outlines(lines, item, result)
