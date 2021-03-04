@@ -481,6 +481,9 @@ local function first_marker_index(lines, lnum, offset)
     return -1
   end
   local index = line:find("%S")
+  if not index then
+    return -1
+  end
   return index - offset
 end
 
