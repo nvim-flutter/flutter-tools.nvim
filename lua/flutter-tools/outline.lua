@@ -529,30 +529,28 @@ local function collect_outlines(lines, data, result)
     for lnum = start_lnum, end_lnum, 1 do
       -- TODO skip empty lines since currently extmarks
       -- cannot set where there is no existing text
-      if lines[lnum + 1] == "" then
-        goto continue
+      if lines[lnum + 1] ~= "" then
+        local end_index = first_marker_index(lines, lnum, END_OFFSET)
+        local indent_size = end_index - start_index
+        indent_size = indent_size > 0 and indent_size - 1 or indent_size
+        table.insert(
+          line,
+          {
+            lnum = lnum,
+            start_index = start_index,
+            character = get_guide_character(
+              lnum,
+              end_lnum,
+              start_index,
+              indent_size,
+              data.children,
+              lines
+            )
+          }
+        )
       end
-      local end_index = first_marker_index(lines, lnum, END_OFFSET)
-      local indent_size = end_index - start_index
-      indent_size = indent_size > 0 and indent_size - 1 or indent_size
-      table.insert(
-        line,
-        {
-          lnum = lnum,
-          start_index = start_index,
-          character = get_guide_character(
-            lnum,
-            end_lnum,
-            start_index,
-            indent_size,
-            data.children,
-            lines
-          )
-        }
-      )
+      table.insert(result, line)
     end
-    table.insert(result, line)
-    ::continue::
   end
   for _, item in ipairs(data.children) do
     collect_outlines(lines, item, result)
