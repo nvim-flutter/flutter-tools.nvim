@@ -11,7 +11,7 @@ to allow users to easily develop flutter apps using neovim.
 
 ## Prerequisites
 
-* `neovim 0.5+` (nightly)
+- `neovim 0.5+` (nightly)
 
 ## Installation
 
@@ -36,6 +36,8 @@ require("flutter-tools").setup{} -- use defaults
 
 -- alternatively you can override the default configs
 require("flutter-tools").setup {
+  flutter_path = "<full/path/if/needed>", -- <-- this takes priority over the lookup
+  flutter_lookup_cmd = nil, -- example "which flutter" or "asdf which flutter"
   flutter_outline = {
     highlight = "NonText",
     enabled = false,
@@ -59,6 +61,14 @@ require("flutter-tools").setup {
 
 You can override any options available in the `lspconfig` setup, this call essentially wraps
 it and adds some extra `flutter` specific handlers and utilisation options.
+
+#### Flutter binary
+
+In order to run flutter commands you _might_ need to pass either a _path_ a _command_ to the plugin so it can find your
+installation of flutter. Must people will not need this since it will find the executable path of `flutter` similar to
+`which flutter` which should find the absolute path to your binary. If using something like `asdf` or some other version manager,
+or you installed flutter via `snap` or in some other custom way, then you need to pass in a command by specifying
+`flutter_lookup_cmd = <my-command>`. If you have a full path already you can pass it in using `flutter_path`.
 
 # Functionality
 

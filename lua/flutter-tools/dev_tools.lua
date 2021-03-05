@@ -1,11 +1,13 @@
 local utils = require "flutter-tools/utils"
 local ui = require "flutter-tools/ui"
+local executable = require "flutter-tools/executable"
+
 local M = {}
 local fn = vim.fn
 
 local start_id = nil
 
-local activate_cmd = {"flutter", "pub", "global", "activate", "devtools"}
+local activate_cmd = {"pub", "global", "activate", "devtools"}
 
 local function handle_start(_, data, name)
   if data then
@@ -16,7 +18,7 @@ local function handle_start(_, data, name)
             ui.notify(
               {
                 "Flutter pub global devtools has not been activated.",
-                "Run " .. table.concat(activate_cmd, "").. " to activate it."
+                "Run " .. executable.with(table.concat(activate_cmd, "")) .. " to activate it."
               }
             )
           end
@@ -50,7 +52,7 @@ function M.start()
       fn.jobstart(
       table.concat(
         {
-          "flutter",
+          executable.get_flutter(),
           "pub",
           "global",
           "run",

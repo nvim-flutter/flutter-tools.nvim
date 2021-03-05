@@ -1,5 +1,6 @@
 local ui = require "flutter-tools/ui"
 local utils = require "flutter-tools/utils"
+local executable = require "flutter-tools/executable"
 
 local api = vim.api
 local jobstart = vim.fn.jobstart
@@ -83,7 +84,7 @@ function M.list()
     devices = {}
   }
   jobstart(
-    "flutter devices",
+    executable.with("devices"),
     {
       on_stdout = get_device(result),
       on_exit = show_devices(result),

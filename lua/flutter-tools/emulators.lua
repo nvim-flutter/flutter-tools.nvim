@@ -1,5 +1,6 @@
 local ui = require "flutter-tools/ui"
 local utils = require "flutter-tools/utils"
+local executable = require "flutter-tools/executable"
 
 local api = vim.api
 local jobstart = vim.fn.jobstart
@@ -59,7 +60,7 @@ function M.launch_emulator(emulator)
   local result = {error = true, data = {}}
   local _ =
     jobstart(
-    "flutter emulators --launch " .. emulator.id,
+    executable.with("emulators --launch " .. emulator.id),
     {
       on_exit = emulator_launch_handler(result),
       on_stderr = emulator_launch_handler(result),
@@ -139,7 +140,7 @@ function M.list()
     emulators = {}
   }
   jobstart(
-    "flutter emulators",
+    executable.with("emulators"),
     {
       on_stdout = get_emulator(result),
       on_exit = show_emulators(result),

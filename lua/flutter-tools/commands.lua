@@ -3,6 +3,7 @@ local utils = require "flutter-tools/utils"
 local devices = require "flutter-tools/devices"
 local dev_log = require "flutter-tools/dev_log"
 local config = require "flutter-tools/config"
+local executable = require "flutter-tools/executable"
 
 local api = vim.api
 local jobstart = vim.fn.jobstart
@@ -107,7 +108,7 @@ end
 
 function M.run(device)
   local cfg = config.get()
-  local cmd = "flutter run"
+  local cmd = executable.with("run")
   if M.job_id then
     return utils.echomsg("Flutter is already running!")
   end
@@ -159,7 +160,7 @@ function M.pub_get()
   if not pub_get_job then
     pub_get_job =
       jobstart(
-      "flutter pub get",
+      executable.with("pub get"),
       {
         stdout_buffered = true,
         stderr_buffered = true,

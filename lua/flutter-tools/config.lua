@@ -19,6 +19,8 @@ function M.set(user_config)
   -- we setup the defaults here so that dynamic values
   -- can be calculated as close as possible to usage
   local defaults = {
+    flutter_path = nil,
+    flutter_lookup_cmd = nil,
     flutter_outline = {
       highlight = "Normal",
       enabled = false
@@ -35,9 +37,9 @@ function M.set(user_config)
     }
   }
 
-  user_config = user_config or {}
-  validate_prefs(user_config)
-  config = vim.tbl_deep_extend("keep", user_config, defaults)
+  config = user_config and vim.deepcopy(user_config) or {}
+  validate_prefs(config)
+  setmetatable(config, {__index = defaults})
 end
 
 return M
