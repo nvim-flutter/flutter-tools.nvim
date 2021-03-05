@@ -70,6 +70,9 @@ installation of flutter. Must people will not need this since it will find the e
 or you installed flutter via `snap` or in some other custom way, then you need to pass in a command by specifying
 `flutter_lookup_cmd = <my-command>`. If you have a full path already you can pass it in using `flutter_path`.
 
+If using a `snap` installation set your `flutter_lookup_cmd` to `"echo $HOME/snap/flutter/common/flutter/bin/flutter"`
+which is where this is usually installed by `snap`.
+
 # Functionality
 
 #### Run flutter app with hot reloading
