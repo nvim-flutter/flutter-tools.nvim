@@ -4,6 +4,7 @@ local devices = require "flutter-tools/devices"
 local dev_log = require "flutter-tools/dev_log"
 local config = require "flutter-tools/config"
 local executable = require "flutter-tools/executable"
+local emulators = require "flutter-tools/emulators"
 
 local api = vim.api
 local jobstart = vim.fn.jobstart
@@ -177,6 +178,9 @@ end
 
 function M.quit()
   jobstop(state.log.job_id)
+  if emulators.job then
+    jobstop(emulators.job)
+  end
   state.log.job_id = nil
 end
 

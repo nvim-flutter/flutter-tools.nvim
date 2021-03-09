@@ -139,7 +139,8 @@ function M.list()
     data = {},
     emulators = {}
   }
-  jobstart(
+  M.job =
+    jobstart(
     executable.with("emulators"),
     {
       on_stdout = get_emulator(result),
