@@ -8,29 +8,10 @@ local M = {
   initialised = false
 }
 
-local bin_name = "dart"
-
-local function find_dart_sdk_root_path(user_bin_path)
-  if user_bin_path then
-    return user_bin_path .. "/cache/dart-sdk/bin/dart"
-  elseif fn.executable("flutter") == 1 then
-    local flutter_path = fn.resolve(fn.exepath("flutter"))
-    local flutter_bin = fn.fnamemodify(flutter_path, ":h")
-    return flutter_bin.."/cache/dart-sdk/bin/dart"
-  elseif fn.executable("dart") == 1 then
-    return fn.resolve(fn.exepath("dart"))
-  else
-    return ''
-  end
-end
-
-local function analysis_server_snapshot_path()
-  local dart_sdk_root_path = fn.fnamemodify(find_dart_sdk_root_path(), ":h")
-  local snapshot = dart_sdk_root_path.."/snapshots/analysis_server.dart.snapshot"
-
-  if fn.has("win32") == 1 or fn.has("win64") == 1 then
-    snapshot = snapshot:gsub("/", "\\")
-  end
+local function analysis_server_snapshot_path(dart_sdk_path)
+  local dart_sdk_root_path = fn.fnamemodify(dart_sdk_path, ":h")
+  local snapshot = utils.join {dart_sdk_root_path, "snapshots", "analysis_server.dart.snapshot"}
+  print("snapshot: " .. vim.inspect(snapshot))
 
   return snapshot
 end
@@ -46,10 +27,10 @@ function M.setup(config)
     return
   end
 
-  local c = require('flutter-tools.config').get()
+  local executable = require("flutter-tools/executable")
+  local dart_sdk_path = executable.dart_sdk_root_path()
   local cfg = {
-    cmd = {bin_name, analysis_server_snapshot_path(c.flutter_path), "--lsp"};
-    flags = {allow_incremental_sync = true},
+    cmd = {executable.dart_bin_name, analysis_server_snapshot_path(dart_sdk_path), "--lsp"},
     init_options = {
       closingLabels = true,
       outline = true,
