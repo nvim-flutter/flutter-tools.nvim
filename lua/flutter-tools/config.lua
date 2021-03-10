@@ -1,3 +1,4 @@
+local utils = require("flutter-tools/utils")
 local M = {}
 
 --- @param prefs table user preferences
@@ -39,7 +40,10 @@ local defaults = {
         return k == "open_cmd" and get_split_cmd(0.4, 50) or nil
       end
     }
-  )
+  ),
+  experimental = {
+    lsp_derive_paths = false
+  }
 }
 
 local config = setmetatable({}, {__index = defaults})
@@ -49,12 +53,10 @@ function M.get()
 end
 
 function M.set(user_config)
-  -- we setup the defaults here so that dynamic values
-  -- can be calculated as close as possible to usage
   user_config = user_config or {}
-
-  config = vim.tbl_deep_extend("keep", user_config, config)
+  config = utils.merge(config, user_config)
   validate_prefs(config)
+  return config
 end
 
 return M

@@ -115,6 +115,22 @@ function M.fold(accumulator, callback, list)
   return accumulator
 end
 
+---Merge two table but maintain metatables
+---Priority is given to the second table
+---@param t1 table
+---@param t2 table
+---@return table
+function M.merge(t1, t2)
+  for k, v in pairs(t2) do
+    if (type(v) == "table") and (type(t1[k] or false) == "table") then
+      M.merge(t1[k], t2[k])
+    else
+      t1[k] = v
+    end
+  end
+  return t1
+end
+
 ---Join segments of a path into a full path with
 ---the correct separator
 ---@param segments string[]
