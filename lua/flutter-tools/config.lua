@@ -19,8 +19,8 @@ function M.set(user_config)
   -- we setup the defaults here so that dynamic values
   -- can be calculated as close as possible to usage
   local defaults = {
-    dart_lookup_cmd = "which dart",
-    flutter_lookup_cmd = "which flutter",
+    flutter_path = nil,
+    flutter_lookup_cmd = "flutter sdk-path",
     flutter_outline = {
       highlight = "Normal",
       enabled = false
