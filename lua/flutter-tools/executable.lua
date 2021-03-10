@@ -50,15 +50,15 @@ function M.get_flutter()
   if M.flutter_bin_path then
     return M.flutter_bin_path
   end
-  local user_config = config.get()
-  if user_config.flutter_path then
-    M.flutter_bin_path = user_config.flutter_path
-  elseif user_config.flutter_lookup_cmd then
-    M.flutter_sdk_path = utils.remove_newlines(fn.system(user_config.flutter_lookup_cmd))
+  local cfg = config.get()
+  if cfg.flutter_path then
+    M.flutter_bin_path = cfg.flutter_path
+  elseif cfg.flutter_lookup_cmd then
+    M.flutter_sdk_path = utils.remove_newlines(fn.system(cfg.flutter_lookup_cmd))
     M.dart_bin_path = utils.join {M.flutter_sdk_path, "bin", "dart"}
     M.flutter_bin_path = utils.join {M.flutter_sdk_path, "bin", "flutter"}
     if vim.v.shell_error > 0 or vim.v.shell_error == -1 then
-      ui.notify(string.format("Error running %s", user_config.flutter_lookup_cmd))
+      ui.notify(string.format("Error running %s", cfg.flutter_lookup_cmd))
     end
   end
 
