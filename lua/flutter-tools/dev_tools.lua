@@ -9,36 +9,42 @@ local start_id = nil
 
 local activate_cmd = {"pub", "global", "activate", "devtools"}
 
+--[[ {
+    event = "server.started",
+    method = "server.started",
+    params = {
+        host = "127.0.0.1",
+        pid = 3407971,
+        port = 9100,
+        protocolVersion = "1.1.0"
+    }
+}]]
 local function handle_start(_, data, name)
-  if data then
+  local is_error = name == "stderr"
+  if is_error and type(data) ~= "table" then
+    ui.notify({"Sorry! devtools couldn't be opened"})
+    return
+  end
+  if data and type(data) == "table" then
     for _, str in ipairs(data) do
       if #str > 0 then
-        if name == "stderr" then
+        if is_error then
           if str:match("No active package devtools") then
-            ui.notify(
+            return ui.notify(
               {
                 "Flutter pub global devtools has not been activated.",
                 "Run " .. executable.with(table.concat(activate_cmd, "")) .. " to activate it."
               }
             )
+          else
+            return ui.notify({"Sorry! devtools couldn't be opened"})
           end
-        else
-          local json = fn.json_decode(str)
-          if json and json.params then
-            -- {
-            --   event = "server.started",
-            --   method = "server.started",
-            --   params = {
-            --     host = "127.0.0.1",
-            --     pid = 3407971,
-            --     port = 9100,
-            --     protocolVersion = "1.1.0"
-            --   }
-            -- }
-            local msg =
-              string.format("Serving DevTools at http://%s:%s", json.params.host, json.params.port)
-            ui.notify({msg}, 20000)
-          end
+        end
+        local json = fn.json_decode(str)
+        if json and json.params then
+          local msg =
+            string.format("Serving DevTools at http://%s:%s", json.params.host, json.params.port)
+          ui.notify({msg}, 20000)
         end
       end
     end
