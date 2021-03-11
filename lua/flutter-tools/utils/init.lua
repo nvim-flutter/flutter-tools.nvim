@@ -138,6 +138,8 @@ function M.join(segments)
   return table.concat(segments, M.sep)
 end
 
+local sys_name = vim.loop.os_uname().sysname
+M.is_linux = sys_name == "Linux"
 M.is_windows = fn.has("win32") == 1 or fn.has("win64") == 1
 
 M.sep = fn.has("win32") == 1 or fn.has("win64") == 1 and "\\" or "/"

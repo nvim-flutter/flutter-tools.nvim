@@ -42,10 +42,15 @@ function M.dart_sdk_root_path(user_bin_path)
   end
 end
 
-local function report_shell_error(msg)
-  if vim.v.shell_error > 0 or vim.v.shell_error == -1 then
-    ui.notify(string.format("Error running %s", msg))
-  end
+local function has_shell_error()
+  return vim.v.shell_error > 0 or vim.v.shell_error == -1
+end
+
+---Get paths for flutter and dart based on the binary locations
+---@return string
+---@return string
+local function get_default_binaries()
+  return fn.resolve(fn.exepath("flutter")), fn.resolve(fn.exepath("dart"))
 end
 
 ---Fetch the path to the users flutter installation.
@@ -56,17 +61,23 @@ function M.get_flutter()
   if M.flutter_bin_path then
     return M.flutter_bin_path
   end
-  local cfg = config.get()
-  if cfg.flutter_path then
-    M.flutter_bin_path = cfg.flutter_path
-  elseif cfg.flutter_lookup_cmd then
-    M.flutter_sdk_path = utils.remove_newlines(fn.system(cfg.flutter_lookup_cmd))
-    M.dart_bin_path = utils.join {M.flutter_sdk_path, "bin", "dart"}
-    M.flutter_bin_path = utils.join {M.flutter_sdk_path, "bin", "flutter"}
-    report_shell_error(cfg.flutter_lookup_cmd)
+
+  local _config = config.get()
+  if _config.flutter_path then
+    M.flutter_bin_path = _config.flutter_path
+  elseif _config.flutter_lookup_cmd then
+    M.flutter_sdk_path = utils.remove_newlines(fn.system(_config.flutter_lookup_cmd))
+
+    if not has_shell_error() then
+      M.dart_bin_path = utils.join {M.flutter_sdk_path, "bin", "dart"}
+      M.flutter_bin_path = utils.join {M.flutter_sdk_path, "bin", "flutter"}
+    else
+      ui.notify(string.format("Error running %s", _config.flutter_lookup_cmd))
+      M.flutter_bin_path, M.dart_bin_path = get_default_binaries()
+    end
+
   else
-    M.dart_bin_path = fn.resolve(fn.exepath("dart"))
-    M.flutter_bin_path = fn.resolve(fn.exepath("flutter"))
+    M.flutter_bin_path, M.dart_bin_path = get_default_binaries()
   end
 
   return M.flutter_bin_path, M.flutter_sdk_path
