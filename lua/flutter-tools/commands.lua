@@ -176,12 +176,17 @@ function M.pub_get()
   end
 end
 
-function M.quit()
-  jobstop(state.log.job_id)
-  if emulators.job then
-    jobstop(emulators.job)
+local function stop_job(id)
+  if id then
+    jobstop(id)
   end
+end
+
+function M.quit()
+  stop_job(state.log.job_id)
   state.log.job_id = nil
+  stop_job(emulators.job)
+  emulators.job = nil
 end
 
 function _G.__flutter_tools_close(buf)
