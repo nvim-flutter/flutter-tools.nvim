@@ -2,12 +2,19 @@ local utils = require "flutter-tools/utils"
 local labels = require "flutter-tools/labels"
 local outline = require "flutter-tools/outline"
 
+local fn = vim.fn
+
 local M = {
   initialised = false
 }
 
-function M.setup(config)
-  config = config or {}
+local function analysis_server_snapshot_path(dart_sdk_path)
+  local dart_sdk_root_path = fn.fnamemodify(dart_sdk_path, ":h")
+  return utils.join {dart_sdk_root_path, "snapshots", "analysis_server.dart.snapshot"}
+end
+
+function M.setup(user_config)
+  local config = (user_config and user_config.lsp) and user_config.lsp or {}
   if M.initialised then
     return utils.echomsg [[DartLS has already been setup!]]
   end
@@ -18,7 +25,6 @@ function M.setup(config)
   end
 
   local cfg = {
-    flags = {allow_incremental_sync = true},
     init_options = {
       closingLabels = true,
       outline = true,
@@ -30,6 +36,11 @@ function M.setup(config)
       ["dart/textDocument/publishFlutterOutline"] = outline.flutter_outline
     }
   }
+  if user_config.experimental.lsp_derive_paths then
+    local executable = require("flutter-tools/executable")
+    local dart_sdk_path = executable.dart_sdk_root_path()
+    cfg.cmd = {executable.dart_bin_name, analysis_server_snapshot_path(dart_sdk_path), "--lsp"}
+  end
 
   config = vim.tbl_deep_extend("force", cfg, config)
   lspconfig.dartls.setup(config)

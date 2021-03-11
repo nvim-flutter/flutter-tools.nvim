@@ -1,3 +1,4 @@
+local utils = require("flutter-tools/utils")
 local M = {}
 
 --- @param prefs table user preferences
@@ -9,37 +10,53 @@ local function validate_prefs(prefs)
   }
 end
 
-local config = {}
+local function get_split_cmd(percentage, fallback)
+  return string.format("botright %dvnew", math.max(vim.o.columns * percentage, fallback))
+end
+
+local defaults = {
+  flutter_path = nil,
+  flutter_lookup_cmd = utils.is_linux and "flutter sdk-path" or nil,
+  flutter_outline = {
+    highlight = "Normal",
+    enabled = false
+  },
+  closing_tags = {
+    highlight = "Comment",
+    prefix = "//"
+  },
+  outline = setmetatable(
+    {},
+    {
+      __index = function(_, k)
+        return k == "open_cmd" and get_split_cmd(0.3, 40) or nil
+      end
+    }
+  ),
+  dev_log = setmetatable(
+    {},
+    {
+      __index = function(_, k)
+        return k == "open_cmd" and get_split_cmd(0.4, 50) or nil
+      end
+    }
+  ),
+  experimental = {
+    lsp_derive_paths = false
+  }
+}
+
+local config = setmetatable({}, {__index = defaults})
 
 function M.get()
   return config
 end
 
 function M.set(user_config)
-  -- we setup the defaults here so that dynamic values
-  -- can be calculated as close as possible to usage
-  local defaults = {
-    flutter_path = nil,
-    flutter_lookup_cmd = nil,
-    flutter_outline = {
-      highlight = "Normal",
-      enabled = false
-    },
-    closing_tags = {
-      highlight = "Comment",
-      prefix = "//"
-    },
-    dev_log = {
-      open_cmd = string.format("botright %dvnew", math.max(vim.o.columns * 0.4, 50))
-    },
-    outline = {
-      open_cmd = string.format("botright %dvnew", math.max(vim.o.columns * 0.3, 40))
-    }
-  }
-
-  config = user_config and vim.deepcopy(user_config) or {}
+  user_config = user_config or {}
+  config = utils.merge(config, user_config)
   validate_prefs(config)
-  setmetatable(config, {__index = defaults})
+  return config
 end
 
 return M

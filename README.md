@@ -1,8 +1,13 @@
 # flutter-tools.nvim
 
-Tools to help create flutter apps in neovim using the native lsp
+Build flutter and dart applications in neovim using the native lsp.
 
 **Status: Alpha**
+
+#### NOTE
+
+I plan to try and keep things _relatively_ stable but ultimately there might still need to be some
+breaking changes while I flesh out some of the functionality.
 
 # Inspiration
 
@@ -36,6 +41,9 @@ require("flutter-tools").setup{} -- use defaults
 
 -- alternatively you can override the default configs
 require("flutter-tools").setup {
+  experimental = { -- map of feature flags
+    derive_lsp_paths = false, -- EXPERIMENTAL: Attempt to find the user's flutter SDK
+  }
   flutter_path = "<full/path/if/needed>", -- <-- this takes priority over the lookup
   flutter_lookup_cmd = nil, -- example "which flutter" or "asdf which flutter"
   flutter_outline = {
