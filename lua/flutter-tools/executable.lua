@@ -42,6 +42,12 @@ function M.dart_sdk_root_path(user_bin_path)
   end
 end
 
+local function report_shell_error(msg)
+  if vim.v.shell_error > 0 or vim.v.shell_error == -1 then
+    ui.notify(string.format("Error running %s", msg))
+  end
+end
+
 ---Fetch the path to the users flutter installation.
 ---NOTE: this should not be called before the plugin
 ---setup has occurred
@@ -57,9 +63,10 @@ function M.get_flutter()
     M.flutter_sdk_path = utils.remove_newlines(fn.system(cfg.flutter_lookup_cmd))
     M.dart_bin_path = utils.join {M.flutter_sdk_path, "bin", "dart"}
     M.flutter_bin_path = utils.join {M.flutter_sdk_path, "bin", "flutter"}
-    if vim.v.shell_error > 0 or vim.v.shell_error == -1 then
-      ui.notify(string.format("Error running %s", cfg.flutter_lookup_cmd))
-    end
+    report_shell_error(cfg.flutter_lookup_cmd)
+  else
+    M.dart_bin_path = fn.resolve(fn.exepath("dart"))
+    M.flutter_bin_path = fn.resolve(fn.exepath("flutter"))
   end
 
   return M.flutter_bin_path, M.flutter_sdk_path

@@ -16,7 +16,7 @@ end
 
 local defaults = {
   flutter_path = nil,
-  flutter_lookup_cmd = "flutter sdk-path",
+  flutter_lookup_cmd = nil,
   flutter_outline = {
     highlight = "Normal",
     enabled = false
@@ -46,7 +46,18 @@ local defaults = {
   }
 }
 
-local config = setmetatable({}, {__index = defaults})
+local config =
+  setmetatable(
+  {},
+  {
+    __index = function(tbl, key)
+      if key == "flutter_lookup_cmd" and tbl.experimental and tbl.experimental.lsp_derive_paths then
+        return "flutter sdk-path"
+      end
+      return defaults[key]
+    end
+  }
+)
 
 function M.get()
   return config
