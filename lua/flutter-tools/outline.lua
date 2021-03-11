@@ -563,13 +563,18 @@ end
 ---@param outline_config table
 local function render_guide(bufnum, line, outline_config)
   for _, marker in ipairs(line) do
-    api.nvim_buf_set_extmark(
+    local success, msg =
+      pcall(
+      api.nvim_buf_set_extmark,
       bufnum,
       widget_outline_ns_id,
       marker.lnum,
       marker.start_index,
       {virt_text = {{marker.character, outline_config.highlight}}, virt_text_pos = "overlay"}
     )
+    if not success then
+      vim.api.nvim_echo({{msg, "ErrorMsg"}}, true, {})
+    end
   end
 end
 
