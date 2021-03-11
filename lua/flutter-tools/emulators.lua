@@ -1,3 +1,5 @@
+local Job = require("plenary.job")
+
 local ui = require "flutter-tools/ui"
 local utils = require "flutter-tools/utils"
 local executable = require "flutter-tools/executable"
@@ -82,17 +84,17 @@ function M.parse(line)
   end
 end
 
----@param result table
-local function get_emulator(result)
-  return function(_, data, _)
-    for _, line in pairs(data) do
-      local emulator = M.parse(line)
-      if emulator then
-        table.insert(result.emulators, emulator)
-      end
-      table.insert(result.data, line)
+---@param data table
+local function get_emulators(data)
+  local result = {emulators = {}, data = {}}
+  for _, line in pairs(data) do
+    local emulator = M.parse(line)
+    if emulator then
+      table.insert(result.emulators, emulator)
     end
+    table.insert(result.data, line)
   end
+  return result
 end
 
 local function setup_emulators_win(result, highlights)
@@ -113,45 +115,38 @@ end
 
 ---@param result table
 local function show_emulators(result)
-  return function(_, _, _)
-    local formatted = {}
-    local has_emulators = #result.emulators > 0
-    local highlights = {}
-    if has_emulators then
-      for lnum, item in pairs(result.emulators) do
-        local name = utils.display_name(item.name, item.platform)
-        utils.add_device_highlights(highlights, name, lnum, item)
-        table.insert(formatted, name)
-      end
-    else
-      for _, line in pairs(result.data) do
-        table.insert(formatted, line)
-      end
+  local formatted = {}
+  local output = get_emulators(result)
+  local has_emulators = #output.emulators > 0
+  local highlights = {}
+  if has_emulators then
+    for lnum, item in pairs(output.emulators) do
+      local name = utils.display_name(item.name, item.platform)
+      utils.add_device_highlights(highlights, name, lnum, item)
+      table.insert(formatted, name)
     end
-    if #formatted > 0 then
-      ui.popup_create("Flutter emulators", formatted, setup_emulators_win(result, highlights))
+  else
+    for _, line in pairs(output.data) do
+      table.insert(formatted, line)
     end
+  end
+  if #formatted > 0 then
+    vim.schedule(
+      function()
+        ui.popup_create("Flutter emulators", formatted, setup_emulators_win(output, highlights))
+      end
+    )
   end
 end
 
 function M.list()
-  local result = {
-    data = {},
-    emulators = {}
-  }
-  M.job =
-    jobstart(
-    executable.with("emulators"),
-    {
-      on_stdout = get_emulator(result),
-      on_exit = show_emulators(result),
-      on_stderr = function(_, data, _)
-        if data and data[1] ~= "" then
-          utils.echomsg(data[1])
-        end
-      end
-    }
-  )
+  Job:new {
+    command = executable.get_flutter(),
+    args = {"emulators"},
+    on_exit = function(j, _)
+      show_emulators(j:result())
+    end
+  }:sync(8000)
 end
 
 return M
