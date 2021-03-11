@@ -77,7 +77,9 @@ local function autoscroll(buf, win)
     -- TODO fix invalid window id for autoscroll
     if b == buf and api.nvim_win_is_valid(w) then
       local lines = api.nvim_buf_line_count(b)
-      api.nvim_win_set_cursor(win, {lines, 0})
+      if lines < 1 then
+        api.nvim_win_set_cursor(win, {lines - 1, 0})
+      end
       break
     end
   end
