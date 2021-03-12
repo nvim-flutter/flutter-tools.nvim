@@ -1,3 +1,5 @@
+local Job = require("plenary.job")
+
 local ui = require "flutter-tools/ui"
 local utils = require "flutter-tools/utils"
 local devices = require "flutter-tools/devices"
@@ -13,37 +15,41 @@ local jobstop = vim.fn.jobstop
 local M = {}
 
 local state = {
-  job_id = nil
+  job = nil
 }
 
----@param lines table
-local function has_device_conflict(lines)
-  for _, line in pairs(lines) do
-    if line then
-      -- match the error string returned if multiple devices are matched
-      return line:match("More than one device connected") ~= nil
-    end
+---@param line table
+local function has_device_conflict(line)
+  if not line then
+    return false
   end
-  return false
+  -- match the error string returned if multiple devices are matched
+  return line:match("More than one device connected") ~= nil
 end
 
-local function on_flutter_run_error(result)
-  return function(_, data, _)
-    for _, item in pairs(data) do
-      table.insert(result.data, item)
+---Handle any errors running flutter
+---@param error string
+---@param result string
+local function handle_error(error, data, result)
+  local err = type(error) == "string" and error or vim.inspect(error)
+  vim.schedule(
+    function()
+      ui.notify({"Error running flutter:", data, err})
     end
-  end
+  )
 end
 
-local function on_flutter_run_data(result, opts)
-  return function(job_id, data, _)
-    -- only check if there is a conflict if we haven't already seen this message
-    result.has_conflict = result.has_conflict or has_device_conflict(data)
-    if result.has_conflict then
-      vim.list_extend(result.data, data)
-    else
-      dev_log.log(job_id, data, opts)
-    end
+local function handle_data(job, data, result, opts)
+  -- only check if there is a conflict if we haven't already seen this message
+  result.has_conflict = result.has_conflict or has_device_conflict(data)
+  if result.has_conflict then
+    vim.list_extend(result.data, data)
+  else
+    vim.schedule(
+      function()
+        dev_log.log(job, data, opts)
+      end
+    )
   end
 end
 
@@ -68,28 +74,30 @@ local function add_device_options(result)
   return edited, win_devices, highlights
 end
 
-local function on_flutter_run_exit(result)
-  return function(_, _, name)
-    if result.has_conflict and result.data then
-      local edited, win_devices, highlights = add_device_options(result)
-      ui.popup_create(
-        "Flutter run (" .. name .. "): ",
-        edited,
-        function(buf, _)
-          vim.b.devices = win_devices
-          ui.add_highlights(buf, highlights)
-          -- we have handled this conflict by giving the user a
-          result.has_conflict = false
-          api.nvim_buf_set_keymap(
-            buf,
-            "n",
-            "<CR>",
-            ":lua __flutter_tools_select_device()<CR>",
-            {silent = true, noremap = true}
-          )
-        end
-      )
-    end
+local function handle_exit(result)
+  if result.has_conflict and result.data then
+    local edited, win_devices, highlights = add_device_options(result)
+    vim.schedule(
+      function()
+        ui.popup_create(
+          "Flutter run exit: ",
+          edited,
+          function(buf, _)
+            vim.b.devices = win_devices
+            ui.add_highlights(buf, highlights)
+            -- we have handled this conflict by giving the user a
+            result.has_conflict = false
+            api.nvim_buf_set_keymap(
+              buf,
+              "n",
+              "<CR>",
+              ":lua __flutter_tools_select_device()<CR>",
+              {silent = true, noremap = true}
+            )
+          end
+        )
+      end
+    )
   end
 end
 
@@ -109,8 +117,8 @@ end
 
 function M.run(device)
   local cfg = config.get()
-  local cmd = executable.with("run")
-  if M.job_id then
+  local cmd = "run"
+  if M.job then
     return utils.echomsg("Flutter is already running!")
   end
   if device then
@@ -120,19 +128,23 @@ function M.run(device)
     end
   end
   ui.notify {"Starting flutter project..."}
-  local result = {
-    has_conflict = false,
-    data = {}
-  }
-  state.job_id =
-    jobstart(
-    cmd,
-    {
-      on_stdout = on_flutter_run_data(result, cfg.dev_log),
-      on_exit = on_flutter_run_exit(result),
-      on_stderr = on_flutter_run_error(result)
-    }
-  )
+
+  local result = {has_conflict = false, data = {}}
+
+  M.job =
+    Job:new {
+    command = executable.get_flutter(),
+    args = {cmd},
+    on_stderr = function(err, data, _)
+      handle_error(err, data, result.data)
+    end,
+    on_stdout = function(_, data, job)
+      handle_data(job, data, result, cfg.dev_log)
+    end,
+    on_exit = function(j, _)
+      handle_exit(j:result())
+    end
+  }:start()
 end
 
 local function on_pub_get(result)
@@ -183,10 +195,10 @@ local function stop_job(id)
 end
 
 function M.quit()
-  stop_job(state.log.job_id)
-  state.log.job_id = nil
+  stop_job(state.log.job)
+  state.log.job:stop()
   stop_job(emulators.job)
-  emulators.job = nil
+  emulators.job:stop()
 end
 
 function _G.__flutter_tools_close(buf)

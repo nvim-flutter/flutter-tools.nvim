@@ -5,7 +5,6 @@ local utils = require "flutter-tools/utils"
 local executable = require "flutter-tools/executable"
 
 local api = vim.api
-local jobstart = vim.fn.jobstart
 
 local M = {}
 -----------------------------------------------------------------------------//
@@ -31,44 +30,30 @@ function _G.__flutter_tools_select_emulator()
   end
   api.nvim_win_close(0, true)
 end
-
-local function emulator_launch_handler(result)
-  ---@param data table
-  ---@param name string stdout, stderr, stdin
-  return function(_, data, name)
-    if name ~= "stdout" and name ~= "stderr" then
-      if result.error and vim.tbl_isempty(result.data) then
-        ui.notify(result.data)
-      end
-    else
-      if name == "stderr" and not result.error then
-        result.error = true
-      end
-      if data then
-        local str = table.concat(data, "")
-        if str ~= "" then
-          table.insert(result.data, str)
-        end
-      end
-    end
-  end
-end
-
 ---@param emulator table
 function M.launch_emulator(emulator)
   if not emulator then
     return
   end
-  local result = {error = true, data = {}}
-  local _ =
-    jobstart(
-    executable.with("emulators --launch " .. emulator.id),
-    {
-      on_exit = emulator_launch_handler(result),
-      on_stderr = emulator_launch_handler(result),
-      on_stdin = emulator_launch_handler(result)
-    }
-  )
+  Job:new {
+    command = executable.get_flutter(),
+    args = {"emulators", "--launch", emulator.id},
+    on_stderr = function(error, data, _)
+      vim.schedule(
+        function()
+          ui.notify({"Error launching emulators: ", data, error})
+        end
+      )
+    end,
+    on_exit = function(job, _)
+      local result = job:result()
+      if not vim.tbl_isempty(result) then
+        vim.schedule(function()
+          ui.notify(job:result())
+        end)
+      end
+    end
+  }:sync()
 end
 
 ---@param line string
@@ -140,7 +125,8 @@ local function show_emulators(result)
 end
 
 function M.list()
-  Job:new {
+  M.job =
+    Job:new {
     command = executable.get_flutter(),
     args = {"emulators"},
     on_exit = function(j, _)
