@@ -9,8 +9,6 @@ local executable = require "flutter-tools/executable"
 local emulators = require "flutter-tools/emulators"
 
 local api = vim.api
-local jobstart = vim.fn.jobstart
-local jobstop = vim.fn.jobstop
 
 local M = {}
 
@@ -147,58 +145,44 @@ function M.run(device)
   }:start()
 end
 
-local function on_pub_get(result)
-  return function(_, data, channel)
-    if not channel == "stderr" and result.error then
-      result.error = true
-    end
-    local str = table.concat(data, "")
-    if data and (str and str:len() > 0) then
-      table.insert(result.data, str)
-    end
-  end
-end
-
-local function on_pub_get_exit(result)
-  ui.notify(result.data)
-end
-
 local pub_get_job = nil
 
 function M.pub_get()
-  local result = {
-    error = false,
-    data = {}
-  }
   if not pub_get_job then
     pub_get_job =
-      jobstart(
-      executable.with("pub get"),
-      {
-        stdout_buffered = true,
-        stderr_buffered = true,
-        on_stdout = on_pub_get(result),
-        on_stderr = on_pub_get(result),
-        on_exit = function()
-          pub_get_job = nil
-          on_pub_get_exit(result)
-        end
-      }
-    )
-  end
-end
-
-local function stop_job(id)
-  if id then
-    jobstop(id)
+      Job:new {
+      command = executable.get_flutter(),
+      args = {"pub", "get"},
+      on_stderr = function(j)
+        vim.schedule(
+          function()
+            ui.notify(j:result())
+            pub_get_job = nil
+          end
+        )
+      end,
+      on_exit = function(j)
+        vim.schedule(
+          function()
+            ui.notify(j:result())
+            pub_get_job = nil
+          end
+        )
+      end
+    }:start()
   end
 end
 
 function M.quit()
-  stop_job(state.log.job)
-  state.log.job:stop()
-  stop_job(emulators.job)
-  emulators.job:stop()
+  if state.log.job then
+    state.log.job:stop()
+    state.log.job = nil
+  end
+  if emulators.job then
+    emulators.job:stop()
+    emulators.job = nil
+  end
+  _G.__flutter_tools_close_dev_log()
 end
 
 function _G.__flutter_tools_close(buf)
