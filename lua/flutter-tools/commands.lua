@@ -1,12 +1,11 @@
-local Job = require("plenary.job")
-
-local ui = require "flutter-tools/ui"
-local utils = require "flutter-tools/utils"
-local devices = require "flutter-tools/devices"
-local dev_log = require "flutter-tools/dev_log"
-local config = require "flutter-tools/config"
-local executable = require "flutter-tools/executable"
-local emulators = require "flutter-tools/emulators"
+local Job = require("flutter-tools.job")
+local ui = require("flutter-tools.ui")
+local utils = require("flutter-tools.utils")
+local devices = require("flutter-tools.devices")
+local dev_log = require("flutter-tools.dev_log")
+local config = require("flutter-tools.config")
+local executable = require("flutter-tools.executable")
+local emulators = require("flutter-tools.emulators")
 
 local api = vim.api
 
@@ -131,7 +130,7 @@ function M.run(device)
 
   M.job =
     Job:new {
-    command = executable.get_flutter(),
+    command = executable.flutter(),
     args = {cmd},
     on_stderr = function(err, data, _)
       handle_error(err, data, result.data)
@@ -151,7 +150,7 @@ function M.pub_get()
   if not pub_get_job then
     pub_get_job =
       Job:new {
-      command = executable.get_flutter(),
+      command = executable.flutter(),
       args = {"pub", "get"},
       on_stderr = function(j)
         vim.schedule(

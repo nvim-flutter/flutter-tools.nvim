@@ -527,7 +527,7 @@ local function collect_outlines(lines, data, result)
     -- outline marker indent
     local line = {}
     for lnum = start_lnum, end_lnum, 1 do
-      -- TODO skip empty lines since currently extmarks
+      -- TODO: skip empty lines since currently extmarks
       -- cannot set where there is no existing text
       if lines[lnum + 1] ~= "" then
         local end_index = first_marker_index(lines, lnum, END_OFFSET)
@@ -583,7 +583,7 @@ end
 ---@param outlines table
 ---@param outline_config table
 local function flutter_outline_guides(bufnum, outlines, outline_config)
-  -- TODO would it be more performant to do some sort of diff and patched
+  -- TODO: would it be more performant to do some sort of diff and patched
   -- update rather than replace the namespace each time
   api.nvim_buf_clear_namespace(bufnum, widget_outline_ns_id, 0, -1)
   for _, line in ipairs(outlines) do

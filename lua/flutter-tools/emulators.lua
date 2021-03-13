@@ -1,8 +1,7 @@
-local Job = require("plenary.job")
-
-local ui = require "flutter-tools/ui"
-local utils = require "flutter-tools/utils"
-local executable = require "flutter-tools/executable"
+local Job = require("flutter-tools.job")
+local ui = require("flutter-tools.ui")
+local utils = require("flutter-tools.utils")
+local executable = require("flutter-tools.executable")
 
 local api = vim.api
 
@@ -36,7 +35,7 @@ function M.launch_emulator(emulator)
     return
   end
   Job:new {
-    command = executable.get_flutter(),
+    command = executable.flutter(),
     args = {"emulators", "--launch", emulator.id},
     on_stderr = function(error, data, _)
       vim.schedule(
@@ -48,9 +47,11 @@ function M.launch_emulator(emulator)
     on_exit = function(job, _)
       local result = job:result()
       if not vim.tbl_isempty(result) then
-        vim.schedule(function()
-          ui.notify(job:result())
-        end)
+        vim.schedule(
+          function()
+            ui.notify(job:result())
+          end
+        )
       end
     end
   }:sync()
@@ -127,7 +128,7 @@ end
 function M.list()
   M.job =
     Job:new {
-    command = executable.get_flutter(),
+    command = executable.flutter(),
     args = {"emulators"},
     on_exit = function(j, _)
       show_emulators(j:result())

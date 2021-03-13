@@ -1,8 +1,7 @@
-local Job = require("plenary.job")
-
-local ui = require "flutter-tools/ui"
-local utils = require "flutter-tools/utils"
-local executable = require "flutter-tools/executable"
+local Job = require("flutter-tools.job")
+local ui = require("flutter-tools.ui")
+local utils = require("flutter-tools.utils")
+local executable = require("flutter-tools.executable")
 
 local api = vim.api
 
@@ -82,7 +81,7 @@ end
 
 function M.list()
   Job:new {
-    command = executable.get_flutter(),
+    command = executable.flutter(),
     args = {"devices"},
     on_exit = function(j, _)
       show_devices(j:result())

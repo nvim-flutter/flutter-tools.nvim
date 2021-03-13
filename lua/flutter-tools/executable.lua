@@ -6,9 +6,9 @@ local fn = vim.fn
 
 local M = {
   dart_bin_name = "dart",
-  dart_bin_path = nil,
-  flutter_bin_path = nil,
-  flutter_sdk_path = nil
+  dart_bin = nil,
+  flutter_bin = nil,
+  flutter_sdk = nil
 }
 
 local dart_sdk = utils.join {"cache", "dart-sdk", "bin", "dart"}
@@ -17,7 +17,7 @@ function M.dart_sdk_root_path(user_bin_path)
   if user_bin_path then
     return utils.join {user_bin_path, dart_sdk}
   elseif utils.executable("flutter") then
-    local _, flutter_sdk = M.get_flutter()
+    local _, flutter_sdk = M.flutter()
     if flutter_sdk then
       -- On Linux installations with snap the dart SDK can be further nested inside a bin directory
       -- so it's /bin/cache/dart-sdk whereas else where it is /cache/dart-sdk
@@ -53,40 +53,54 @@ local function get_default_binaries()
   return fn.resolve(fn.exepath("flutter")), fn.resolve(fn.exepath("dart"))
 end
 
+local function get_binaries_from_lookup(cmd)
+  local dart_bin
+  local flutter_bin
+  local sdk_path = utils.remove_newlines(fn.system(cmd))
+  if not has_shell_error() then
+    dart_bin = utils.join {sdk_path, "bin", "dart"}
+    flutter_bin = utils.join {sdk_path, "bin", "flutter"}
+  else
+    ui.notify(string.format("Error running %s", cmd))
+    flutter_bin, dart_bin = get_default_binaries()
+  end
+  return flutter_bin, dart_bin, sdk_path
+end
+
 ---Fetch the path to the users flutter installation.
 ---NOTE: this should not be called before the plugin
 ---setup has occurred
 ---@return string
-function M.get_flutter()
-  if M.flutter_bin_path then
-    return M.flutter_bin_path
+function M.flutter()
+  if M.flutter_bin then
+    return M.flutter_bin, M.flutter_sdk, M.dart_bin
   end
+
+  local dart_bin
+  local flutter_bin
+  local flutter_sdk
 
   local _config = config.get()
   if _config.flutter_path then
-    M.flutter_bin_path = _config.flutter_path
+    -- TODO: should a user be able to specify an SDK path
+    flutter_bin = _config.flutter_path
   elseif _config.flutter_lookup_cmd then
-    M.flutter_sdk_path = utils.remove_newlines(fn.system(_config.flutter_lookup_cmd))
-
-    if not has_shell_error() then
-      M.dart_bin_path = utils.join {M.flutter_sdk_path, "bin", "dart"}
-      M.flutter_bin_path = utils.join {M.flutter_sdk_path, "bin", "flutter"}
-    else
-      ui.notify(string.format("Error running %s", _config.flutter_lookup_cmd))
-      M.flutter_bin_path, M.dart_bin_path = get_default_binaries()
-    end
-
+    flutter_bin, dart_bin, flutter_sdk = get_binaries_from_lookup(_config.flutter_lookup_cmd)
   else
-    M.flutter_bin_path, M.dart_bin_path = get_default_binaries()
+    flutter_bin, dart_bin = get_default_binaries()
   end
 
-  return M.flutter_bin_path, M.flutter_sdk_path
+  M.dart_bin = dart_bin
+  M.flutter_bin = flutter_bin
+  M.flutter_sdk = flutter_sdk
+
+  return M.flutter_bin, M.flutter_sdk, M.dart_bin
 end
 
 ---Prefix a command with the flutter executable
 ---@param cmd string
 function M.with(cmd)
-  return M.get_flutter() .. " " .. cmd
+  return M.flutter() .. " " .. cmd
 end
 
 return M
