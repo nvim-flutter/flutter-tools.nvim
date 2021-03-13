@@ -15,44 +15,41 @@ local state = {
   job = nil
 }
 
----@param line table
-local function has_device_conflict(line)
-  if not line then
-    return false
+---@param lines string[]
+local function has_device_conflict(lines)
+  for _, line in ipairs(lines) do
+    if not line then
+      return false
+    end
+    -- match the error string returned if multiple devices are matched
+    return line:match("More than one device connected") ~= nil
   end
-  -- match the error string returned if multiple devices are matched
-  return line:match("More than one device connected") ~= nil
+  return false
 end
 
 ---Handle any errors running flutter
----@param error string
----@param result string
-local function handle_error(error, data, result)
-  local err = type(error) == "string" and error or vim.inspect(error)
+---@param err string
+local function handle_error(err, data)
+  local msg = type(err) == "string" and err or vim.inspect(err)
   vim.schedule(
     function()
-      ui.notify({"Error running flutter:", data, err})
+      ui.notify({"Error running flutter:", data, msg})
     end
   )
 end
 
-local function handle_data(job, data, result, opts)
-  -- only check if there is a conflict if we haven't already seen this message
-  result.has_conflict = result.has_conflict or has_device_conflict(data)
-  if result.has_conflict then
-    vim.list_extend(result.data, data)
-  else
-    vim.schedule(
-      function()
-        dev_log.log(job, data, opts)
-      end
-    )
-  end
+local function handle_data(job, data, opts)
+  vim.schedule(
+    function()
+      dev_log.log(job, data, opts)
+    end
+  )
 end
 
 --- Parse a list of lines looking for devices
 --- return the parsed list and the found devices if any
 ---@param result table
+---@return string[], table[], table[]
 local function add_device_options(result)
   local edited = {}
   local win_devices = {}
@@ -71,8 +68,10 @@ local function add_device_options(result)
   return edited, win_devices, highlights
 end
 
+--- Handle outcome of a call to flutter run
+---@param result table
 local function handle_exit(result)
-  if result.has_conflict and result.data then
+  if has_device_conflict(result) then
     local edited, win_devices, highlights = add_device_options(result)
     vim.schedule(
       function()
@@ -126,20 +125,18 @@ function M.run(device)
   end
   ui.notify {"Starting flutter project..."}
 
-  local result = {has_conflict = false, data = {}}
-
   M.job =
     Job:new {
     command = executable.flutter(),
     args = {cmd},
     on_stderr = function(err, data, _)
-      handle_error(err, data, result.data)
+      handle_error(err, data)
     end,
     on_stdout = function(_, data, job)
-      handle_data(job, data, result, cfg.dev_log)
+      handle_data(job, data, cfg.dev_log)
     end,
-    on_exit = function(j, _)
-      handle_exit(j:result())
+    on_exit = function(job, _)
+      handle_exit(job:result())
     end
   }:start()
 end
@@ -185,7 +182,7 @@ function M.quit()
 end
 
 function _G.__flutter_tools_close(buf)
-  vim.cmd("bw " .. buf)
+  api.nvim_buf_delete(buf)
 end
 
 return M
