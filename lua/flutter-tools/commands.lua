@@ -181,7 +181,7 @@ function M.quit()
 end
 
 function _G.__flutter_tools_close(buf)
-  api.nvim_buf_delete(buf)
+  api.nvim_buf_delete(buf, {force = true})
 end
 
 return M
