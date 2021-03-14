@@ -18,11 +18,10 @@ local state = {
 ---@param lines string[]
 local function has_device_conflict(lines)
   for _, line in ipairs(lines) do
-    if not line then
-      return false
+    if line then
+      -- match the error string returned if multiple devices are matched
+      return line:match("More than one device connected") ~= nil
     end
-    -- match the error string returned if multiple devices are matched
-    return line:match("More than one device connected") ~= nil
   end
   return false
 end
