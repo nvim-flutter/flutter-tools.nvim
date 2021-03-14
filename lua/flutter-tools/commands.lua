@@ -112,14 +112,14 @@ end
 
 function M.run(device)
   local cfg = config.get()
-  local cmd = "run"
+  local args = {"run"}
   if M.job then
     return utils.echomsg("Flutter is already running!")
   end
   if device then
     local id = device.id or device.device_id
     if id then
-      cmd = cmd .. " -d " .. id
+      table.insert(args, unpack({"-d", id}))
     end
   end
   ui.notify {"Starting flutter project..."}
@@ -127,7 +127,7 @@ function M.run(device)
   M.job =
     Job:new {
     command = executable.flutter(),
-    args = {cmd},
+    args = args,
     on_stderr = function(err, data, _)
       handle_error(err, data)
     end,
