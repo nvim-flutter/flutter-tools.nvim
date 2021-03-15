@@ -3,7 +3,6 @@ local ui = require("flutter-tools.ui")
 local utils = require("flutter-tools.utils")
 local devices = require("flutter-tools.devices")
 local dev_log = require("flutter-tools.dev_log")
-local config = require("flutter-tools.config")
 local executable = require("flutter-tools.executable")
 local emulators = require("flutter-tools.emulators")
 
@@ -111,7 +110,7 @@ function _G.__flutter_tools_select_device()
 end
 
 function M.run(device)
-  local cfg = config.get()
+  local config = require("flutter-tools.config").value
   local args = {"run"}
   if M.job then
     return utils.echomsg("Flutter is already running!")

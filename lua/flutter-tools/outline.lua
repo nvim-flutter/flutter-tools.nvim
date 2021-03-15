@@ -419,7 +419,7 @@ function _G.__flutter_tools_set_current_item()
 end
 
 function M.open()
-  local cfg = config.get()
+  local cfg = config.value
   local options = cfg.outline
   local ok, lines, highlights, outline = get_outline_content()
   if not ok then
@@ -592,7 +592,7 @@ local function flutter_outline_guides(bufnum, outlines, outline_config)
 end
 
 function M.flutter_outline(_, _, data, _)
-  local outline_config = config.get().flutter_outline
+  local outline_config = config.value.flutter_outline
   if outline_config.enabled then
     M.flutter_outlines = data
     local outlines = {}

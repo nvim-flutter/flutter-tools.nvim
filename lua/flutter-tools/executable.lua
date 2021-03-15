@@ -80,12 +80,11 @@ function M.flutter()
   local flutter_bin
   local flutter_sdk
 
-  local _config = config.get()
-  if _config.flutter_path then
+  if config.value.flutter_path then
     -- TODO: should a user be able to specify an SDK path
-    flutter_bin = _config.flutter_path
-  elseif _config.flutter_lookup_cmd then
-    flutter_bin, dart_bin, flutter_sdk = get_binaries_from_lookup(_config.flutter_lookup_cmd)
+    flutter_bin = config.value.flutter_path
+  elseif config.value.flutter_lookup_cmd then
+    flutter_bin, dart_bin, flutter_sdk = get_binaries_from_lookup(config.value.flutter_lookup_cmd)
   else
     flutter_bin, dart_bin = get_default_binaries()
   end
