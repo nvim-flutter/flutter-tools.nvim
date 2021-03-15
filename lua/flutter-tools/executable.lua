@@ -1,4 +1,3 @@
-local config = require("flutter-tools/config")
 local utils = require("flutter-tools/utils")
 local ui = require("flutter-tools/ui")
 
@@ -80,11 +79,12 @@ function M.flutter()
   local flutter_bin
   local flutter_sdk
 
-  if config.value.flutter_path then
+  local config = require("flutter-tools.config").get()
+  if config.flutter_path then
     -- TODO: should a user be able to specify an SDK path
-    flutter_bin = config.value.flutter_path
-  elseif config.value.flutter_lookup_cmd then
-    flutter_bin, dart_bin, flutter_sdk = get_binaries_from_lookup(config.value.flutter_lookup_cmd)
+    flutter_bin = config.flutter_path
+  elseif config.flutter_lookup_cmd then
+    flutter_bin, dart_bin, flutter_sdk = get_binaries_from_lookup(config.flutter_lookup_cmd)
   else
     flutter_bin, dart_bin = get_default_binaries()
   end

@@ -46,15 +46,19 @@ local defaults = {
   }
 }
 
-M.value = setmetatable({}, {__index = defaults})
+local config = setmetatable({}, {__index = defaults})
+
+function M.get()
+  return config
+end
 
 function M.set(user_config)
   if not user_config or type(user_config) ~= "table" then
-    return M.value
+    return config
   end
   validate_prefs(user_config)
-  M.value = setmetatable(user_config, {__index = defaults})
-  return M.value
+  config = utils.merge(config, user_config)
+  return config
 end
 
 return M

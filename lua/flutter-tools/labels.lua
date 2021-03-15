@@ -28,7 +28,7 @@ end
 
 --- returns a function which handles rendering floating labels
 function M.closing_tags(err, _, response)
-  local opts = config.value.closing_tags
+  local opts = config.get().closing_tags
   if err then
     return
   end

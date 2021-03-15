@@ -4,6 +4,7 @@ local utils = require("flutter-tools.utils")
 local devices = require("flutter-tools.devices")
 local dev_log = require("flutter-tools.dev_log")
 local executable = require("flutter-tools.executable")
+local config = require("flutter-tools.config")
 local emulators = require("flutter-tools.emulators")
 
 local api = vim.api
@@ -98,7 +99,7 @@ function _G.__flutter_tools_select_device()
 end
 
 function M.run(device)
-  local config = require("flutter-tools.config").value
+  local dev_config = config.get().dev_log
   local args = {"run"}
   if M.job then
     return utils.echomsg("Flutter is already running!")
@@ -121,7 +122,7 @@ function M.run(device)
     on_stdout = function(_, data, job)
       vim.schedule(
         function()
-          dev_log.log(job, data, config.dev_log)
+          dev_log.log(job, data, dev_config)
         end
       )
     end,

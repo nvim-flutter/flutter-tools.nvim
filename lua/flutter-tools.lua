@@ -61,7 +61,7 @@ end
 
 function M.setup(user_config)
   config.set(user_config)
-  lsp.setup(config.value)
+  lsp.setup(config.get())
   setup_commands()
   setup_autocommands()
 end
