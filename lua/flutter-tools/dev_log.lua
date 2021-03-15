@@ -60,7 +60,11 @@ end
 local function send(cmd, quiet)
   if M.job then
     M.job:send(cmd)
-  elseif not quiet then
+  end
+  if not M.job then
+    utils.echomsg [[Something went wrong, the current operation can no longer be updated]]
+  end
+  if not quiet then
     utils.echomsg [[Sorry! Flutter is not running]]
   end
 end
@@ -86,7 +90,9 @@ local function autoscroll(buf, win)
 end
 
 function M.log(job, line, opts)
-  M.job = job
+  if job and not M.job then
+    M.job = job
+  end
   if not exists() then
     create(opts)
   end
@@ -111,13 +117,17 @@ end
 
 ---@param quiet boolean
 function M.restart(quiet)
-  ui.notify({"Restarting..."}, 1500)
+  if not quiet then
+    ui.notify({"Restarting..."}, 1500)
+  end
   send("R", quiet)
 end
 
 ---@param quiet boolean
 function M.quit(quiet)
-  ui.notify({"Closing flutter application..."}, 1500)
+  if not quiet then
+    ui.notify({"Closing flutter application..."}, 1500)
+  end
   send("q", quiet)
 end
 
@@ -129,7 +139,10 @@ end
 function _G.__flutter_tools_close_dev_log()
   M.buf = nil
   M.win = nil
-  M.job = nil
+  if M.job then
+    M.job:shutdown()
+    M.job = nil
+  end
 end
 
 return M

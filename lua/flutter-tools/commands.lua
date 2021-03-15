@@ -10,10 +10,6 @@ local api = vim.api
 
 local M = {}
 
-local state = {
-  job = nil
-}
-
 ---@param lines string[]
 local function has_device_conflict(lines)
   for _, line in ipairs(lines) do
@@ -32,14 +28,6 @@ local function handle_error(err, data)
   vim.schedule(
     function()
       ui.notify({"Error running flutter:", data, msg})
-    end
-  )
-end
-
-local function handle_data(job, data, opts)
-  vim.schedule(
-    function()
-      dev_log.log(job, data, opts)
     end
   )
 end
@@ -131,7 +119,11 @@ function M.run(device)
       handle_error(err, data)
     end,
     on_stdout = function(_, data, job)
-      handle_data(job, data, cfg.dev_log)
+      vim.schedule(
+        function()
+          dev_log.log(job, data, config.dev_log)
+        end
+      )
     end,
     on_exit = function(job, _)
       handle_exit(job:result())
@@ -168,12 +160,12 @@ function M.pub_get()
 end
 
 function M.quit()
-  if state.log.job then
-    state.log.job:stop()
-    state.log.job = nil
+  if dev_log.job then
+    dev_log.job:shutdown()
+    dev_log.job = nil
   end
   if emulators.job then
-    emulators.job:stop()
+    emulators.job:shutdown()
     emulators.job = nil
   end
   _G.__flutter_tools_close_dev_log()
