@@ -60,7 +60,8 @@ local function setup_autocommands()
 end
 
 function M.setup(user_config)
-  lsp.setup(config.set(user_config))
+  config.set(user_config)
+  lsp.setup(config.value)
   setup_commands()
   setup_autocommands()
 end
