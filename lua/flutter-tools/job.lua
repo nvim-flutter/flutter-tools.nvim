@@ -50,7 +50,9 @@ function Job:_process_result(_, data, name)
 end
 
 function Job:send(cmd)
-  chansend(self.id, cmd)
+  if self.id then
+    chansend(self.id, cmd)
+  end
 end
 
 function Job:sync()
