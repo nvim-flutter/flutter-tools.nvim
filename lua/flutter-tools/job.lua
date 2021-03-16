@@ -46,9 +46,9 @@ function Job:sync()
       on_stderr = function(id, data, name)
         self:_process_result(id, data, name)
       end,
-      on_exit = function()
+      on_exit = function(_, code, _)
         if self.on_exit then
-          self.on_exit(self.result)
+          self.on_exit(code ~= 0, self.result)
         end
       end
     }
@@ -69,9 +69,9 @@ function Job:start()
       on_stderr = function(id, data, name)
         self:_process_result(id, data, name)
       end,
-      on_exit = function()
+      on_exit = function(_, code, _)
         if self.on_exit then
-          self.on_exit(self.result)
+          self.on_exit(code ~= 0, self.result)
         end
       end
     }

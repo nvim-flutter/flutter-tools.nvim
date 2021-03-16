@@ -51,8 +51,9 @@ local function setup_devices_win(devices, highlights)
   end
 end
 
+---@param error boolean
 ---@param result table list of devices
-local function show_devices(result)
+local function show_devices(error, result)
   local lines = {}
   local highlights = {}
   local devices = get_devices(result)
