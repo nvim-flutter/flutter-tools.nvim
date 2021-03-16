@@ -4,7 +4,6 @@ local devices = require "flutter-tools/devices"
 local dev_log = require "flutter-tools/dev_log"
 local config = require "flutter-tools/config"
 local executable = require "flutter-tools/executable"
-local emulators = require "flutter-tools/emulators"
 
 local api = vim.api
 local jobstart = vim.fn.jobstart
@@ -93,31 +92,14 @@ local function on_flutter_run_exit(result)
   end
 end
 
-function _G.__flutter_tools_select_device()
-  local win_devices = vim.b.devices
-  if not win_devices then
-    vim.cmd [[echomsg "Sorry there is no device on this line"]]
-    return
-  end
-  local lnum = vim.fn.line(".")
-  local device = win_devices[lnum] or win_devices[tostring(lnum)]
-  if device then
-    M.run(device)
-  end
-  api.nvim_win_close(0, true)
-end
-
 function M.run(device)
   local cfg = config.get()
   local cmd = executable.with("run")
   if M.job_id then
     return utils.echomsg("Flutter is already running!")
   end
-  if device then
-    local id = device.id or device.device_id
-    if id then
-      cmd = cmd .. " -d " .. id
-    end
+  if device and device.id then
+    cmd = cmd .. " -d " .. device.id
   end
   ui.notify {"Starting flutter project..."}
   local result = {
@@ -185,8 +167,8 @@ end
 function M.quit()
   stop_job(state.log.job_id)
   state.log.job_id = nil
-  stop_job(emulators.job)
-  emulators.job = nil
+  -- stop_job(emulators.job)
+  -- emulators.job = nil
 end
 
 function _G.__flutter_tools_close(buf)
