@@ -583,7 +583,7 @@ end
 ---@param outlines table
 ---@param outline_config table
 local function flutter_outline_guides(bufnum, outlines, outline_config)
-  -- TODO would it be more performant to do some sort of diff and patched
+  -- TODO: would it be more performant to do some sort of diff and patched
   -- update rather than replace the namespace each time
   api.nvim_buf_clear_namespace(bufnum, widget_outline_ns_id, 0, -1)
   for _, line in ipairs(outlines) do

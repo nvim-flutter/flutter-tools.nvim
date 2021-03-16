@@ -94,7 +94,7 @@ function M.log(job, data, opts)
   vim.bo[M.buf].modifiable = false
 end
 
-function M.resurrect()
+function M.__resurrect()
   local buf = api.nvim_get_current_buf()
   vim.cmd [[setfiletype log]]
   vim.bo[buf].modifiable = false

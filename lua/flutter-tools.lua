@@ -34,7 +34,7 @@ local function setup_autocommands()
       {
         events = {"BufEnter"},
         targets = {log.filename},
-        command = "lua require('flutter-tools.log')._resurrect_log()"
+        command = "lua require('flutter-tools.log').__resurrect()"
       }
     }
   )
