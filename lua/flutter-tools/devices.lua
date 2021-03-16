@@ -1,9 +1,9 @@
+local Job = require("flutter-tools.job")
 local ui = require "flutter-tools/ui"
 local utils = require "flutter-tools/utils"
 local executable = require "flutter-tools/executable"
 
 local api = vim.api
-local jobstart = vim.fn.jobstart
 
 local M = {}
 
@@ -23,24 +23,23 @@ function M.parse(line)
   end
 end
 
----@param result table
-local function get_device(result)
-  return function(_, data, _)
-    for _, line in pairs(data) do
-      local device = M.parse(line)
-      if device then
-        table.insert(result.devices, device)
-      end
-      table.insert(result.data, line)
+---@param result string[]
+local function get_devices(result)
+  local devices = {}
+  for _, line in pairs(result) do
+    local device = M.parse(line)
+    if device then
+      table.insert(devices, device)
     end
   end
+  return devices
 end
 
-local function setup_devices_win(result, highlights)
+local function setup_devices_win(devices, highlights)
   return function(buf, _)
     ui.add_highlights(buf, highlights)
-    if #result.devices > 0 then
-      api.nvim_buf_set_var(buf, "devices", result.devices)
+    if #devices > 0 then
+      api.nvim_buf_set_var(buf, "devices", devices)
     end
     api.nvim_buf_set_keymap(
       buf,
@@ -54,47 +53,35 @@ end
 
 ---@param result table list of devices
 local function show_devices(result)
-  return function(_, _, _)
-    local lines = {}
-    local highlights = {}
-    if #result.devices > 0 then
-      for lnum, item in pairs(result.devices) do
-        local name = utils.display_name(item.name, item.platform)
-        utils.add_device_highlights(highlights, name, lnum, item)
-        table.insert(lines, name)
-      end
-    else
-      for _, item in pairs(result.data) do
-        table.insert(lines, item)
-      end
+  local lines = {}
+  local highlights = {}
+  local devices = get_devices(result)
+  if #devices > 0 then
+    for lnum, item in pairs(devices) do
+      local name = utils.display_name(item.name, item.platform)
+      utils.add_device_highlights(highlights, name, lnum, item)
+      table.insert(lines, name)
     end
-    if #lines > 0 then
-      ui.popup_create(
-        "Flutter devices",
-        lines,
-        setup_devices_win(result, highlights)
-      )
+  else
+    for _, item in pairs(result) do
+      table.insert(lines, item)
     end
+  end
+  if #lines > 0 then
+    ui.popup_create("Flutter devices", lines, setup_devices_win(devices, highlights))
   end
 end
 
 function M.list()
-  local result = {
-    data = {},
-    devices = {}
-  }
-  jobstart(
-    executable.with("devices"),
-    {
-      on_stdout = get_device(result),
-      on_exit = show_devices(result),
-      on_stderr = function(_, data, _)
-        if data and data[1] ~= "" then
-          utils.echomsg(data[1])
-        end
+  Job:new {
+    cmd = executable.with("devices"),
+    on_exit = show_devices,
+    on_stderr = function(result)
+      if result then
+        utils.echomsg(result)
       end
-    }
-  )
+    end
+  }:sync()
 end
 
 return M
