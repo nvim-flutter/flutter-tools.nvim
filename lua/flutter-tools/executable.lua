@@ -72,10 +72,9 @@ function M.get_flutter()
       M.dart_bin_path = utils.join {M.flutter_sdk_path, "bin", "dart"}
       M.flutter_bin_path = utils.join {M.flutter_sdk_path, "bin", "flutter"}
     else
-      ui.notify(string.format("Error running %s", _config.flutter_lookup_cmd))
+      ui.notify({string.format("Error running %s", _config.flutter_lookup_cmd)})
       M.flutter_bin_path, M.dart_bin_path = get_default_binaries()
     end
-
   else
     M.flutter_bin_path, M.dart_bin_path = get_default_binaries()
   end

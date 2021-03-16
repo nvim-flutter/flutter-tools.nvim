@@ -76,6 +76,7 @@ function Job:sync()
       end
     }
   )
+  return self
 end
 
 function Job:start()
@@ -99,6 +100,7 @@ function Job:start()
       end
     }
   )
+  return self
 end
 
 return Job

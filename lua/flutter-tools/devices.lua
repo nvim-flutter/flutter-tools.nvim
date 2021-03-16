@@ -5,7 +5,10 @@ local executable = require "flutter-tools/executable"
 
 local api = vim.api
 
-local M = {}
+local M = {
+  ---@type Job
+  emulator_job = nil
+}
 
 local EMULATOR = 1
 local DEVICE = 2
@@ -102,12 +105,19 @@ local function handle_launch(err, result)
   end
 end
 
+function M.close_emulator()
+  if M.emulator_job then
+    M.emulator_job:close()
+  end
+end
+
 ---@param emulator table
 function M.launch_emulator(emulator)
   if not emulator then
     return
   end
-  Job:new {
+  M.emulator_job =
+    Job:new {
     cmd = executable.with("emulators --launch " .. emulator.id),
     on_exit = handle_launch
   }:sync()

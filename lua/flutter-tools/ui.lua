@@ -141,7 +141,14 @@ local function border_create(title, config)
   return config, buf
 end
 
+---Create a popup window to notify the user of an event
+---@param lines table
+---@param duration integer
 function M.notify(lines, duration)
+  if type(lines) ~= "table"  then
+    utils.echomsg [[lines passed to notify should be a list of strings]]
+    return
+  end
   duration = duration or 3000
   if not lines or #lines < 1 or invalid_lines(lines) then
     return

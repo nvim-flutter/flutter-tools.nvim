@@ -6,11 +6,11 @@ local config = require("flutter-tools.config")
 local executable = require("flutter-tools.executable")
 
 local api = vim.api
-local jobstart = vim.fn.jobstart
 
 local M = {}
 
 local state = {
+  ---@type Job
   job = nil
 }
 
@@ -36,7 +36,7 @@ end
 local function on_run_data(err, opts)
   return function(job, data)
     if err then
-      ui.notify(data)
+      ui.notify({data})
     end
     if not device_conflict(data) then
       require("flutter-tools.log").log(job, data, opts)
@@ -106,60 +106,39 @@ function M.run(device)
     on_exit = function(_, result)
       on_run_exit(result)
     end
-  }
-  state.job:start()
+  }:start()
 end
 
-local function on_pub_get(result)
-  return function(_, data, channel)
-    if not channel == "stderr" and result.error then
-      result.error = true
-    end
-    local str = table.concat(data, "")
-    if data and (str and str:len() > 0) then
-      table.insert(result.data, str)
-    end
-  end
+local function on_pub_get(_, result)
+  ui.notify(result)
 end
 
-local function on_pub_get_exit(result)
-  ui.notify(result.data)
-end
-
+---@type Job
 local pub_get_job = nil
 
 function M.pub_get()
-  local result = {
-    error = false,
-    data = {}
-  }
   if not pub_get_job then
     pub_get_job =
-      jobstart(
-      executable.with("pub get"),
-      {
-        stdout_buffered = true,
-        stderr_buffered = true,
-        on_stdout = on_pub_get(result),
-        on_stderr = on_pub_get(result),
-        on_exit = function()
-          pub_get_job = nil
-          on_pub_get_exit(result)
-        end
-      }
-    )
+      Job:new {
+      cmd = executable.with("pub get"),
+      on_exit = function(err, result)
+        on_pub_get(err, result)
+        pub_get_job = nil
+      end
+    }:sync()
   end
 end
 
 function M.quit()
-  -- stop_job(state.log.job_id)
-  -- state.log.job_id = nil
-  -- stop_job(emulators.job)
-  -- emulators.job = nil
+  if state.job then
+    state.job:close()
+    state.job = nil
+  end
+  devices.close_emulator()
 end
 
 function _G.__flutter_tools_close(buf)
-  vim.cmd("bw " .. buf)
+  vim.api.nvim_buf_delete(buf, {force = true})
 end
 
 return M
