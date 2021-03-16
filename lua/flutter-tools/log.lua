@@ -2,13 +2,12 @@ local ui = require "flutter-tools/ui"
 local utils = require "flutter-tools/utils"
 
 local api = vim.api
+
 local M = {
   buf = nil,
   win = nil,
-  job = nil,
+  job = nil
 }
-
-local dev_log_job
 
 M.filename = "__FLUTTER_DEV_LOG__"
 
@@ -56,17 +55,6 @@ function M.get_content()
     return api.nvim_buf_get_lines(M.buf, 0, -1, false)
   end
 end
-
----@param cmd string
----@param quiet boolean
-local function send(cmd, quiet)
-  if dev_log_job then
-    dev_log_job:send(cmd)
-  elseif not quiet then
-    utils.echomsg [[Sorry! Flutter is not running]]
-  end
-end
-
 local function autoscroll(buf, win)
   -- if the dev log is focused don't scroll it as it
   -- will block the user for perusing
@@ -87,9 +75,14 @@ local function autoscroll(buf, win)
   end
 end
 
+--- Open a log showing the output from a command
+--- in this case flutter run
+---@param job Job
+---@param data string
+---@param opts table
 function M.log(job, data, opts)
-  if job and type(job) == "table" and not dev_log_job then
-    dev_log_job = job
+  if job and not M.job then
+    M.job = job
   end
 
   if not exists() then
@@ -109,6 +102,16 @@ function M.resurrect()
   vim.bo[buf].buftype = "nofile"
 end
 
+---@param cmd string
+---@param quiet boolean
+local function send(cmd, quiet)
+  if M.job then
+    M.job:send(cmd)
+  elseif not quiet then
+    utils.echomsg [[Sorry! Flutter is not running]]
+  end
+end
+
 ---@param quiet boolean
 function M.reload(quiet)
   send("r", quiet)
@@ -116,13 +119,17 @@ end
 
 ---@param quiet boolean
 function M.restart(quiet)
-  ui.notify({"Restarting..."}, 1500)
+  if not quiet then
+    ui.notify({"Restarting..."}, 1500)
+  end
   send("R", quiet)
 end
 
 ---@param quiet boolean
 function M.quit(quiet)
-  ui.notify({"Closing flutter application..."}, 1500)
+  if not quiet then
+    ui.notify({"Closing flutter application..."}, 1500)
+  end
   send("q", quiet)
 end
 
@@ -134,6 +141,9 @@ end
 function _G.__flutter_tools_close_dev_log()
   M.buf = nil
   M.win = nil
+  if M.job then
+    M.job:close()
+  end
 end
 
 return M

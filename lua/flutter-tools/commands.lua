@@ -2,18 +2,16 @@ local Job = require("flutter-tools.job")
 local ui = require("flutter-tools.ui")
 local utils = require("flutter-tools.utils")
 local devices = require("flutter-tools.devices")
-local dev_log = require("flutter-tools.dev_log")
 local config = require("flutter-tools.config")
 local executable = require("flutter-tools.executable")
 
 local api = vim.api
 local jobstart = vim.fn.jobstart
-local jobstop = vim.fn.jobstop
 
 local M = {}
 
 local state = {
-  job_id = nil
+  job = nil
 }
 
 local function device_conflict(line)
@@ -24,7 +22,7 @@ local function device_conflict(line)
   return line:match("More than one device connected") ~= nil
 end
 
----@param lines table
+---@param lines string[]
 local function has_device_conflict(lines)
   for _, line in pairs(lines) do
     local conflict = device_conflict(line)
@@ -35,11 +33,14 @@ local function has_device_conflict(lines)
   return false
 end
 
-local function on_run_data(err, job, data, opts)
-  if err then
-    ui.notify(data)
-  elseif not device_conflict(data) then
-    dev_log.log(job, data, opts)
+local function on_run_data(err, opts)
+  return function(job, data)
+    if err then
+      ui.notify(data)
+    end
+    if not device_conflict(data) then
+      require("flutter-tools.log").log(job, data, opts)
+    end
   end
 end
 
@@ -90,25 +91,23 @@ end
 function M.run(device)
   local cfg = config.get()
   local cmd = executable.with("run")
-  if M.job_id then
+  if state.job then
     return utils.echomsg("Flutter is already running!")
   end
   if device and device.id then
     cmd = cmd .. " -d " .. device.id
   end
   ui.notify {"Starting flutter project..."}
-  Job:new {
+  state.job =
+    Job:new {
     cmd = cmd,
-    on_stdout = function(job, data)
-      on_run_data(false, job, data, cfg.dev_log)
-    end,
-    on_stderr = function(job, data)
-      on_run_data(true, job, data, cfg.dev_log)
-    end,
+    on_stdout = on_run_data(false, cfg.dev_log),
+    on_stderr = on_run_data(true, cfg.dev_log),
     on_exit = function(_, result)
       on_run_exit(result)
     end
-  }:start()
+  }
+  state.job:start()
 end
 
 local function on_pub_get(result)
@@ -152,15 +151,9 @@ function M.pub_get()
   end
 end
 
-local function stop_job(id)
-  if id then
-    jobstop(id)
-  end
-end
-
 function M.quit()
-  stop_job(state.log.job_id)
-  state.log.job_id = nil
+  -- stop_job(state.log.job_id)
+  -- state.log.job_id = nil
   -- stop_job(emulators.job)
   -- emulators.job = nil
 end
