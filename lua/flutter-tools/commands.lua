@@ -1,9 +1,10 @@
-local ui = require "flutter-tools/ui"
-local utils = require "flutter-tools/utils"
-local devices = require "flutter-tools/devices"
-local dev_log = require "flutter-tools/dev_log"
-local config = require "flutter-tools/config"
-local executable = require "flutter-tools/executable"
+local Job = require("flutter-tools.job")
+local ui = require("flutter-tools.ui")
+local utils = require("flutter-tools.utils")
+local devices = require("flutter-tools.devices")
+local dev_log = require("flutter-tools.dev_log")
+local config = require("flutter-tools.config")
+local executable = require("flutter-tools.executable")
 
 local api = vim.api
 local jobstart = vim.fn.jobstart
@@ -15,34 +16,30 @@ local state = {
   job_id = nil
 }
 
+local function device_conflict(line)
+  if not line then
+    return false
+  end
+  -- match the error string returned if multiple devices are matched
+  return line:match("More than one device connected") ~= nil
+end
+
 ---@param lines table
 local function has_device_conflict(lines)
   for _, line in pairs(lines) do
-    if line then
-      -- match the error string returned if multiple devices are matched
-      return line:match("More than one device connected") ~= nil
+    local conflict = device_conflict(line)
+    if conflict then
+      return conflict
     end
   end
   return false
 end
 
-local function on_flutter_run_error(result)
-  return function(_, data, _)
-    for _, item in pairs(data) do
-      table.insert(result.data, item)
-    end
-  end
-end
-
-local function on_flutter_run_data(result, opts)
-  return function(job_id, data, _)
-    -- only check if there is a conflict if we haven't already seen this message
-    result.has_conflict = result.has_conflict or has_device_conflict(data)
-    if result.has_conflict then
-      vim.list_extend(result.data, data)
-    else
-      dev_log.log(job_id, data, opts)
-    end
+local function on_run_data(err, job, data, opts)
+  if err then
+    ui.notify(data)
+  elseif not device_conflict(data) then
+    dev_log.log(job, data, opts)
   end
 end
 
@@ -67,28 +64,26 @@ local function add_device_options(result)
   return edited, win_devices, highlights
 end
 
-local function on_flutter_run_exit(result)
-  return function(_, _, name)
-    if result.has_conflict and result.data then
-      local edited, win_devices, highlights = add_device_options(result)
-      ui.popup_create(
-        "Flutter run (" .. name .. "): ",
-        edited,
-        function(buf, _)
-          vim.b.devices = win_devices
-          ui.add_highlights(buf, highlights)
-          -- we have handled this conflict by giving the user a
-          result.has_conflict = false
-          api.nvim_buf_set_keymap(
-            buf,
-            "n",
-            "<CR>",
-            ":lua __flutter_tools_select_device()<CR>",
-            {silent = true, noremap = true}
-          )
-        end
-      )
-    end
+local function on_run_exit(result)
+  if has_device_conflict(result) then
+    local edited, win_devices, highlights = add_device_options(result)
+    ui.popup_create(
+      "Flutter run: ",
+      edited,
+      function(buf, _)
+        vim.b.devices = win_devices
+        ui.add_highlights(buf, highlights)
+        -- we have handled this conflict by giving the user a
+        result.has_conflict = false
+        api.nvim_buf_set_keymap(
+          buf,
+          "n",
+          "<CR>",
+          ":lua __flutter_tools_select_device()<CR>",
+          {silent = true, noremap = true}
+        )
+      end
+    )
   end
 end
 
@@ -102,19 +97,18 @@ function M.run(device)
     cmd = cmd .. " -d " .. device.id
   end
   ui.notify {"Starting flutter project..."}
-  local result = {
-    has_conflict = false,
-    data = {}
-  }
-  state.job_id =
-    jobstart(
-    cmd,
-    {
-      on_stdout = on_flutter_run_data(result, cfg.dev_log),
-      on_exit = on_flutter_run_exit(result),
-      on_stderr = on_flutter_run_error(result)
-    }
-  )
+  Job:new {
+    cmd = cmd,
+    on_stdout = function(job, data)
+      on_run_data(false, job, data, cfg.dev_log)
+    end,
+    on_stderr = function(job, data)
+      on_run_data(true, job, data, cfg.dev_log)
+    end,
+    on_exit = function(_, result)
+      on_run_exit(result)
+    end
+  }:start()
 end
 
 local function on_pub_get(result)

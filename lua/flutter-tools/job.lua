@@ -1,5 +1,6 @@
 local jobstart = vim.fn.jobstart
 local jobstop = vim.fn.jobstop
+local chansend = vim.fn.chansend
 
 local Job = {}
 
@@ -28,6 +29,10 @@ function Job:_process_result(_, data, name)
       end
     end
   end
+end
+
+function Job:send(cmd)
+  chansend(self.id, cmd)
 end
 
 function Job:sync()

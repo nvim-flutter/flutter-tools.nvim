@@ -2,11 +2,13 @@ local ui = require "flutter-tools/ui"
 local utils = require "flutter-tools/utils"
 
 local api = vim.api
-local M = {}
+local M = {
+  buf = nil,
+  win = nil,
+  job = nil,
+}
 
-M.buf = nil
-M.win = nil
-M.job_id = nil
+local dev_log_job
 
 M.filename = "__FLUTTER_DEV_LOG__"
 
@@ -58,8 +60,8 @@ end
 ---@param cmd string
 ---@param quiet boolean
 local function send(cmd, quiet)
-  if M.job_id then
-    vim.fn.chansend(M.job_id, cmd)
+  if dev_log_job then
+    dev_log_job:send(cmd)
   elseif not quiet then
     utils.echomsg [[Sorry! Flutter is not running]]
   end
@@ -74,7 +76,7 @@ local function autoscroll(buf, win)
   local wins = api.nvim_list_wins()
   for _, w in ipairs(wins) do
     local b = api.nvim_win_get_buf(w)
-    -- TODO fix invalid window id for auto scroll
+    -- TODO: fix invalid window id for auto scroll
     if b == buf and api.nvim_win_is_valid(w) then
       local lines = api.nvim_buf_line_count(b)
       if lines < 1 then
@@ -85,13 +87,16 @@ local function autoscroll(buf, win)
   end
 end
 
-function M.log(job_id, data, opts)
-  M.job_id = job_id
+function M.log(job, data, opts)
+  if job and type(job) == "table" and not dev_log_job then
+    dev_log_job = job
+  end
+
   if not exists() then
     create(opts)
   end
   vim.bo[M.buf].modifiable = true
-  api.nvim_buf_set_lines(M.buf, -1, -1, true, data)
+  api.nvim_buf_set_lines(M.buf, -1, -1, true, {data})
   autoscroll(M.buf, M.win)
   vim.bo[M.buf].modifiable = false
 end
