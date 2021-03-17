@@ -6,15 +6,19 @@ local config = require("flutter-tools.config")
 local M = {}
 
 local function setup_commands()
+  -- Commands
   utils.command("FlutterRun", [[lua require('flutter-tools.commands').run()]])
   utils.command("FlutterReload", [[lua require('flutter-tools.commands').reload()]])
   utils.command("FlutterRestart", [[lua require('flutter-tools.commands').restart()]])
   utils.command("FlutterQuit", [[lua require('flutter-tools.commands').quit()]])
+  utils.command("FlutterVisualDebug", [[lua require('flutter-tools.commands').visual_debug()]])
+  -- Lists
   utils.command("FlutterDevices", [[lua require('flutter-tools.devices').list_devices()]])
   utils.command("FlutterEmulators", [[lua require('flutter-tools.devices').list_emulators()]])
+  --- Outline
   utils.command("FlutterOutline", [[lua require('flutter-tools.outline').open()]])
+  --- Dev tools
   utils.command("FlutterDevTools", [[lua require('flutter-tools.dev_tools').start()]])
-  utils.command("FlutterVisualDebug", [[lua require('flutter-tools.commands').visual_debug()]])
 end
 
 local function setup_autocommands()
