@@ -42,10 +42,10 @@ require("flutter-tools").setup{} -- use defaults
 -- alternatively you can override the default configs
 require("flutter-tools").setup {
   experimental = { -- map of feature flags
-    derive_lsp_paths = false, -- EXPERIMENTAL: Attempt to find the user's flutter SDK
+    lsp_derive_paths = false, -- EXPERIMENTAL: Attempt to find the user's flutter SDK
   }
   flutter_path = "<full/path/if/needed>", -- <-- this takes priority over the lookup
-  flutter_lookup_cmd = nil, -- example "which flutter" or "asdf which flutter"
+  flutter_lookup_cmd = nil, -- example "dirname $(which flutter)" or "asdf where flutter"
   flutter_outline = {
     highlight = "NonText",
     enabled = false,
