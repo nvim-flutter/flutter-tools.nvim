@@ -1,6 +1,6 @@
-local config = require("flutter-tools/config")
-local utils = require("flutter-tools/utils")
-local ui = require("flutter-tools/ui")
+local config = require("flutter-tools.config")
+local utils = require("flutter-tools.utils")
+local ui = require("flutter-tools.ui")
 
 local fn = vim.fn
 

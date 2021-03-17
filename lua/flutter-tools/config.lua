@@ -53,9 +53,11 @@ function M.get()
 end
 
 function M.set(user_config)
-  user_config = user_config or {}
-  config = utils.merge(config, user_config)
-  validate_prefs(config)
+  if not user_config or type(user_config) ~= "table" then
+    return config
+  end
+  validate_prefs(user_config)
+  config = setmetatable(user_config, {__index = defaults})
   return config
 end
 

@@ -37,7 +37,7 @@ function M.setup(user_config)
     }
   }
   if user_config.experimental.lsp_derive_paths then
-    local executable = require("flutter-tools/executable")
+    local executable = require("flutter-tools.executable")
     local dart_sdk_path = executable.dart_sdk_root_path()
     cfg.cmd = {executable.dart_bin_name, analysis_server_snapshot_path(dart_sdk_path), "--lsp"}
   end
