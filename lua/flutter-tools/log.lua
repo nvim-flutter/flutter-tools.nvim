@@ -5,7 +5,7 @@ local api = vim.api
 
 local M = {
   buf = nil,
-  win = nil,
+  win = nil
 }
 
 M.filename = "__FLUTTER_DEV_LOG__"
@@ -54,6 +54,10 @@ function M.get_content()
     return api.nvim_buf_get_lines(M.buf, 0, -1, false)
   end
 end
+
+---Autoscroll the log buffer to the end of the output
+---@param buf integer
+---@param win integer
 local function autoscroll(buf, win)
   -- if the dev log is focused don't scroll it as it
   -- will block the user for perusing
@@ -65,11 +69,12 @@ local function autoscroll(buf, win)
     local b = api.nvim_win_get_buf(w)
     -- TODO: fix invalid window id for auto scroll
     if b == buf and api.nvim_win_is_valid(w) then
-      local lines = api.nvim_buf_line_count(b)
-      if lines > 1 then
-        api.nvim_win_set_cursor(win, {lines - 1, 0})
-        break
+      local buf_length = api.nvim_buf_line_count(buf)
+      local success = pcall(api.nvim_win_set_cursor, w, {buf_length, 0})
+      if not success then
+        utils.echomsg(("Failed to set cursor for log: win_id: %s, buf_id: %s"):format(w, b))
       end
+      break
     end
   end
 end
