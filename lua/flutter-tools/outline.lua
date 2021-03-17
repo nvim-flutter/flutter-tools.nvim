@@ -1,6 +1,6 @@
-local ui = require "flutter-tools/ui"
-local utils = require "flutter-tools/utils"
-local config = require "flutter-tools/config"
+local ui = require("flutter-tools.ui")
+local utils = require("flutter-tools.utils")
+local config = require("flutter-tools.config")
 
 local api = vim.api
 local fn = vim.fn
@@ -585,10 +585,14 @@ end
 local function flutter_outline_guides(bufnum, outlines, outline_config)
   -- TODO: would it be more performant to do some sort of diff and patched
   -- update rather than replace the namespace each time
-  api.nvim_buf_clear_namespace(bufnum, widget_outline_ns_id, 0, -1)
-  for _, line in ipairs(outlines) do
-    render_guide(bufnum, line, outline_config)
-  end
+  vim.schedule_wrap(
+    function()
+      api.nvim_buf_clear_namespace(bufnum, widget_outline_ns_id, 0, -1)
+      for _, line in ipairs(outlines) do
+        render_guide(bufnum, line, outline_config)
+      end
+    end
+  )()
 end
 
 function M.flutter_outline(_, _, data, _)
@@ -598,8 +602,17 @@ function M.flutter_outline(_, _, data, _)
     local outlines = {}
     local bufnum = vim.uri_to_bufnr(data.uri)
     local lines = vim.api.nvim_buf_get_lines(bufnum, 0, -1, false)
-    collect_outlines(lines, data.outline, outlines)
-    flutter_outline_guides(bufnum, outlines, outline_config)
+
+    local async
+    async =
+      vim.loop.new_async(
+      function()
+        collect_outlines(lines, data.outline, outlines)
+        flutter_outline_guides(bufnum, outlines, outline_config)
+        async:close()
+      end
+    )
+    async:send()
   end
 end
 
