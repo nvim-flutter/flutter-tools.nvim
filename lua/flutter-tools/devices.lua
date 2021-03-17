@@ -43,7 +43,16 @@ function M.parse(line, device_type)
   end
 end
 
-local function get_window_props(result, type)
+--- Parse a list of lines looking for devices
+--- return the parsed list and the found devices if any
+---
+---@param result string[]
+---@param type integer
+---@return string[]
+---@return table
+---@return table
+function M.extract_device_props(result, type)
+  type = type or DEVICE
   local lines = {}
   local highlights = {}
   local devices = get_devices(result, type)
@@ -129,7 +138,7 @@ local function show_emulators(err, result)
   if err then
     return utils.echomsg(result)
   end
-  local lines, emulators, highlights = get_window_props(result, EMULATOR)
+  local lines, emulators, highlights = M.extract_device_props(result, EMULATOR)
   if #lines > 0 then
     ui.popup_create("Flutter emulators", lines, setup_window(emulators, highlights))
   end
@@ -151,7 +160,7 @@ local function show_devices(err, result)
   if err then
     return utils.echomsg(result)
   end
-  local lines, devices, highlights = get_window_props(result, DEVICE)
+  local lines, devices, highlights = M.extract_device_props(result, DEVICE)
   if #lines > 0 then
     ui.popup_create("Flutter devices", lines, setup_window(devices, highlights))
   end

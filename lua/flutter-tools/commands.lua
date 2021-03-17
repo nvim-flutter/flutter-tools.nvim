@@ -15,68 +15,56 @@ local state = {
   job = nil
 }
 
-local function device_conflict(line)
+local function match_error_string(line)
   if not line then
     return false
   end
-  -- match the error string returned if multiple devices are matched
-  return line:match("More than one device connected") ~= nil
+  -- match the error string if no devices are setup
+  if line:match("No supported devices connected") ~= nil then
+    -- match the error string returned if multiple devices are matched
+    return true, "Choose a device"
+  elseif line:match("More than one device connected") ~= nil then
+    return true, "Choose a device"
+  end
 end
 
 ---@param lines string[]
-local function has_device_conflict(lines)
+---@return boolean, string
+local function has_recoverable_error(lines)
   for _, line in pairs(lines) do
-    local conflict = device_conflict(line)
-    if conflict then
-      return conflict
+    local match, msg = match_error_string(line)
+    if match then
+      return match, msg
     end
   end
-  return false
+  return false, nil
 end
 
+---Handle output from flutter run command
+---@param err boolean
+---@param opts table config options for the dev log window
+---@return fun(job: Job, data: string): nil
 local function on_run_data(err, opts)
   return function(_, data)
     if err then
       ui.notify({data})
     end
-    if not device_conflict(data) then
+    if not match_error_string(data) then
       dev_log.log(data, opts)
     end
   end
 end
 
---- Parse a list of lines looking for devices
---- return the parsed list and the found devices if any
----@param result table
-local function add_device_options(result)
-  local edited = {}
-  local win_devices = {}
-  local highlights = {}
-  for index, line in pairs(result.data) do
-    local device = devices.parse(line)
-    if device then
-      win_devices[tostring(index)] = device
-      local name = utils.display_name(device.name, device.platform)
-      table.insert(edited, name)
-      utils.add_device_highlights(highlights, name, index, device)
-    else
-      table.insert(edited, line)
-    end
-  end
-  return edited, win_devices, highlights
-end
-
 local function on_run_exit(result)
-  if has_device_conflict(result) then
-    local edited, win_devices, highlights = add_device_options(result)
+  local matched_error, msg = has_recoverable_error(result)
+  if matched_error then
+    local lines, win_devices, highlights = devices.extract_device_props(result)
     ui.popup_create(
-      "Flutter run: ",
-      edited,
+      "Flutter run ("..msg..") ",
+      lines,
       function(buf, _)
         vim.b.devices = win_devices
         ui.add_highlights(buf, highlights)
-        -- we have handled this conflict by giving the user a
-        result.has_conflict = false
         api.nvim_buf_set_keymap(
           buf,
           "n",
@@ -119,26 +107,6 @@ function M.run(device)
   }:start()
 end
 
-local function on_pub_get(_, result)
-  ui.notify(result)
-end
-
----@type Job
-local pub_get_job = nil
-
-function M.pub_get()
-  if not pub_get_job then
-    pub_get_job =
-      Job:new {
-      cmd = executable.with("pub get"),
-      on_exit = function(err, result)
-        on_pub_get(err, result)
-        pub_get_job = nil
-      end
-    }:sync()
-  end
-end
-
 ---@param cmd string
 ---@param quiet boolean
 local function send(cmd, quiet)
@@ -168,7 +136,6 @@ function M.quit(quiet)
     ui.notify({"Closing flutter application..."}, 1500)
   end
   send("q", quiet)
-  shutdown()
 end
 
 ---@param quiet boolean
@@ -178,6 +145,29 @@ end
 
 function _G.__flutter_tools_close(buf)
   vim.api.nvim_buf_delete(buf, {force = true})
+end
+
+-----------------------------------------------------------------------------//
+-- Pub commands
+-----------------------------------------------------------------------------//
+local function on_pub_get(_, result)
+  ui.notify(result)
+end
+
+---@type Job
+local pub_get_job = nil
+
+function M.pub_get()
+  if not pub_get_job then
+    pub_get_job =
+      Job:new {
+      cmd = executable.with("pub get"),
+      on_exit = function(err, result)
+        on_pub_get(err, result)
+        pub_get_job = nil
+      end
+    }:sync()
+  end
 end
 
 return M
