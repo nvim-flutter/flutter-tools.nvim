@@ -6,7 +6,6 @@ local api = vim.api
 local M = {
   buf = nil,
   win = nil,
-  job = nil
 }
 
 M.filename = "__FLUTTER_DEV_LOG__"
@@ -77,14 +76,9 @@ end
 
 --- Open a log showing the output from a command
 --- in this case flutter run
----@param job Job
 ---@param data string
 ---@param opts table
-function M.log(job, data, opts)
-  if job and not M.job then
-    M.job = job
-  end
-
+function M.log(data, opts)
   if not exists() then
     create(opts)
   end
@@ -102,48 +96,9 @@ function M.__resurrect()
   vim.bo[buf].buftype = "nofile"
 end
 
----@param cmd string
----@param quiet boolean
-local function send(cmd, quiet)
-  if M.job then
-    M.job:send(cmd)
-  elseif not quiet then
-    utils.echomsg [[Sorry! Flutter is not running]]
-  end
-end
-
----@param quiet boolean
-function M.reload(quiet)
-  send("r", quiet)
-end
-
----@param quiet boolean
-function M.restart(quiet)
-  if not quiet then
-    ui.notify({"Restarting..."}, 1500)
-  end
-  send("R", quiet)
-end
-
----@param quiet boolean
-function M.quit(quiet)
-  if not quiet then
-    ui.notify({"Closing flutter application..."}, 1500)
-  end
-  send("q", quiet)
-end
-
----@param quiet boolean
-function M.visual_debug(quiet)
-  send("p", quiet)
-end
-
 function _G.__flutter_tools_close_dev_log()
   M.buf = nil
   M.win = nil
-  if M.job then
-    M.job:close()
-  end
 end
 
 return M

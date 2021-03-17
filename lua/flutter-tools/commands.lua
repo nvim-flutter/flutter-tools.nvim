@@ -4,6 +4,7 @@ local utils = require("flutter-tools.utils")
 local devices = require("flutter-tools.devices")
 local config = require("flutter-tools.config")
 local executable = require("flutter-tools.executable")
+local dev_log = require("flutter-tools.log")
 
 local api = vim.api
 
@@ -34,12 +35,12 @@ local function has_device_conflict(lines)
 end
 
 local function on_run_data(err, opts)
-  return function(job, data)
+  return function(_, data)
     if err then
       ui.notify({data})
     end
     if not device_conflict(data) then
-      require("flutter-tools.log").log(job, data, opts)
+      dev_log.log(data, opts)
     end
   end
 end
@@ -88,6 +89,14 @@ local function on_run_exit(result)
   end
 end
 
+local function shutdown()
+  if state.job then
+    state.job:close()
+    state.job = nil
+  end
+  devices.close_emulator()
+end
+
 function M.run(device)
   local cfg = config.get()
   local cmd = executable.with("run")
@@ -105,6 +114,7 @@ function M.run(device)
     on_stderr = on_run_data(true, cfg.dev_log),
     on_exit = function(_, result)
       on_run_exit(result)
+      shutdown()
     end
   }:start()
 end
@@ -129,12 +139,41 @@ function M.pub_get()
   end
 end
 
-function M.quit()
+---@param cmd string
+---@param quiet boolean
+local function send(cmd, quiet)
   if state.job then
-    state.job:close()
-    state.job = nil
+    state.job:send(cmd)
+  elseif not quiet then
+    utils.echomsg [[Sorry! Flutter is not running]]
   end
-  devices.close_emulator()
+end
+
+---@param quiet boolean
+function M.reload(quiet)
+  send("r", quiet)
+end
+
+---@param quiet boolean
+function M.restart(quiet)
+  if not quiet then
+    ui.notify({"Restarting..."}, 1500)
+  end
+  send("R", quiet)
+end
+
+---@param quiet boolean
+function M.quit(quiet)
+  if not quiet then
+    ui.notify({"Closing flutter application..."}, 1500)
+  end
+  send("q", quiet)
+  shutdown()
+end
+
+---@param quiet boolean
+function M.visual_debug(quiet)
+  send("p", quiet)
 end
 
 function _G.__flutter_tools_close(buf)

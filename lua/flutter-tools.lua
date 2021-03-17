@@ -7,14 +7,14 @@ local M = {}
 
 local function setup_commands()
   utils.command("FlutterRun", [[lua require('flutter-tools.commands').run()]])
-  utils.command("FlutterReload", [[lua require('flutter-tools.log').reload()]])
-  utils.command("FlutterRestart", [[lua require('flutter-tools.log').restart()]])
-  utils.command("FlutterQuit", [[lua require('flutter-tools.log').quit()]])
+  utils.command("FlutterReload", [[lua require('flutter-tools.commands').reload()]])
+  utils.command("FlutterRestart", [[lua require('flutter-tools.commands').restart()]])
+  utils.command("FlutterQuit", [[lua require('flutter-tools.commands').quit()]])
   utils.command("FlutterDevices", [[lua require('flutter-tools.devices').list_devices()]])
   utils.command("FlutterEmulators", [[lua require('flutter-tools.devices').list_emulators()]])
   utils.command("FlutterOutline", [[lua require('flutter-tools.outline').open()]])
   utils.command("FlutterDevTools", [[lua require('flutter-tools.dev_tools').start()]])
-  utils.command("FlutterVisualDebug", [[lua require('flutter-tools.log').visual_debug()]])
+  utils.command("FlutterVisualDebug", [[lua require('flutter-tools.commands').visual_debug()]])
 end
 
 local function setup_autocommands()
@@ -22,9 +22,14 @@ local function setup_autocommands()
     "FlutterToolsHotReload",
     {
       {
+        events = {"VimLeavePre"},
+        targets = {"*"},
+        command = "lua require('flutter-tools.devices').close_emulator()"
+      },
+      {
         events = {"BufWritePost"},
         targets = {"*.dart"},
-        command = "lua require('flutter-tools.log').reload(true)"
+        command = "lua require('flutter-tools.commands').reload(true)"
       },
       {
         events = {"BufWritePost"},
