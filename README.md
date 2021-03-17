@@ -72,14 +72,16 @@ it and adds some extra `flutter` specific handlers and utilisation options.
 
 #### Flutter binary
 
-In order to run flutter commands you _might_ need to pass either a _path_ a _command_ to the plugin so it can find your
-installation of flutter. Must people will not need this since it will find the executable path of `flutter` similar to
-`which flutter` which should find the absolute path to your binary. If using something like `asdf` or some other version manager,
-or you installed flutter via `snap` or in some other custom way, then you need to pass in a command by specifying
-`flutter_lookup_cmd = <my-command>`. If you have a full path already you can pass it in using `flutter_path`.
+In order to run flutter commands you _might_ need to pass either a _path_ or a _command_ to the plugin so it can find your
+installation of flutter. Most people will not need this since it will find the executable path of `flutter` if it is in your `$PATH`.
+
+If using something like `asdf` or some other version manager, or you installed flutter via `snap` or in some other custom way,
+then you need to pass in a command by specifying `flutter_lookup_cmd = <my-command>`.
+If you have a full path already you can pass it in using `flutter_path`.
 
 If using a `snap` installation set your `flutter_lookup_cmd` to `"echo $HOME/snap/flutter/common/flutter/bin/flutter"`
-which is where this is usually installed by `snap`.
+which is where this is usually installed by `snap`. Alternatively you can use the `experimental.lsp_derive_paths` option
+which should auto-magically find your flutter installation.
 
 # Functionality
 
