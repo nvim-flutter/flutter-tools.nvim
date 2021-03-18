@@ -7,6 +7,31 @@ local namespace_id = api.nvim_create_namespace("flutter_tools_popups")
 
 local WIN_BLEND = 5
 
+local border_chars = {
+  double = {
+    top_left = "╔",
+    top_right = "╗",
+    middle_left = "║",
+    middle_right = "║",
+    bottom_left = "╚",
+    bottom_right = "╝",
+    fill = "═"
+  },
+  curved = {
+    top_left = "╭",
+    top_right = "╮",
+    middle_left = "│",
+    middle_right = "│",
+    bottom_left = "╰",
+    bottom_right = "╯",
+    fill = "─"
+  }
+}
+
+function _G.__flutter_tools_close(buf)
+  vim.api.nvim_buf_delete(buf, {force = true})
+end
+
 local function format_title(title, fill, width)
   local remainder = width - 1 - string.len(title)
   local side_size = math.floor(remainder) - 1
@@ -75,27 +100,6 @@ local function invalid_lines(lines)
   return true
 end
 
-local border_chars = {
-  double = {
-    top_left = "╔",
-    top_right = "╗",
-    middle_left = "║",
-    middle_right = "║",
-    bottom_left = "╚",
-    bottom_right = "╝",
-    fill = "═"
-  },
-  curved = {
-    top_left = "╭",
-    top_right = "╮",
-    middle_left = "│",
-    middle_right = "│",
-    bottom_left = "╰",
-    bottom_right = "╯",
-    fill = "─"
-  }
-}
-
 local function border_create(title, config)
   local height = config.height
   local width = config.width
@@ -145,7 +149,7 @@ end
 ---@param lines table
 ---@param duration integer
 function M.notify(lines, duration)
-  if type(lines) ~= "table"  then
+  if type(lines) ~= "table" then
     utils.echomsg [[lines passed to notify should be a list of strings]]
     return
   end

@@ -60,7 +60,7 @@ local function on_run_exit(result)
   if matched_error then
     local lines, win_devices, highlights = devices.extract_device_props(result)
     ui.popup_create(
-      "Flutter run ("..msg..") ",
+      "Flutter run (" .. msg .. ") ",
       lines,
       function(buf, _)
         vim.b.devices = win_devices
@@ -141,10 +141,6 @@ end
 ---@param quiet boolean
 function M.visual_debug(quiet)
   send("p", quiet)
-end
-
-function _G.__flutter_tools_close(buf)
-  vim.api.nvim_buf_delete(buf, {force = true})
 end
 
 -----------------------------------------------------------------------------//
