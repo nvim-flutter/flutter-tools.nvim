@@ -17,6 +17,9 @@ local dart_code_git = "https://github.com/Dart-Code/Dart-Code.git"
 local debugger_dir = utils.join {fn.stdpath("cache"), "dart-code"}
 local debugger_path = utils.join {debugger_dir, "out", "dist", "debug.js"}
 
+---Install the dart code debugger into neovim’s cache directory
+---@param silent boolean whether or not to warn if already installed
+---@return nil
 function M.install_debugger(silent)
   if fn.empty(fn.glob(debugger_dir)) <= 0 then
     if silent then
@@ -37,7 +40,7 @@ function M.install_debugger(silent)
 end
 
 function M.setup(_)
-  M.install_debugger()
+  M.install_debugger(true)
 
   local flutter_sdk_path = executable.flutter_sdk_path
   local dart_sdk_path = executable.dart_sdk_root_path()
