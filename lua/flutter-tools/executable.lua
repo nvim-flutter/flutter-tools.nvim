@@ -11,7 +11,6 @@ local M = {
   flutter_sdk_path = nil
 }
 
--- "bin", "dart"
 local dart_sdk = utils.join {"cache", "dart-sdk"}
 
 function M.dart_sdk_root_path(user_bin_path)

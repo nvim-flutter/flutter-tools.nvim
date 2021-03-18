@@ -43,7 +43,10 @@ require("flutter-tools").setup{} -- use defaults
 require("flutter-tools").setup {
   experimental = { -- map of feature flags
     lsp_derive_paths = false, -- EXPERIMENTAL: Attempt to find the user's flutter SDK
-  }
+  },
+  debugger = { -- EXPERIMENTAL: integrate with nvim dap
+    enabled = false,
+  },
   flutter_path = "<full/path/if/needed>", -- <-- this takes priority over the lookup
   flutter_lookup_cmd = nil, -- example "dirname $(which flutter)" or "asdf where flutter"
   flutter_outline = {
@@ -118,3 +121,24 @@ which should auto-magically find your flutter installation.
 - `FlutterRestart` - Restart the current project
 - `FlutterQuit` - Ends a running session
 - `FlutterOutline` - Opens an outline window showing the widget tree for the given file
+
+## Debugging (WIP)
+
+_Requires nvim-dap_
+
+```lua
+-- with packer
+use 'mfussenegger/nvim-dap'
+```
+
+This plugin integrates with [nvim-dap](https://github.com/mfussenegger/nvim-dap) to provide debug capabilities.
+Currently if `debugger` is set to `true` in the user's config **it will expect `nvim-dap` to be installed**.
+If `dap` is installed the plugin will attempt to install the debugger (Dart-Code's debugger)
+
+For now this should setup `dap` so that once you have _already started a flutter app_. You should be able
+to use `dap` commands to begin to debug it.
+
+### TODO
+
+- [ ] Add wrapper functions/commands around dab functionality to simplify.
+- [ ] Investigate sporadic debugger crash.
