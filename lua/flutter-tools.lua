@@ -2,6 +2,7 @@ local utils = require("flutter-tools.utils")
 local log = require("flutter-tools.log")
 local lsp = require("flutter-tools.lsp")
 local config = require("flutter-tools.config")
+local dap = require("flutter-tools.dap")
 
 local M = {}
 
@@ -51,6 +52,7 @@ end
 
 function M.setup(user_config)
   lsp.setup(config.set(user_config))
+  dap.setup()
   setup_commands()
   setup_autocommands()
 end

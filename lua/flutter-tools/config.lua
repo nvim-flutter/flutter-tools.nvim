@@ -21,6 +21,9 @@ local defaults = {
     highlight = "Normal",
     enabled = false
   },
+  debugger = {
+    enabled = false,
+  },
   closing_tags = {
     highlight = "Comment",
     prefix = "//"
