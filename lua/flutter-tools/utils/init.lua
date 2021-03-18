@@ -4,9 +4,10 @@ local api = vim.api
 
 function M.echomsg(msg, hl)
   hl = hl or "Title"
-  vim.cmd("echohl " .. hl)
-  vim.cmd(string.format([[echomsg "%s"]], msg))
-  vim.cmd("echohl clear")
+  if type(msg) == "string" then
+    msg = {{msg, hl}}
+  end
+  api.nvim_echo(msg, true, {})
 end
 
 ---@param name string
