@@ -15,7 +15,7 @@ local M = {}
 
 local dart_code_git = "https://github.com/Dart-Code/Dart-Code.git"
 local debugger_dir = utils.join {fn.stdpath("cache"), "dart-code"}
-local debugger_path = utils.join {debugger_dir, "out", "dist", "debug.js", "flutter"}
+local debugger_path = utils.join {debugger_dir, "out", "dist", "debug.js"}
 
 function M.install_debugger(silent)
   if fn.empty(fn.glob(debugger_dir)) <= 0 then
@@ -37,8 +37,8 @@ function M.install_debugger(silent)
 end
 
 function M.setup(user_config)
-  local dap_config = user_config and user_config.dap or {}
-  if dap_config.enabled then
+  local config = user_config and user_config.debugger or {}
+  if config.enabled then
     M.install_debugger()
   end
 
@@ -48,7 +48,7 @@ function M.setup(user_config)
   dap.adapters.dart = {
     type = "executable",
     command = "node",
-    args = debugger_path
+    args = {debugger_path, "flutter"}
   }
   dap.configurations.dart = {
     {
