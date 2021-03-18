@@ -36,11 +36,8 @@ function M.install_debugger(silent)
   fn.termopen(fmt("%s && %s", clone, build))
 end
 
-function M.setup(user_config)
-  local config = user_config and user_config.debugger or {}
-  if config.enabled then
-    M.install_debugger()
-  end
+function M.setup(_)
+  M.install_debugger()
 
   local flutter_sdk_path = executable.flutter_sdk_path
   local dart_sdk_path = executable.dart_sdk_root_path()

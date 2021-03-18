@@ -2,7 +2,6 @@ local utils = require("flutter-tools.utils")
 local log = require("flutter-tools.log")
 local lsp = require("flutter-tools.lsp")
 local config = require("flutter-tools.config")
-local dap = require("flutter-tools.dap")
 
 local M = {}
 
@@ -51,8 +50,14 @@ local function setup_autocommands()
 end
 
 function M.setup(user_config)
-  lsp.setup(config.set(user_config))
-  dap.setup()
+  local conf = config.set(user_config)
+
+  lsp.setup(conf)
+
+  if conf.debugger.enabled then
+    require("flutter-tools.dap").setup(conf)
+  end
+
   setup_commands()
   setup_autocommands()
 end
