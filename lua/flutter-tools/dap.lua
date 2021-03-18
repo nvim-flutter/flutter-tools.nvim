@@ -1,6 +1,12 @@
 local utils = require("flutter-tools.utils")
 local executable = require("flutter-tools.executable")
 
+local success, dap = pcall(require, "dap")
+if not success then
+  utils.echomsg({{"nvim-dap is not installed!\n", "Title"}, {dap, "ErrorMsg"}})
+  return nil
+end
+
 local fn = vim.fn
 local has = utils.executable
 local fmt = string.format
@@ -10,23 +16,6 @@ local M = {}
 local dart_code_git = "https://github.com/Dart-Code/Dart-Code.git"
 local debugger_dir = utils.join {fn.stdpath("cache"), "dart-code"}
 local debugger_path = utils.join {debugger_dir, "out", "dist", "debug.js", "flutter"}
-
-M.get = nil
-do
-  local dap
-  function M.get()
-    local success
-    if dap then
-      return dap
-    end
-    success, dap = pcall(require, "dap")
-    if not success then
-      utils.echomsg({{"nvim-dap is not installed!\n", "Title"}, {dap, "ErrorMsg"}})
-      return nil
-    end
-    return dap
-  end
-end
 
 function M.install_debugger(silent)
   if fn.empty(fn.glob(debugger_dir)) <= 0 then
@@ -55,10 +44,6 @@ function M.setup(user_config)
 
   local flutter_sdk_path = executable.flutter_sdk_path
   local dart_sdk_path = executable.dart_sdk_root_path()
-  local dap = M.get()
-  if not dap then
-    return
-  end
 
   dap.adapters.dart = {
     type = "executable",
