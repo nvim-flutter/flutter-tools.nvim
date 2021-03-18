@@ -9,8 +9,7 @@ local M = {
 }
 
 local function analysis_server_snapshot_path(dart_sdk_path)
-  local dart_sdk_root_path = fn.fnamemodify(dart_sdk_path, ":h")
-  return utils.join {dart_sdk_root_path, "snapshots", "analysis_server.dart.snapshot"}
+  return utils.join {dart_sdk_path, "bin", "snapshots", "analysis_server.dart.snapshot"}
 end
 
 function M.setup(user_config)
