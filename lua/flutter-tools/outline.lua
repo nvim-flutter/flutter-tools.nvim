@@ -507,11 +507,24 @@ local function get_guide_character(lnum, end_line, parent_start, indent_size, ch
     markers.bottom .. markers.horizontal:rep(indent_size)
 end
 
----Marshal the lsp flutter outline into a flat list of items and ranges
+-- Marshal the lsp flutter outline into a table of lines and characters
+--   {
+--     1 = {[4] = "|", [8] = "|"}
+--     2 = {[4] = "|", },
+--     3 = {[4] = "|", },
+--     4 = {[4] = "|", },
+--     5 = {[4] = "|", },
+--     6 = {[4] = "|", },
+--     7 = {[4] = "|", [8] = "├"},
+--     8 = {[4] = "|", [8] = "├" [12] = "-"},
+--     6 = {[4] = "|", [8] = "|", },
+--     6 = {[4] = "|", },
+--   }
 ---@param lines string[]
 ---@param data table
----@param result table[]
-local function collect_outlines(lines, data, result)
+---@param guides table<number, table>
+local function collect_outlines(lines, data, guides)
+  guides = guides or {}
   if not data.children or vim.tbl_isempty(data.children) then
     return
   end
@@ -523,94 +536,79 @@ local function collect_outlines(lines, data, result)
     local end_lnum = data.children[#data.children].range.start.line
 
     local start_index = first_marker_index(lines, start_lnum, START_OFFSET)
-    -- Construct a list of lists each item in this list being each line of a given
-    -- outline marker indent
-    local line = {}
     for lnum = start_lnum, end_lnum, 1 do
-      -- TODO skip empty lines since currently extmarks
-      -- cannot set where there is no existing text
+      -- TODO: skip empty lines since currently extmarks,
+      -- cannot be set where there is no existing text
       if lines[lnum + 1] ~= "" then
         local end_index = first_marker_index(lines, lnum, END_OFFSET)
         local indent_size = end_index - start_index
         indent_size = indent_size > 0 and indent_size - 1 or indent_size
-        table.insert(
-          line,
-          {
-            lnum = lnum,
-            start_index = start_index,
-            character = get_guide_character(
-              lnum,
-              end_lnum,
-              start_index,
-              indent_size,
-              data.children,
-              lines
-            )
-          }
-        )
+
+        guides[lnum] = guides[lnum] or {}
+        -- Don't do the work to get characters we already have
+        if not guides[lnum][start_index] then
+          guides[lnum][start_index] =
+            get_guide_character(lnum, end_lnum, start_index, indent_size, data.children, lines)
+        end
       end
-      table.insert(result, line)
     end
   end
   for _, item in ipairs(data.children) do
-    collect_outlines(lines, item, result)
+    collect_outlines(lines, item, guides)
   end
-end
-
----Append a single guide to the buffer across a particular range
----@param bufnum number
----@param line table
----@param outline_config table
-local function render_guide(bufnum, line, outline_config)
-  for _, marker in ipairs(line) do
-    local success, msg =
-      pcall(
-      api.nvim_buf_set_extmark,
-      bufnum,
-      widget_outline_ns_id,
-      marker.lnum,
-      marker.start_index,
-      {virt_text = {{marker.character, outline_config.highlight}}, virt_text_pos = "overlay"}
-    )
-    if not success then
-      vim.api.nvim_echo({{msg, "ErrorMsg"}}, true, {})
-    end
-  end
+  return guides
 end
 
 ---Parse and render the widget outline guides
 ---@param bufnum number
----@param outlines table
+---@param guides table<number,table>
 ---@param outline_config table
-local function flutter_outline_guides(bufnum, outlines, outline_config)
-  -- TODO: would it be more performant to do some sort of diff and patched
-  -- update rather than replace the namespace each time
-  vim.schedule_wrap(
-    function()
-      api.nvim_buf_clear_namespace(bufnum, widget_outline_ns_id, 0, -1)
-      for _, line in ipairs(outlines) do
-        render_guide(bufnum, line, outline_config)
+local function flutter_outline_guides(bufnum, guides, outline_config)
+  -- TODO:
+  -- would it be more performant to do some sort of diff and patched
+  -- update rather than replace the namespace each time, similar to Dart Code
+  api.nvim_buf_clear_namespace(bufnum, widget_outline_ns_id, 0, -1)
+  for lnum, guide in pairs(guides) do
+    for start, character in pairs(guide) do
+      local success, msg =
+        pcall(
+        api.nvim_buf_set_extmark,
+        bufnum,
+        widget_outline_ns_id,
+        lnum,
+        start,
+        {virt_text = {{character, outline_config.highlight}}, virt_text_pos = "overlay"}
+      )
+      if not success then
+        utils.echomsg(msg, "ErrorMsg")
       end
     end
-  )()
+  end
 end
 
 function M.flutter_outline(_, _, data, _)
   local outline_config = config.get().flutter_outline
   if outline_config.enabled then
     M.flutter_outlines = data
-    local outlines = {}
     local bufnum = vim.uri_to_bufnr(data.uri)
+    -- TODO: should this be limited to the view port using vim.fn.line('w0'|'w$')
+    -- although ideally having to track what the current visible
+    -- segment of a buffer is and trying to apply the extmarks in
+    -- in realtime might prove difficult e.g. what autocommand do we use
+    -- also will this actually be faster
     local lines = vim.api.nvim_buf_get_lines(bufnum, 0, -1, false)
 
     local async
+
     async =
       vim.loop.new_async(
-      function()
-        collect_outlines(lines, data.outline, outlines)
-        flutter_outline_guides(bufnum, outlines, outline_config)
-        async:close()
-      end
+      vim.schedule_wrap(
+        function()
+          local guides = collect_outlines(lines, data.outline)
+          flutter_outline_guides(bufnum, guides, outline_config)
+          async:close()
+        end
+      )
     )
     async:send()
   end
