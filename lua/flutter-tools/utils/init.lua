@@ -4,8 +4,15 @@ local api = vim.api
 
 function M.echomsg(msg, hl)
   hl = hl or "Title"
+  local prefix = "[Flutter-tools]: "
   if type(msg) == "string" then
-    msg = {{msg, hl}}
+    msg = {{prefix .. msg, hl}}
+  elseif type(msg) == "table" then
+    for i, value in ipairs(msg) do
+      msg[i] = {prefix .. value[1], value[2]}
+    end
+  else
+    return
   end
   api.nvim_echo(msg, true, {})
 end
@@ -162,6 +169,14 @@ end
 
 function M.is_dir(path)
   return fn.isdirectory(path) > 0
+end
+
+---Get the attribute value of a specified highlight
+---@param name string
+---@param attribute string
+---@return string
+function M.get_hl(name, attribute)
+  return fn.synIDattr(fn.hlID("Normal"), "fg")
 end
 
 return M

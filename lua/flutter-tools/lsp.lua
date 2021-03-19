@@ -1,8 +1,7 @@
-local utils = require "flutter-tools/utils"
-local labels = require "flutter-tools/labels"
-local outline = require "flutter-tools/outline"
-
-local fn = vim.fn
+local utils = require("flutter-tools.utils")
+local labels = require("flutter-tools.labels")
+local outline = require("flutter-tools.outline")
+local guides = require("flutter-tools.guides")
 
 local M = {
   initialised = false
@@ -32,7 +31,7 @@ function M.setup(user_config)
     handlers = {
       ["dart/textDocument/publishClosingLabels"] = labels.closing_tags,
       ["dart/textDocument/publishOutline"] = outline.document_outline,
-      ["dart/textDocument/publishFlutterOutline"] = outline.flutter_outline
+      ["dart/textDocument/publishFlutterOutline"] = guides.widget_guides
     }
   }
   if user_config.experimental.lsp_derive_paths then

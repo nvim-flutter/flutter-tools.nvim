@@ -1,5 +1,8 @@
-local utils = require("flutter-tools/utils")
+local utils = require("flutter-tools.utils")
+
 local M = {}
+
+local fmt = string.format
 
 --- @param prefs table user preferences
 local function validate_prefs(prefs)
@@ -10,6 +13,10 @@ local function validate_prefs(prefs)
   }
 end
 
+---Create a proportional split using a percentage specified as a float
+---@param percentage number
+---@param fallback number
+---@return string
 local function get_split_cmd(percentage, fallback)
   return string.format("botright %dvnew", math.max(vim.o.columns * percentage, fallback))
 end
@@ -17,12 +24,11 @@ end
 local defaults = {
   flutter_path = nil,
   flutter_lookup_cmd = utils.is_linux and "flutter sdk-path" or nil,
-  flutter_outline = {
-    highlight = "Normal",
+  widget_guides = {
     enabled = false
   },
   debugger = {
-    enabled = false,
+    enabled = false
   },
   closing_tags = {
     highlight = "Comment",
@@ -49,6 +55,28 @@ local defaults = {
   }
 }
 
+local deprecations = {
+  flutter_outline = {
+    fallback = "widget_guides",
+    message = "please use widget_guides instead"
+  }
+}
+
+local function handle_deprecation(key, value, config)
+  local deprecation = deprecations[key]
+  if deprecation then
+    vim.defer_fn(
+      function()
+        utils.echomsg(fmt("'%s' is deprecated: '%s'", key, deprecation.message), "WarningMsg")
+      end,
+      1000
+    )
+    if deprecation.fallback then
+      config[deprecation.fallback] = value
+    end
+  end
+end
+
 local config = setmetatable({}, {__index = defaults})
 
 function M.get()
@@ -58,6 +86,9 @@ end
 function M.set(user_config)
   if not user_config or type(user_config) ~= "table" then
     return config
+  end
+  for key, value in pairs(user_config) do
+    handle_deprecation(key, value, user_config)
   end
   validate_prefs(user_config)
   config = setmetatable(user_config, {__index = defaults})

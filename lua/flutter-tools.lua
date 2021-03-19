@@ -58,6 +58,10 @@ function M.setup(user_config)
     require("flutter-tools.dap").setup(conf)
   end
 
+  if conf.widget_guides.enabled then
+    require("flutter-tools.guides").setup(conf)
+  end
+
   setup_commands()
   setup_autocommands()
 end
