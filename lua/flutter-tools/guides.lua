@@ -174,8 +174,7 @@ function M.widget_guides(_, _, data, _)
       vim.loop.new_async(
       vim.schedule_wrap(
         function()
-          local guides = collect_guides(lines, data.outline)
-          render_guides(bufnum, guides, conf)
+          render_guides(bufnum, collect_guides(lines, data.outline), conf)
           async:close()
         end
       )
