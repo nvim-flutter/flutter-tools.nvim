@@ -4,7 +4,7 @@ Build flutter and dart applications in neovim using the native lsp.
 
 **Status: Alpha**
 
-#### NOTE
+#### NOTE:
 
 I plan to try and keep things _relatively_ stable but ultimately there might still need to be some
 breaking changes while I flesh out some of the functionality.
@@ -49,8 +49,7 @@ require("flutter-tools").setup {
   },
   flutter_path = "<full/path/if/needed>", -- <-- this takes priority over the lookup
   flutter_lookup_cmd = nil, -- example "dirname $(which flutter)" or "asdf where flutter"
-  flutter_outline = {
-    highlight = "NonText",
+  widget_guides = {
     enabled = false,
   },
   closing_tags = {
@@ -100,9 +99,11 @@ which should auto-magically find your flutter installation.
 
 ![dev log](./.github/dev_log.png)
 
-#### Widget outlines (experimental, default: disabled)
+#### Widget guides (experimental, default: disabled)
 
-![Widget outlines](./.github/outline_guide.png)
+![Widget guides](./.github/outline_guide.png)
+
+NOTE: To configure the highlight colour you can override the `FlutterWidgetGuides` highlight group
 
 #### Outline window
 
