@@ -7,9 +7,11 @@ function M.echomsg(msg, hl)
   local prefix = "[Flutter-tools]: "
   if type(msg) == "string" then
     msg = {{prefix .. msg, hl}}
-  elseif type(msg) == "table" then
+  elseif vim.tbl_islist(msg) then
     for i, value in ipairs(msg) do
-      msg[i] = {prefix .. value[1], value[2]}
+      if #msg[i] == 2 then
+        msg[i][1] = prefix .. value[1]
+      end
     end
   else
     return
