@@ -58,7 +58,7 @@ local defaults = {
 local deprecations = {
   flutter_outline = {
     fallback = "widget_guides",
-    message = "please use widget_guides instead"
+    message = "please use 'widget_guides' instead"
   }
 }
 
@@ -67,7 +67,7 @@ local function handle_deprecation(key, value, config)
   if deprecation then
     vim.defer_fn(
       function()
-        utils.echomsg(fmt("'%s' is deprecated: '%s'", key, deprecation.message), "WarningMsg")
+        utils.echomsg(fmt("%s is deprecated: %s", key, deprecation.message), "WarningMsg")
       end,
       1000
     )
