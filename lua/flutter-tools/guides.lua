@@ -158,8 +158,8 @@ local function render_guides(bufnum, guides, conf)
 end
 
 function M.setup()
-  local color = utils.get_hl('Normal', 'fg')
-  vim.cmd(fmt('highlight! %s guifg=%s', hl_group, color))
+  local color = utils.get_hl("Normal", "fg")
+  vim.cmd(fmt("highlight! %s guifg=%s", hl_group, color))
 end
 
 function M.widget_guides(_, _, data, _)
