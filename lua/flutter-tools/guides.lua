@@ -145,8 +145,13 @@ local function render_guides(bufnum, guides, conf)
           hl_mode = "combine"
         }
       )
-      if not success then
-        utils.echomsg(msg, "ErrorMsg")
+      if not success and conf.debug then
+        utils.echomsg(
+          {
+            {fmt("error drawing widget guide at %d, col %d", lnum, start), "Title"},
+            {msg, "ErrorMsg"}
+          }
+        )
       end
     end
   end

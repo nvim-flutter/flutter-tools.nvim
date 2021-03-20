@@ -25,7 +25,8 @@ local defaults = {
   flutter_path = nil,
   flutter_lookup_cmd = utils.is_linux and "flutter sdk-path" or nil,
   widget_guides = {
-    enabled = false
+    enabled = false,
+    debug = false
   },
   debugger = {
     enabled = false
