@@ -148,7 +148,7 @@ local function render_guides(bufnum, guides, conf)
       if not success and conf.debug then
         utils.echomsg(
           {
-            {fmt("error drawing widget guide at %d, col %d", lnum, start), "Title"},
+            {fmt("error drawing widget guide at %d, col %d\n", lnum, start), "Title"},
             {msg, "ErrorMsg"}
           }
         )
