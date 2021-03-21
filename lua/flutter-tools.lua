@@ -1,11 +1,7 @@
-local utils = require("flutter-tools.utils")
-local log = require("flutter-tools.log")
-local lsp = require("flutter-tools.lsp")
-local config = require("flutter-tools.config")
-
 local M = {}
 
 local function setup_commands()
+  local utils = require("flutter-tools.utils")
   -- Commands
   utils.command("FlutterRun", [[lua require('flutter-tools.commands').run()]])
   utils.command("FlutterReload", [[lua require('flutter-tools.commands').reload()]])
@@ -22,7 +18,7 @@ local function setup_commands()
 end
 
 local function setup_autocommands()
-  utils.augroup(
+  require("flutter-tools.utils").augroup(
     "FlutterToolsHotReload",
     {
       {
@@ -42,7 +38,7 @@ local function setup_autocommands()
       },
       {
         events = {"BufEnter"},
-        targets = {log.filename},
+        targets = {require("flutter-tools.log").filename},
         command = "lua require('flutter-tools.log').__resurrect()"
       }
     }
@@ -50,9 +46,9 @@ local function setup_autocommands()
 end
 
 function M.setup(user_config)
-  local conf = config.set(user_config)
+  local conf = require("flutter-tools.config").set(user_config)
 
-  lsp.setup(conf)
+  require("flutter-tools.lsp").setup(conf)
 
   if conf.debugger.enabled then
     require("flutter-tools.dap").setup(conf)
