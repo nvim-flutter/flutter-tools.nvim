@@ -162,10 +162,18 @@ function M.setup()
   vim.cmd(fmt("highlight! %s guifg=%s", hl_group, color))
 end
 
+local function is_buf_valid(bufnum)
+  return bufnum and api.nvim_buf_is_valid(bufnum) and not vim.wo.previewwindow and
+    vim.bo.buftype == ""
+end
+
 function M.widget_guides(_, _, data, _)
   local conf = config.get().widget_guides
   if conf.enabled then
     local bufnum = vim.uri_to_bufnr(data.uri)
+    if not is_buf_valid(bufnum) then
+      return
+    end
     -- TODO: should this be limited to the view port using vim.fn.line('w0'|'w$')
     -- although ideally having to track what the current visible
     -- segment of a buffer is and trying to apply the extmarks in
