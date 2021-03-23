@@ -8,35 +8,20 @@ local namespace_id = api.nvim_create_namespace("flutter_tools_popups")
 local WIN_BLEND = 5
 
 local border_chars = {
-  double = {
-    top_left = "╔",
-    top_right = "╗",
-    middle_left = "║",
-    middle_right = "║",
-    bottom_left = "╚",
-    bottom_right = "╝",
-    fill = "═"
-  },
   curved = {
-    top_left = "╭",
-    top_right = "╮",
-    middle_left = "│",
-    middle_right = "│",
-    bottom_left = "╰",
-    bottom_right = "╯",
-    fill = "─"
+    "╭",
+    "─",
+    "╮",
+    "│",
+    "╯",
+    "─",
+    "╰",
+    "│"
   }
 }
 
 function _G.__flutter_tools_close(buf)
   vim.api.nvim_buf_delete(buf, {force = true})
-end
-
-local function format_title(title, fill, width)
-  local remainder = width - 1 - string.len(title)
-  local side_size = math.floor(remainder) - 1
-  local side = string.rep(fill, side_size)
-  return title .. side
 end
 
 ---@param lines table
@@ -100,51 +85,6 @@ local function invalid_lines(lines)
   return true
 end
 
-local function border_create(title, config)
-  local height = config.height
-  local width = config.width
-  local border = border_chars.curved
-  title = format_title(title, border.fill, width)
-  local top = border.top_left .. title .. border.top_right
-  local content = {top}
-  local padding = string.rep(" ", width - 2)
-  for _ = 1, height - 1 do
-    table.insert(content, border.middle_left .. padding .. border.middle_right)
-  end
-  local bot = border.bottom_left .. string.rep(border.fill, width - 2) .. border.bottom_right
-
-  table.insert(content, bot)
-
-  local buf = api.nvim_create_buf(false, true)
-  api.nvim_buf_set_lines(buf, 0, -1, false, content)
-  local win =
-    api.nvim_open_win(
-    buf,
-    false,
-    vim.tbl_extend("force", config, {focusable = false, height = #content, width = width})
-  )
-  vim.wo[win].winblend = WIN_BLEND
-  api.nvim_win_set_option(win, "winhighlight", "NormalFloat:Normal")
-
-  M.add_highlights(
-    buf,
-    {
-      {
-        highlight = "Title",
-        number = 0,
-        column_end = #title + 3,
-        column_start = 3
-      }
-    }
-  )
-
-  config.row = config.row + 1
-  config.col = config.col + 2
-  config.height = config.height - 2
-  config.width = config.width - 4
-  return config, buf
-end
-
 ---Create a popup window to notify the user of an event
 ---@param lines table
 ---@param duration integer
@@ -159,17 +99,19 @@ function M.notify(lines, duration)
   end
   lines = pad_lines(lines)
   local opts = {
-    row = 1,
-    col = vim.o.columns,
+    row = vim.o.lines - #lines - vim.o.cmdheight - 2,
+    col = vim.o.columns - vim.wo.numberwidth - 2,
     relative = "editor",
     style = "minimal",
     width = calculate_width(lines),
     height = #lines,
-    anchor = "NE",
-    focusable = false
+    anchor = "SE",
+    focusable = false,
+    border = "single"
   }
   local buf = api.nvim_create_buf(false, true)
   local win = api.nvim_open_win(buf, false, opts)
+  api.nvim_win_set_option(win, "winhighlight", "NormalFloat:Normal")
   api.nvim_buf_set_lines(buf, 0, -1, true, lines)
   vim.wo[win].winblend = WIN_BLEND
   vim.bo[buf].modifiable = false
@@ -192,20 +134,35 @@ function M.popup_create(title, lines, on_create)
   local width = calculate_width(lines)
   local height = 10
   local buf = api.nvim_create_buf(false, true)
-  local config, border =
-    border_create(
-    title,
+  local offset = 2 -- offset the line position by the title and underline
+  lines = {title, string.rep(border_chars.curved[2], width), unpack(lines)}
+  api.nvim_buf_set_lines(buf, 0, -1, true, lines)
+  local win =
+    api.nvim_open_win(
+    buf,
+    true,
     {
       row = (vim.o.lines - height) / 2,
       col = (vim.o.columns - width) / 2,
       relative = "editor",
       style = "minimal",
       width = width,
-      height = height
+      height = height,
+      border = "single"
     }
   )
-  api.nvim_buf_set_lines(buf, 0, -1, true, lines)
-  local win = api.nvim_open_win(buf, true, config)
+
+  M.add_highlights(
+    buf,
+    {
+      {
+        highlight = "Title",
+        number = 0,
+        column_end = #title,
+        column_start = 0
+      }
+    }
+  )
   vim.wo[win].winblend = WIN_BLEND
   vim.bo[buf].modifiable = false
   vim.wo[win].cursorline = true
@@ -217,7 +174,7 @@ function M.popup_create(title, lines, on_create)
     ":lua __flutter_tools_close(" .. buf .. ")<CR>",
     {silent = true, noremap = true}
   )
-  vim.cmd(string.format([[autocmd! WinLeave <buffer> silent! execute 'bw %d %d']], buf, border))
+  vim.cmd(string.format([[autocmd! WinLeave <buffer> silent! execute 'bw %d']], buf))
   if on_create then
     on_create(buf, win)
   end
