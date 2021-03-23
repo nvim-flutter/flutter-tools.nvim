@@ -25,57 +25,16 @@ function M.display_name(name, platform)
   if not name then
     return ""
   end
-  local symbol = " • "
-  local result = symbol .. name .. (platform and symbol .. platform or "")
-  return result
-end
-
-function M.add_device_highlights(highlights, line, lnum, device)
-  local locations =
-    M.get_highlights(
-    line,
-    lnum,
-    {
-      word = device.name,
-      highlight = "Type"
-    },
-    {
-      word = device.platform,
-      highlight = "Comment"
-    }
-  )
-  if locations then
-    vim.list_extend(highlights, locations)
-  end
+  local symbol = "•"
+  return symbol .. " " .. name .. (platform and (" " .. symbol .. " ") .. platform or "")
 end
 
 --- escape any special characters in text
 --- source: https://stackoverflow.com/a/20778724
 ---@param text string
-local function escape_pattern(text)
+function M.escape_pattern(text)
   local pattern = "([" .. ("%^$().[]*+-?"):gsub("(.)", "%%%1") .. "])"
   return text:gsub(pattern, "%%%1")
-end
-
-function M.get_highlights(line, lnum, ...)
-  local highlights = {}
-  for i = 1, select("#", ...) do
-    local item = select(i, ...)
-    local s, e = line:find(escape_pattern(item.word))
-    if not s or not e then
-      return {}
-    end
-    table.insert(
-      highlights,
-      {
-        highlight = item.highlight,
-        column_start = s,
-        column_end = e + 1,
-        number = lnum - 1
-      }
-    )
-  end
-  return highlights
 end
 
 function M.command(name, rhs)

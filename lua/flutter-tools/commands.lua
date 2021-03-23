@@ -60,19 +60,21 @@ local function on_run_exit(result)
   if matched_error then
     local lines, win_devices, highlights = devices.extract_device_props(result)
     ui.popup_create(
-      "Flutter run (" .. msg .. ") ",
-      lines,
-      function(buf, _)
-        vim.b.devices = win_devices
-        ui.add_highlights(buf, highlights)
-        api.nvim_buf_set_keymap(
-          buf,
-          "n",
-          "<CR>",
-          ":lua __flutter_tools_select_device()<CR>",
-          {silent = true, noremap = true}
-        )
-      end
+      {
+        title = "Flutter run (" .. msg .. ") ",
+        lines = lines,
+        highlights = highlights,
+        on_create = function(buf, _)
+          vim.b.devices = win_devices
+          api.nvim_buf_set_keymap(
+            buf,
+            "n",
+            "<CR>",
+            ":lua __flutter_tools_select_device()<CR>",
+            {silent = true, noremap = true}
+          )
+        end
+      }
     )
   end
 end

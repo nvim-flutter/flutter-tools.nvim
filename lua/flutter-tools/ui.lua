@@ -3,6 +3,7 @@ local utils = require "flutter-tools/utils"
 local M = {}
 
 local api = vim.api
+local fn = vim.fn
 local namespace_id = api.nvim_create_namespace("flutter_tools_popups")
 
 local WIN_BLEND = 5
@@ -22,6 +23,18 @@ local border_chars = {
 
 function _G.__flutter_tools_close(buf)
   vim.api.nvim_buf_delete(buf, {force = true})
+end
+
+---Create a reverse look up to find a lines number in a buffer
+---based on it's content
+---@param buf integer
+---@return table<string, integer>
+local function create_buf_lookup(buf)
+  local lnum_by_line = {}
+  for lnum, line in ipairs(api.nvim_buf_get_lines(buf, 0, -1, false)) do
+    lnum_by_line[fn.trim(line)] = lnum - 1
+  end
+  return lnum_by_line
 end
 
 ---@param lines table
@@ -51,8 +64,28 @@ function M.clear_highlights(buf_id, ns_id, line_start, line_end)
   api.nvim_buf_clear_namespace(buf_id, ns_id, line_start, line_end)
 end
 
+function M.get_line_highlights(line, items, highlights)
+  highlights = highlights or {}
+  for _, item in ipairs(items) do
+    local match_start, match_end = line:find(utils.escape_pattern(item.word))
+    if match_start and match_end then
+      highlights[line] = highlights[line] or {}
+      table.insert(
+        highlights[line],
+        {
+          highlight = item.highlight,
+          column_start = match_start,
+          column_end = match_end + 1
+        }
+      )
+    end
+  end
+  return highlights
+end
+
 --- @param buf_id number
---- @param lines table
+--- @param lines table[]
+--- @param ns_id integer
 function M.add_highlights(buf_id, lines, ns_id)
   if not buf_id then
     return
@@ -66,7 +99,7 @@ function M.add_highlights(buf_id, lines, ns_id)
       buf_id,
       ns_id,
       line.highlight,
-      line.number,
+      line.line_number,
       line.column_start,
       line.column_end
     )
@@ -123,10 +156,16 @@ function M.notify(lines, duration)
   )
 end
 
----@param title string
----@param lines string[]
----@param on_create function
-function M.popup_create(title, lines, on_create)
+---@param opts table
+function M.popup_create(opts)
+  if not opts then
+    error("An options table must be passed to popup create!")
+  end
+  local title, lines, on_create, highlights =
+    opts.title,
+    opts.lines,
+    opts.on_create,
+    opts.highlights
   if not lines or #lines < 1 or invalid_lines(lines) then
     return
   end
@@ -134,8 +173,8 @@ function M.popup_create(title, lines, on_create)
   local width = calculate_width(lines)
   local height = 10
   local buf = api.nvim_create_buf(false, true)
-  local offset = 2 -- offset the line position by the title and underline
   lines = {title, string.rep(border_chars.curved[2], width), unpack(lines)}
+
   api.nvim_buf_set_lines(buf, 0, -1, true, lines)
   local win =
     api.nvim_open_win(
@@ -152,15 +191,34 @@ function M.popup_create(title, lines, on_create)
     }
   )
 
+  local buf_highlights = {}
+  local lookup = create_buf_lookup(buf)
+  for key, value in pairs(highlights) do
+    local lnum = lookup[fn.trim(key)]
+    if lnum then
+      for _, hl in ipairs(value) do
+        hl.line_number = lnum
+        buf_highlights[#buf_highlights + 1] = hl
+      end
+    end
+  end
+
   M.add_highlights(
     buf,
     {
       {
         highlight = "Title",
-        number = 0,
+        line_number = 0,
         column_end = #title,
         column_start = 0
-      }
+      },
+      {
+        highlight = "FloatBorder",
+        line_number = 1,
+        column_start = 0,
+        column_end = -1
+      },
+      unpack(buf_highlights)
     }
   )
   vim.wo[win].winblend = WIN_BLEND

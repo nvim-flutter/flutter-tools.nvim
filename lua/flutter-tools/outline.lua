@@ -224,7 +224,7 @@ local function get_display_props(items)
   for _, item in ipairs(items) do
     if item.hl then
       for _, hl in ipairs(item.hl) do
-        hl.number = item.lnum
+        hl.line_number = item.lnum
         table.insert(highlights, hl)
       end
     end
@@ -356,7 +356,7 @@ local function highlight_current_item(item)
     {
       {
         highlight = hl_prefix .. "SelectedOutlineItem",
-        number = item.lnum,
+        line_number = item.lnum,
         column_start = item.buf_start,
         column_end = item.buf_end + 1 -- add one for padding
       }
