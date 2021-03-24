@@ -42,9 +42,9 @@ require("flutter-tools").setup{} -- use defaults
 -- alternatively you can override the default configs
 require("flutter-tools").setup {
   experimental = { -- map of feature flags
-    lsp_derive_paths = false, -- EXPERIMENTAL: Attempt to find the user's flutter SDK
+    lsp_derive_paths = false, -- experimental: Attempt to find the user's flutter SDK
   },
-  debugger = { -- EXPERIMENTAL: integrate with nvim dap
+  debugger = { -- experimental: integrate with nvim dap
     enabled = false,
   },
   flutter_path = "<full/path/if/needed>", -- <-- this takes priority over the lookup
@@ -93,7 +93,7 @@ which should auto-magically find your flutter installation.
 
 #### Start emulators or connected devices
 
-![device list](./.github/emulators.png)
+![flutter-devices](https://user-images.githubusercontent.com/22454918/112320203-b5f31a80-8ca6-11eb-90b8-9ac934a842da.png)
 
 #### Visualise logs
 
