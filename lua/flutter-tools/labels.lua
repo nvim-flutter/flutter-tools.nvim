@@ -10,7 +10,7 @@ local function render_labels(labels, opts)
   api.nvim_buf_clear_namespace(0, namespace, 0, -1)
   opts = opts or {}
   local highlight = opts and opts.highlight or "Comment"
-  local prefix = opts and opts.prefix or "//"
+  local prefix = opts and opts.prefix or "// "
 
   for _, item in ipairs(labels) do
     local line = item.range["end"].line
