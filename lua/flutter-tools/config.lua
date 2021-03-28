@@ -33,7 +33,7 @@ local defaults = {
   },
   closing_tags = {
     highlight = "Comment",
-    prefix = "//"
+    prefix = "// "
   },
   outline = setmetatable(
     {},
