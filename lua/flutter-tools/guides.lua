@@ -130,6 +130,9 @@ local function render_guides(bufnum, guides, conf)
   -- would it be more performant to do some sort of diff and patched
   -- update rather than replace the namespace each time, similar to Dart Code
   api.nvim_buf_clear_namespace(bufnum, widget_outline_ns_id, 0, -1)
+  if not guides then
+    return
+  end
   for lnum, guide in pairs(guides) do
     for start, character in pairs(guide) do
       local success, msg =
