@@ -51,7 +51,7 @@ end
 function Job:new(o)
   o = o or {}
   setmetatable(o, self)
-  self.result = {}
+  self.result = {""}
   self:__set_status(status.ALIVE)
   self.__index = self
   return o
@@ -77,12 +77,20 @@ end
 ---stderr or stdout with only a single line
 function Job:__process_result(_, data, name)
   if data and type(data) == "table" then
-    vim.list_extend(self.result, data)
+    if data[#data] == "" then
+      data[#data] = nil
+    end
+    if data[1] then
+      self.result[#self.result] = self.result[#self.result] .. data[1]
+    end
+    vim.list_extend(self.result, vim.list_slice(data, 2, #data))
     for _, datum in ipairs(data) do
-      if name == "stdout" and self.on_stdout then
-        self:on_stdout(datum)
-      elseif name == "stderr" and self.on_stderr then
-        self:on_stderr(datum)
+      if datum then
+        if name == "stdout" and self.on_stdout then
+          self:on_stdout(datum)
+        elseif name == "stderr" and self.on_stderr then
+          self:on_stderr(datum)
+        end
       end
     end
   end
