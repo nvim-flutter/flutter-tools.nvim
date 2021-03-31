@@ -59,17 +59,17 @@ end
 ---@param buf integer
 ---@param win integer
 local function autoscroll(buf, win)
-  -- if the dev log is focused don't scroll it as it
-  -- will block the user for perusing
-  if api.nvim_get_current_win() == win then
-    return
-  end
   local wins = api.nvim_list_wins()
   for _, w in ipairs(wins) do
     local b = api.nvim_win_get_buf(w)
     -- TODO: fix invalid window id for auto scroll
     if b == buf and api.nvim_win_is_valid(w) then
       local buf_length = api.nvim_buf_line_count(buf)
+      -- if the dev log is focused don't scroll it as it
+      -- will block the user for perusing
+      if api.nvim_get_current_win() == w then
+        return
+      end
       local success = pcall(api.nvim_win_set_cursor, w, {buf_length, 0})
       if not success then
         utils.echomsg(("Failed to set cursor for log: win_id: %s, buf_id: %s"):format(w, b))
