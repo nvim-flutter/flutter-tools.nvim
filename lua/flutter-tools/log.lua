@@ -56,23 +56,23 @@ function M.get_content()
 end
 
 ---Autoscroll the log buffer to the end of the output
----@param buf integer
----@param win integer
-local function autoscroll(buf, win)
+---@param bufnr integer
+---@param winnr integer
+local function autoscroll(bufnr, winnr)
   local wins = api.nvim_list_wins()
-  for _, w in ipairs(wins) do
-    local b = api.nvim_win_get_buf(w)
+  for _, win in ipairs(wins) do
+    local buf = api.nvim_win_get_buf(win)
     -- TODO: fix invalid window id for auto scroll
-    if b == buf and api.nvim_win_is_valid(w) then
-      local buf_length = api.nvim_buf_line_count(buf)
+    if buf == bufnr and api.nvim_win_is_valid(win) then
+      local buf_length = api.nvim_buf_line_count(bufnr)
       -- if the dev log is focused don't scroll it as it
       -- will block the user for perusing
-      if api.nvim_get_current_win() == w then
+      if api.nvim_get_current_win() == win then
         return
       end
-      local success = pcall(api.nvim_win_set_cursor, w, {buf_length, 0})
+      local success = pcall(api.nvim_win_set_cursor, win, {buf_length, 0})
       if not success then
-        utils.echomsg(("Failed to set cursor for log: win_id: %s, buf_id: %s"):format(w, b))
+        utils.echomsg(("Failed to set cursor for log: win_id: %s, buf_id: %s"):format(win, buf))
       end
       break
     end
