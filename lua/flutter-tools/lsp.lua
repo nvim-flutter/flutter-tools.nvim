@@ -70,7 +70,6 @@ function M.attach()
   local config = utils.merge({name = "dartls"}, user_config)
 
   local bufnr = api.nvim_get_current_buf()
-  -- local bufname = api.nvim_buf_get_name(bufnr)
 
   -- Check to see if dartls is already attached, and if so attatch
   for _, buf in pairs(vim.fn.getbufinfo({bufloaded = true})) do
@@ -95,8 +94,8 @@ function M.attach()
   config.cmd = {executable.dart_bin_name, analysis_server_snapshot_path(root_path), "--lsp"}
   config.root_patterns = config.root_patterns or {".git", "pubspec.yaml"}
 
-  -- util.find_root_dir(config.root_patterns, bufname) or
-  config.root_dir = fn.expand("%:p:h")
+  local current_dir = fn.expand("%:p:h")
+  config.root_dir = path.find_root(config.root_patterns, current_dir) or current_dir
 
   config.capabilities = merge_config(lsp.protocol.make_client_capabilities(), config.capabilities)
   config.capabilities = merge_config(config.capabilities, {workspace = {configuration = true}})

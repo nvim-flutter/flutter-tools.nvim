@@ -1,25 +1,27 @@
-local luv = vim.loop
+-- Some path utilities, copied from nvim-lsp config
 
--- Some path utilities
-local function exists(filename)
+local luv = vim.loop
+local M = {}
+
+function M.exists(filename)
   local stat = luv.fs_stat(filename)
   return stat and stat.type or false
 end
 
-local function is_dir(filename)
-  return exists(filename) == "directory"
+function M.is_dir(filename)
+  return M.exists(filename) == "directory"
 end
 
-local function is_file(filename)
-  return exists(filename) == "file"
+function M.is_file(filename)
+  return M.exists(filename) == "file"
 end
 
-local is_linux = luv.os_uname().sysname == "Linux"
-local is_windows = luv.os_uname().version:match("Windows")
-local path_sep = is_windows and "\\" or "/"
+M.is_linux = luv.os_uname().sysname == "Linux"
+M.is_windows = luv.os_uname().version:match("Windows")
+M.path_sep = M.is_windows and "\\" or "/"
 
 local is_fs_root
-if is_windows then
+if M.is_windows then
   is_fs_root = function(path)
     return path:match("^%a:$")
   end
@@ -29,19 +31,19 @@ else
   end
 end
 
-local function is_absolute(filename)
-  if is_windows then
+function M.is_absolute(filename)
+  if M.is_windows then
     return filename:match("^%a:") or filename:match("^\\\\")
   else
     return filename:match("^/")
   end
 end
 
-local dirname
+M.dirname = nil
 do
-  local strip_dir_pat = path_sep .. "([^" .. path_sep .. "]+)$"
-  local strip_sep_pat = path_sep .. "$"
-  dirname = function(path)
+  local strip_dir_pat = M.path_sep .. "([^" .. M.path_sep .. "]+)$"
+  local strip_sep_pat = M.path_sep .. "$"
+  M.dirname = function(path)
     if not path then
       return
     end
@@ -53,18 +55,18 @@ do
   end
 end
 
-local function path_join(...)
-  local result = table.concat(vim.tbl_flatten {...}, path_sep):gsub(path_sep .. "+", path_sep)
+function M.join(...)
+  local result = table.concat(vim.tbl_flatten {...}, M.path_sep):gsub(M.path_sep .. "+", M.path_sep)
   return result
 end
 
 -- Traverse the path calling cb along the way.
-local function traverse_parents(path, cb)
+function M.traverse_parents(path, cb)
   path = luv.fs_realpath(path)
   local dir = path
   -- Just in case our algo is buggy, don't infinite loop.
   for _ = 1, 100 do
-    dir = dirname(dir)
+    dir = M.dirname(dir)
     if not dir then
       return
     end
@@ -79,7 +81,7 @@ local function traverse_parents(path, cb)
 end
 
 -- Iterate the path until we find the rootdir.
-local function iterate_parents(path)
+function M.iterate_parents(path)
   path = luv.fs_realpath(path)
   local function it(_, v)
     if not v then
@@ -88,12 +90,12 @@ local function iterate_parents(path)
     if is_fs_root(v) then
       return
     end
-    return dirname(v), path
+    return M.dirname(v), path
   end
   return it, path, path
 end
 
-local function is_descendant(root, path)
+function M.is_descendant(root, path)
   if (not path) then
     return false
   end
@@ -102,22 +104,28 @@ local function is_descendant(root, path)
     return dir == root
   end
 
-  local dir, _ = traverse_parents(path, cb)
+  local dir, _ = M.traverse_parents(path, cb)
 
   return dir == root
 end
 
-return {
-  is_dir = is_dir,
-  is_file = is_file,
-  is_absolute = is_absolute,
-  exists = exists,
-  sep = path_sep,
-  dirname = dirname,
-  join = path_join,
-  traverse_parents = traverse_parents,
-  iterate_parents = iterate_parents,
-  is_descendant = is_descendant,
-  is_windows = is_windows,
-  is_linux = is_linux,
-}
+function M.search_ancestors(startpath, func)
+  vim.validate { func = {func, 'f'} }
+  if func(startpath) then return startpath end
+  for path in M.iterate_parents(startpath) do
+    if func(path) then return path end
+  end
+end
+
+function M.find_root(patterns, startpath)
+  local function matcher(path)
+    for _, pattern in ipairs(patterns) do
+      if M.exists(vim.fn.glob(M.join(path, pattern))) then
+        return path
+      end
+    end
+  end
+  return M.search_ancestors(startpath, matcher)
+end
+
+return M
