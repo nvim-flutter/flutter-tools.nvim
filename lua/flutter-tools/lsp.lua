@@ -115,7 +115,7 @@ function M.attach()
   config.capabilities = merge_config(defaults.capabilities, config.capabilities)
   config.init_options = merge_config(defaults.init_options, config.init_options)
   config.handlers = merge_config(defaults.handlers, config.handlers)
-  config.settings = merge_config(defaults.settings, config.settings)
+  config.settings = merge_config(defaults.settings, {dart = config.settings})
 
   config.on_init = function(client, _)
     return client.notify("workspace/didChangeConfiguration", {settings = config.settings})
