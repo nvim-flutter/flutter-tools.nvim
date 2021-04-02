@@ -43,7 +43,7 @@ local function create_debug_log(level)
 end
 
 local function get_defaults()
-  return {
+  local config = {
     init_options = {
       onlyAnalyzeProjectsWithOpenFiles = true,
       suggestFromUnimportedLibraries = true,
@@ -51,14 +51,29 @@ local function get_defaults()
       outline = true,
       flutterOutline = true
     },
+    settings = {
+      dart = {
+        completeFunctionCalls = true,
+        showTodos = true
+      }
+    },
     handlers = {
       ["dart/textDocument/publishClosingLabels"] = require("flutter-tools.labels").closing_tags,
       ["dart/textDocument/publishOutline"] = require("flutter-tools.outline").document_outline,
       ["dart/textDocument/publishFlutterOutline"] = require("flutter-tools.guides").widget_guides
-    }
+    },
+    capabilities = (function()
+      local capabilities = lsp.protocol.make_client_capabilities()
+      capabilities.workspace.configuration = true
+      capabilities.textDocument.completion.completionItem.snippetSupport = true
+      return capabilities
+    end)()
   }
+  return config
 end
 
+---This was heavily inspired by nvim-metals implementation of the attach functionality
+---@return boolean
 function M.attach()
   local conf = require("flutter-tools.config").get()
   local user_config = conf.lsp
@@ -97,17 +112,13 @@ function M.attach()
   local current_dir = fn.expand("%:p:h")
   config.root_dir = path.find_root(config.root_patterns, current_dir) or current_dir
 
-  config.capabilities = merge_config(lsp.protocol.make_client_capabilities(), config.capabilities)
-  config.capabilities = merge_config(config.capabilities, {workspace = {configuration = true}})
-
+  config.capabilities = merge_config(defaults.capabilities, config.capabilities)
   config.init_options = merge_config(defaults.init_options, config.init_options)
-
   config.handlers = merge_config(defaults.handlers, config.handlers)
-
-  local settings = config.settings or {}
+  config.settings = merge_config(defaults.settings, config.settings)
 
   config.on_init = function(client, _)
-    return client.notify("workspace/didChangeConfiguration", {settings = settings})
+    return client.notify("workspace/didChangeConfiguration", {settings = config.settings})
   end
 
   local client_id = M.lsps[config.root_dir]
