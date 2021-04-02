@@ -1,5 +1,4 @@
 local utils = require("flutter-tools.utils")
-local executable = require("flutter-tools.executable")
 
 local success, dap = pcall(require, "dap")
 if not success then
@@ -42,6 +41,7 @@ end
 function M.setup(_)
   M.install_debugger(true)
 
+  local executable = require("flutter-tools.executable")
   local flutter_sdk_path = executable.flutter_sdk_path
   local dart_sdk_path = executable.dart_sdk_root_path()
 

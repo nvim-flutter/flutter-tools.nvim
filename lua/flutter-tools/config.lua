@@ -21,6 +21,10 @@ local function get_split_cmd(percentage, fallback)
   return string.format("botright %dvnew", math.max(vim.o.columns * percentage, fallback))
 end
 
+M.debug_levels = {
+  DEBUG = 1
+}
+
 local defaults = {
   flutter_path = nil,
   flutter_lookup_cmd = utils.is_linux and "flutter sdk-path" or nil,
@@ -34,6 +38,9 @@ local defaults = {
   closing_tags = {
     highlight = "Comment",
     prefix = "// "
+  },
+  lsp = {
+    debug = M.debug_levels.DEBUG
   },
   outline = setmetatable(
     {},
@@ -91,6 +98,9 @@ function M.set(user_config)
   end
   for key, value in pairs(user_config) do
     handle_deprecation(key, value, user_config)
+    if user_config[key] and type(user_config[key]) == "table" then
+      setmetatable(user_config[key], {__index = defaults[key]})
+    end
   end
   validate_prefs(user_config)
   config = setmetatable(user_config, {__index = defaults})

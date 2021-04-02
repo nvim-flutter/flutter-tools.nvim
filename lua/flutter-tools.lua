@@ -48,7 +48,7 @@ end
 function M.setup(user_config)
   local conf = require("flutter-tools.config").set(user_config)
 
-  require("flutter-tools.lsp").setup(conf)
+  require("flutter-tools.lsp").setup()
 
   if conf.debugger.enabled then
     require("flutter-tools.dap").setup(conf)
