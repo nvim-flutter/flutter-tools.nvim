@@ -32,6 +32,10 @@ or using `packer.nvim`
 use "akinsho/flutter-tools.nvim"
 ```
 
+NOTE: flutter tools does not depend on `nvim-lspconfig`. The two can co-exist but please ensure
+you do **NOT** configure `dartls` using `lspconfig`. It will be automatically set up by this
+plugin instead.
+
 To set it up
 
 ```lua
