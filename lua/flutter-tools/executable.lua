@@ -1,4 +1,5 @@
 local utils = require("flutter-tools.utils")
+local path = require("flutter-tools.utils.path")
 local ui = require("flutter-tools.ui")
 
 local fn = vim.fn
@@ -33,8 +34,8 @@ local function get_paths()
     local flutter_sdk_path = utils.remove_newlines(fn.system(conf.flutter_lookup_cmd))
     if not has_shell_error() then
       return {
-        dart_bin = utils.join {flutter_sdk_path, "bin", "dart"},
-        flutter_bin = utils.join {flutter_sdk_path, "bin", "flutter"},
+        dart_bin = path.join(flutter_sdk_path, "bin", "dart"),
+        flutter_bin = path.join(flutter_sdk_path, "bin", "flutter"),
         flutter_sdk = flutter_sdk_path
       }
     else
@@ -47,30 +48,30 @@ end
 
 M.paths = get_paths()
 
-local dart_sdk = utils.join {"cache", "dart-sdk"}
+local dart_sdk = path.join("cache", "dart-sdk")
 
 function M.dart_sdk_root_path(user_bin_path)
   if user_bin_path then
-    return utils.join {user_bin_path, dart_sdk}
+    return path.join(user_bin_path, dart_sdk)
   end
 
   if utils.executable("flutter") then
     if M.paths.flutter_sdk then
       -- On Linux installations with snap the dart SDK can be further nested inside a bin directory
       -- so it's /bin/cache/dart-sdk whereas else where it is /cache/dart-sdk
-      local paths = {M.paths.flutter_sdk, "cache"}
-      if not utils.is_dir(utils.join(paths)) then
-        table.insert(paths, 2, "bin")
+      local segments = {M.paths.flutter_sdk, "cache"}
+      if not path.is_dir(path.join(unpack(segments))) then
+        table.insert(segments, 2, "bin")
       end
-      if utils.is_dir(utils.join(paths)) then
+      if path.is_dir(path.join(unpack(segments))) then
         -- remove the /cache/ directory as it's already part of the SDK path above
-        paths[#paths] = nil
-        return utils.join(vim.tbl_flatten {paths, dart_sdk})
+        segments[#segments] = nil
+        return path.join(unpack(vim.tbl_flatten {segments, dart_sdk}))
       end
     else
       local flutter_path = fn.resolve(fn.exepath("flutter"))
       local flutter_bin = fn.fnamemodify(flutter_path, ":h")
-      return utils.join {flutter_bin, dart_sdk}
+      return path.join(flutter_bin, dart_sdk)
     end
   end
 

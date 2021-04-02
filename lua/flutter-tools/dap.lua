@@ -1,4 +1,5 @@
 local utils = require("flutter-tools.utils")
+local path = require("flutter-tools.utils.path")
 
 local success, dap = pcall(require, "dap")
 if not success then
@@ -13,8 +14,8 @@ local fmt = string.format
 local M = {}
 
 local dart_code_git = "https://github.com/Dart-Code/Dart-Code.git"
-local debugger_dir = utils.join {fn.stdpath("cache"), "dart-code"}
-local debugger_path = utils.join {debugger_dir, "out", "dist", "debug.js"}
+local debugger_dir = path.join(fn.stdpath("cache"), "dart-code")
+local debugger_path = path.join(debugger_dir, "out", "dist", "debug.js")
 
 ---Install the dart code debugger into neovim’s cache directory
 ---@param silent boolean whether or not to warn if already installed

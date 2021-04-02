@@ -1,5 +1,4 @@
-local utils = require("flutter-tools.utils")
-
+local path = require("flutter-tools.utils.path")
 local M = {}
 
 local fmt = string.format
@@ -27,7 +26,7 @@ M.debug_levels = {
 
 local defaults = {
   flutter_path = nil,
-  flutter_lookup_cmd = utils.is_linux and "flutter sdk-path" or nil,
+  flutter_lookup_cmd = path.is_linux and "flutter sdk-path" or nil,
   widget_guides = {
     enabled = false,
     debug = false
@@ -71,13 +70,14 @@ local deprecations = {
 }
 
 local function handle_deprecation(key, value, config)
+  local echomsg = require("flutter-tools.utils").echomsg
   local deprecation = deprecations[key]
   if not deprecation then
     return
   end
   vim.defer_fn(
     function()
-      utils.echomsg(fmt("%s is deprecated: %s", key, deprecation.message), "WarningMsg")
+      echomsg(fmt("%s is deprecated: %s", key, deprecation.message), "WarningMsg")
     end,
     1000
   )

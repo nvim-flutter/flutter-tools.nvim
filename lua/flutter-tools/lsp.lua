@@ -1,4 +1,5 @@
 local utils = require("flutter-tools.utils")
+local path = require("flutter-tools.utils.path")
 
 local api = vim.api
 local lsp = vim.lsp
@@ -12,7 +13,7 @@ local M = {
 }
 
 local function analysis_server_snapshot_path(sdk_path)
-  return utils.join {sdk_path, "bin", "snapshots", "analysis_server.dart.snapshot"}
+  return path.join(sdk_path, "bin", "snapshots", "analysis_server.dart.snapshot")
 end
 
 function M.setup()
@@ -87,11 +88,11 @@ function M.attach()
   config.filetypes = {FILETYPE}
 
   local executable = require("flutter-tools.executable")
-  local path = executable.dart_sdk_root_path()
+  local root_path = executable.dart_sdk_root_path()
 
-  debug_log(fmt("dart_sdk_path: %s", path))
+  debug_log(fmt("dart_sdk_path: %s", root_path))
 
-  config.cmd = {executable.dart_bin_name, analysis_server_snapshot_path(path), "--lsp"}
+  config.cmd = {executable.dart_bin_name, analysis_server_snapshot_path(root_path), "--lsp"}
   config.root_patterns = config.root_patterns or {".git", "pubspec.yaml"}
 
   -- util.find_root_dir(config.root_patterns, bufname) or
