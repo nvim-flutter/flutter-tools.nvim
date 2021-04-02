@@ -1,7 +1,4 @@
 local utils = require("flutter-tools.utils")
-local labels = require("flutter-tools.labels")
-local outline = require("flutter-tools.outline")
-local guides = require("flutter-tools.guides")
 
 local api = vim.api
 local lsp = vim.lsp
@@ -44,9 +41,27 @@ local function create_debug_log(level)
   end
 end
 
+local function get_defaults()
+  return {
+    init_options = {
+      onlyAnalyzeProjectsWithOpenFiles = false,
+      suggestFromUnimportedLibraries = true,
+      closingLabels = true,
+      outline = true,
+      flutterOutline = true
+    },
+    handlers = {
+      ["dart/textDocument/publishClosingLabels"] = require("flutter-tools.labels").closing_tags,
+      ["dart/textDocument/publishOutline"] = require("flutter-tools.outline").document_outline,
+      ["dart/textDocument/publishFlutterOutline"] = require("flutter-tools.guides").widget_guides
+    }
+  }
+end
+
 function M.attach()
   local conf = require("flutter-tools.config").get()
-  local user_config = conf.lsp or {}
+  local user_config = conf.lsp
+  local defaults = get_defaults()
   local debug_log = create_debug_log(user_config.debug)
 
   debug_log("attaching LSP")
@@ -81,22 +96,13 @@ function M.attach()
 
   -- util.find_root_dir(config.root_patterns, bufname) or
   config.root_dir = fn.expand("%:p:h")
+
   config.capabilities = merge_config(lsp.protocol.make_client_capabilities(), config.capabilities)
   config.capabilities = merge_config(config.capabilities, {workspace = {configuration = true}})
 
-  config.init_options = {
-    onlyAnalyzeProjectsWithOpenFiles = false,
-    suggestFromUnimportedLibraries = true,
-    closingLabels = true,
-    outline = true,
-    flutterOutline = true
-  }
+  config.init_options = merge_config(defaults.init_options, config.init_options)
 
-  config.handlers = {
-    ["dart/textDocument/publishClosingLabels"] = labels.closing_tags,
-    ["dart/textDocument/publishOutline"] = outline.document_outline,
-    ["dart/textDocument/publishFlutterOutline"] = guides.widget_guides
-  }
+  config.handlers = merge_config(defaults.handlers, config.handlers)
 
   local settings = config.settings or {}
 
