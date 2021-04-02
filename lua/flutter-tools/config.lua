@@ -21,7 +21,8 @@ local function get_split_cmd(percentage, fallback)
 end
 
 M.debug_levels = {
-  DEBUG = 1
+  DEBUG = 1,
+  WARN = 2
 }
 
 local defaults = {
@@ -39,7 +40,7 @@ local defaults = {
     prefix = "// "
   },
   lsp = {
-    debug = M.debug_levels.DEBUG
+    debug = M.debug_levels.WARN
   },
   outline = setmetatable(
     {},
