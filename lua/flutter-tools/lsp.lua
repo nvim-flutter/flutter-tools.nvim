@@ -29,7 +29,14 @@ function M.setup()
   )
 end
 
+---Merge a set of default configurations with a user's own settings
+---@param default table
+---@param user table
+---@return table
 local function merge_config(default, user)
+  if not user or vim.tbl_isempty(user) then
+    return default
+  end
   return vim.tbl_deep_extend("force", default or {}, user or {})
 end
 
