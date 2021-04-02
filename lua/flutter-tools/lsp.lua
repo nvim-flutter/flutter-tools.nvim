@@ -45,7 +45,7 @@ end
 local function get_defaults()
   return {
     init_options = {
-      onlyAnalyzeProjectsWithOpenFiles = false,
+      onlyAnalyzeProjectsWithOpenFiles = true,
       suggestFromUnimportedLibraries = true,
       closingLabels = true,
       outline = true,
