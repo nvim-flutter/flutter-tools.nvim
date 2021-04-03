@@ -85,7 +85,7 @@ end
 ---Prefix a command with the flutter executable
 ---@param cmd string
 function M.with(cmd)
-  return M.paths .. " " .. cmd
+  return M.paths.flutter_bin .. " " .. cmd
 end
 
 return M
