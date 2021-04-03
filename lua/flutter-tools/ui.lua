@@ -8,6 +8,13 @@ local namespace_id = api.nvim_create_namespace("flutter_tools_popups")
 
 local WIN_BLEND = 5
 
+local state = {
+  ---@type number[] list of open windows, so we can operate on them all
+  open_windows = {},
+  ---@type number
+  last_opened = nil
+}
+
 local border_chars = {
   curved = {
     "╭",
@@ -118,6 +125,21 @@ local function invalid_lines(lines)
   return true
 end
 
+---Update notification window state
+---@param win integer
+local function update_win_state(win)
+  state.open_windows =
+    vim.tbl_filter(
+    function(id)
+      return id ~= win
+    end,
+    state.open_windows
+  )
+  if state.last_opened == win then
+    state.last_opened = nil
+  end
+end
+
 ---Create a popup window to notify the user of an event
 ---@param lines table
 ---@param duration integer
@@ -131,8 +153,18 @@ function M.notify(lines, duration)
     return
   end
   lines = pad_lines(lines)
+
+  local row = vim.o.lines - #lines - vim.o.cmdheight - 2
+
+  if state.last_opened then
+    local config = api.nvim_win_get_config(state.last_opened)
+    if config.row[false] then
+      row = config.row[false] - #lines - 2
+    end
+  end
+
   local opts = {
-    row = vim.o.lines - #lines - vim.o.cmdheight - 2,
+    row = row,
     col = vim.o.columns - vim.wo.numberwidth - 2,
     relative = "editor",
     style = "minimal",
@@ -146,12 +178,17 @@ function M.notify(lines, duration)
   local win = api.nvim_open_win(buf, false, opts)
   api.nvim_win_set_option(win, "winhighlight", "NormalFloat:Normal")
   api.nvim_buf_set_lines(buf, 0, -1, true, lines)
+
+  table.insert(state.open_windows, win)
+  state.last_opened = win
+
   vim.wo[win].winblend = WIN_BLEND
   vim.bo[buf].modifiable = false
-  vim.fn.timer_start(
+  fn.timer_start(
     duration,
     function()
       api.nvim_win_close(win, true)
+      update_win_state(win)
     end
   )
 end
