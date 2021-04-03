@@ -23,7 +23,7 @@ to allow users to easily develop flutter apps using neovim.
 using `vim-plug`
 
 ```vim
-Plug "akinsho/flutter-tools.nvim"
+Plug 'akinsho/flutter-tools.nvim'
 ```
 
 or using `packer.nvim`
