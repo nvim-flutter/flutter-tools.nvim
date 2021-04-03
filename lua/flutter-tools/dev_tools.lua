@@ -58,7 +58,7 @@ function M.start()
       fn.jobstart(
       table.concat(
         {
-          executable.get_flutter(),
+          executable.paths.flutter_bin,
           "pub",
           "global",
           "run",

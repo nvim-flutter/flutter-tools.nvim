@@ -100,19 +100,6 @@ function M.merge(t1, t2)
   return t1
 end
 
----Join segments of a path into a full path with
----the correct separator
----@param segments string[]
-function M.join(segments)
-  return table.concat(segments, M.sep)
-end
-
-local sys_name = vim.loop.os_uname().sysname
-M.is_linux = sys_name == "Linux"
-M.is_windows = fn.has("win32") == 1 or fn.has("win64") == 1
-
-M.sep = fn.has("win32") == 1 or fn.has("win64") == 1 and "\\" or "/"
-
 function M.remove_newlines(str)
   if not str or type(str) ~= "string" then
     return str
@@ -120,16 +107,8 @@ function M.remove_newlines(str)
   return str:gsub("[\n\r]", "")
 end
 
-function M.format_path(path)
-  return M.is_windows and path:gsub("/", "\\") or path
-end
-
 function M.executable(bin)
   return fn.executable(bin) > 0
-end
-
-function M.is_dir(path)
-  return fn.isdirectory(path) > 0
 end
 
 ---Get the attribute value of a specified highlight

@@ -1,46 +1,12 @@
-local config = require("flutter-tools.config")
 local utils = require("flutter-tools.utils")
+local path = require("flutter-tools.utils.path")
 local ui = require("flutter-tools.ui")
 
 local fn = vim.fn
 
 local M = {
-  dart_bin_name = "dart",
-  dart_bin_path = nil,
-  flutter_bin_path = nil,
-  flutter_sdk_path = nil
+  dart_bin_name = "dart"
 }
-
-local dart_sdk = utils.join {"cache", "dart-sdk"}
-
-function M.dart_sdk_root_path(user_bin_path)
-  if user_bin_path then
-    return utils.join {user_bin_path, dart_sdk}
-  elseif utils.executable("flutter") then
-    local _, flutter_sdk = M.get_flutter()
-    if flutter_sdk then
-      -- On Linux installations with snap the dart SDK can be further nested inside a bin directory
-      -- so it's /bin/cache/dart-sdk whereas else where it is /cache/dart-sdk
-      local paths = {flutter_sdk, "cache"}
-      if not utils.is_dir(utils.join(paths)) then
-        table.insert(paths, 2, "bin")
-      end
-      if utils.is_dir(utils.join(paths)) then
-        -- remove the /cache/ directory as it's already part of the SDK path above
-        paths[#paths] = nil
-        return utils.join(vim.tbl_flatten {paths, dart_sdk})
-      end
-    else
-      local flutter_path = fn.resolve(fn.exepath("flutter"))
-      local flutter_bin = fn.fnamemodify(flutter_path, ":h")
-      return utils.join {flutter_bin, dart_sdk}
-    end
-  elseif utils.executable("dart") then
-    return fn.resolve(fn.exepath("dart"))
-  else
-    return ""
-  end
-end
 
 local function has_shell_error()
   return vim.v.shell_error > 0 or vim.v.shell_error == -1
@@ -56,36 +22,70 @@ end
 ---Fetch the path to the users flutter installation.
 ---NOTE: this should not be called before the plugin
 ---setup has occurred
----@return string
-function M.get_flutter()
-  if M.flutter_bin_path then
-    return M.flutter_bin_path
+---@return table<string, string>
+local function get_paths()
+  local conf = require("flutter-tools.config").get()
+
+  if conf.flutter_path then
+    return {flutter_bin = conf.flutter_path}
   end
 
-  local _config = config.get()
-  if _config.flutter_path then
-    M.flutter_bin_path = _config.flutter_path
-  elseif _config.flutter_lookup_cmd then
-    M.flutter_sdk_path = utils.remove_newlines(fn.system(_config.flutter_lookup_cmd))
-
+  if conf.flutter_lookup_cmd then
+    local flutter_sdk_path = utils.remove_newlines(fn.system(conf.flutter_lookup_cmd))
     if not has_shell_error() then
-      M.dart_bin_path = utils.join {M.flutter_sdk_path, "bin", "dart"}
-      M.flutter_bin_path = utils.join {M.flutter_sdk_path, "bin", "flutter"}
+      return {
+        dart_bin = path.join(flutter_sdk_path, "bin", "dart"),
+        flutter_bin = path.join(flutter_sdk_path, "bin", "flutter"),
+        flutter_sdk = flutter_sdk_path
+      }
     else
-      ui.notify({string.format("Error running %s", _config.flutter_lookup_cmd)})
-      M.flutter_bin_path, M.dart_bin_path = get_default_binaries()
+      ui.notify({string.format("Error running %s", conf.flutter_lookup_cmd)})
     end
-  else
-    M.flutter_bin_path, M.dart_bin_path = get_default_binaries()
+  end
+  local flutter_bin, dart_bin = get_default_binaries()
+  return {flutter_bin = flutter_bin, dart_bin = dart_bin}
+end
+
+M.paths = get_paths()
+
+local dart_sdk = path.join("cache", "dart-sdk")
+
+function M.dart_sdk_root_path(user_bin_path)
+  if user_bin_path then
+    return path.join(user_bin_path, dart_sdk)
   end
 
-  return M.flutter_bin_path, M.flutter_sdk_path
+  if utils.executable("flutter") then
+    if M.paths.flutter_sdk then
+      -- On Linux installations with snap the dart SDK can be further nested inside a bin directory
+      -- so it's /bin/cache/dart-sdk whereas else where it is /cache/dart-sdk
+      local segments = {M.paths.flutter_sdk, "cache"}
+      if not path.is_dir(path.join(unpack(segments))) then
+        table.insert(segments, 2, "bin")
+      end
+      if path.is_dir(path.join(unpack(segments))) then
+        -- remove the /cache/ directory as it's already part of the SDK path above
+        segments[#segments] = nil
+        return path.join(unpack(vim.tbl_flatten {segments, dart_sdk}))
+      end
+    else
+      local flutter_path = fn.resolve(fn.exepath("flutter"))
+      local flutter_bin = fn.fnamemodify(flutter_path, ":h")
+      return path.join(flutter_bin, dart_sdk)
+    end
+  end
+
+  if utils.executable("dart") then
+    return fn.resolve(fn.exepath("dart"))
+  end
+
+  return ""
 end
 
 ---Prefix a command with the flutter executable
 ---@param cmd string
 function M.with(cmd)
-  return M.get_flutter() .. " " .. cmd
+  return M.paths.flutter_bin .. " " .. cmd
 end
 
 return M

@@ -23,17 +23,19 @@ to allow users to easily develop flutter apps using neovim.
 using `vim-plug`
 
 ```vim
-Plug "neovim/nvim-lspconfig"
 Plug "akinsho/flutter-tools.nvim"
 ```
 
 or using `packer.nvim`
 
 ```lua
-use {"akinsho/flutter-tools.nvim", requires = {"neovim/nvim-lspconfig"}}
+use "akinsho/flutter-tools.nvim"
 ```
 
-Currently this plugin depends on `nvim-lspconfig` for some default setup this might change.
+NOTE: flutter tools does not depend on `nvim-lspconfig`. The two can co-exist but please ensure
+you do **NOT** configure `dartls` using `lspconfig`. It will be automatically set up by this
+plugin instead.
+
 To set it up
 
 ```lua
@@ -65,6 +67,10 @@ require("flutter-tools").setup {
   lsp = {
     on_attach = my_custom_on_attach,
     capabilities = my_custom_capabilities -- e.g. lsp_status capabilities
+    settings = {
+      showTodos = true,
+      completeFunctionCalls = true -- NOTE: this is WIP and doesn't work currently
+    }
   }
 }
 ```
