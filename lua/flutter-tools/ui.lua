@@ -159,7 +159,10 @@ function M.notify(lines, duration)
   if state.last_opened then
     local config = api.nvim_win_get_config(state.last_opened)
     if config.row[false] then
-      row = config.row[false] - #lines - 2
+      local next_row = config.row[false] - #lines - 2
+      -- if the next row will be outside the window then start again from the bottom
+      -- we should ideally never be opening this many windows but if we are stack them
+      row = next_row > 0 and next_row or row
     end
   end
 
