@@ -196,8 +196,8 @@ local function parse_outline(result, node, indent, marker)
       lnum = #result,
       buf_start = #indent,
       buf_end = #content,
-      start_line = range.start.line + 1,
-      start_col = range.start.character + 1,
+      start_line = range.start.line,
+      start_col = range.start.character - 1,
       end_line = range["end"].line,
       end_col = range["end"].character - 1,
       name = element.name,
@@ -343,7 +343,9 @@ function _G.__flutter_tools_select_outline_item()
     return utils.echomsg [[Sorry! this item can't be opened]]
   end
   vim.cmd("drop " .. vim.uri_to_fname(uri))
-  fn.cursor(item.start_line, item.start_col)
+  -- For whatever reason the cursor always lands one row up and two columns
+  -- behind so handle that
+  fn.cursor(item.start_line + 1, item.start_col + 2)
 end
 
 local function highlight_current_item(item)
