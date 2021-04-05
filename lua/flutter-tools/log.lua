@@ -59,14 +59,12 @@ end
 ---@param bufnr integer
 ---@param winnr integer
 local function autoscroll(bufnr, winnr)
-  local wins = api.nvim_list_wins()
-  for _, win in ipairs(wins) do
+  for _, win in ipairs(api.nvim_list_wins()) do
     local buf = api.nvim_win_get_buf(win)
     -- TODO: fix invalid window id for auto scroll
     if buf == bufnr and api.nvim_win_is_valid(win) then
       local buf_length = api.nvim_buf_line_count(bufnr)
-      -- if the dev log is focused don't scroll it as it
-      -- will block the user for perusing
+      -- if the dev log is focused don't scroll it as it will block the user from perusing
       if api.nvim_get_current_win() == win then
         return
       end
