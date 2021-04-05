@@ -15,6 +15,8 @@ local function setup_commands()
   utils.command("FlutterOutline", [[lua require('flutter-tools.outline').open()]])
   --- Dev tools
   utils.command("FlutterDevTools", [[lua require('flutter-tools.dev_tools').start()]])
+  --- Log
+  utils.command("FlutterLogClear", [[lua require('flutter-tools.log').clear()]])
 end
 
 local function setup_autocommands()

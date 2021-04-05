@@ -101,6 +101,14 @@ function M.__resurrect()
   vim.bo[buf].buftype = "nofile"
 end
 
+function M.clear()
+  if api.nvim_buf_is_valid(M.buf) then
+    vim.bo[M.buf].modifiable = true
+    api.nvim_buf_set_lines(M.buf, 0, -1, false, {})
+    vim.bo[M.buf].modifiable = false
+  end
+end
+
 function _G.__flutter_tools_close_dev_log()
   M.buf = nil
   M.win = nil
