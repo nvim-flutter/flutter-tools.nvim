@@ -200,7 +200,9 @@ function M.notify(lines, duration)
   fn.timer_start(
     duration,
     function()
-      api.nvim_win_close(win, true)
+      if api.nvim_win_is_valid(win) then
+        api.nvim_win_close(win, true)
+      end
       update_win_state(win)
     end
   )
