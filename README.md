@@ -2,12 +2,10 @@
 
 Build flutter and dart applications in neovim using the native lsp.
 
-**Status: Alpha**
-
 #### NOTE:
 
-I plan to try and keep things _relatively_ stable but ultimately there might still need to be some
-breaking changes while I flesh out some of the functionality.
+This plugin is under active development. I plan to try and keep things _relatively_ stable
+but ultimately there might still need to be some breaking changes.
 
 # Inspiration
 
@@ -90,6 +88,23 @@ If you have a full path already you can pass it in using `flutter_path`.
 If using a `snap` installation set your `flutter_lookup_cmd` to `"echo $HOME/snap/flutter/common/flutter/bin/flutter"`
 which is where this is usually installed by `snap`. Alternatively you can use the `experimental.lsp_derive_paths` option
 which should auto-magically find your flutter installation.
+
+### Telescope Integration
+
+![telescope picker](https://user-images.githubusercontent.com/22454918/113897929-495a3e80-97c3-11eb-959f-9574319cd93c.png)
+
+You can list available commands in this plugin using [telescope.nvim](https://github.com/nvim-telescope/telescope.nvim).
+
+In order to set this up, you can explicitly load the extension.
+
+```lua
+require("telescope").load_extension("flutter")
+```
+
+Or alternatively telescope can lazy load extension but the `Telescope` command will not autocomplete lazy loaded modules.
+
+This can be accessed using `Telescope flutter commands` or `require('telescope').extensions.flutter.commands()`
+
 
 # Functionality
 
