@@ -134,7 +134,7 @@ function M.commands(opts)
         results = commands,
         entry_maker = command_entry_maker(get_max_length(commands))
       },
-      sorter = sorters.fuzzy_with_index_bias(),
+      sorter = sorters.get_generic_fuzzy_sorter(),
       attach_mappings = function(_, map)
         map("i", "<CR>", execute_command)
 
