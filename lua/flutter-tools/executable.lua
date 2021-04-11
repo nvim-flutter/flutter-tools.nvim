@@ -23,7 +23,7 @@ local _paths = nil
 ---Fetch the path to the users flutter installation.
 ---@param callback fun(paths: table<string, string>)
 ---@return nil
-function M.paths(callback)
+function M.derive_paths(callback)
   local conf = require("flutter-tools.config").get()
   if _paths then
     return callback(_paths)
@@ -101,7 +101,7 @@ function M.dart_sdk_root_path(callback, user_bin_path)
     callback(path.join(user_bin_path, dart_sdk))
   end
 
-  M.paths(
+  M.derive_paths(
     function(paths)
       callback(_dart_sdk_root(paths))
     end
@@ -112,7 +112,7 @@ end
 ---@param cmd string
 function M.with(cmd, callback)
   assert(callback and type(callback) == "function", "A function callback must be passed in")
-  M.paths(
+  M.derive_paths(
     function(paths)
       callback(paths.flutter_bin .. " " .. cmd)
     end
