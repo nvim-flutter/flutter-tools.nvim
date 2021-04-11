@@ -1,7 +1,7 @@
 local Job = require("flutter-tools.job")
-local ui = require "flutter-tools/ui"
-local utils = require "flutter-tools/utils"
-local executable = require "flutter-tools/executable"
+local ui = require("flutter-tools/ui")
+local utils = require("flutter-tools/utils")
+local executable = require("flutter-tools/executable")
 
 local api = vim.api
 local fn = vim.fn
@@ -144,11 +144,16 @@ function M.launch_emulator(emulator)
   if not emulator then
     return
   end
-  M.emulator_job =
-    Job:new {
-    cmd = executable.with("emulators --launch " .. emulator.id),
-    on_exit = handle_launch
-  }:sync()
+  executable.with(
+    "emulators --launch " .. emulator.id,
+    function(cmd)
+      M.emulator_job =
+        Job:new {
+        cmd = cmd,
+        on_exit = handle_launch
+      }:sync()
+    end
+  )
 end
 
 ---@param err boolean
@@ -173,10 +178,15 @@ local function show_emulators(err, result)
 end
 
 function M.list_emulators()
-  Job:new {
-    cmd = executable.with("emulators"),
-    on_exit = show_emulators
-  }:sync()
+  executable.with(
+    "emulators",
+    function(cmd)
+      Job:new {
+        cmd = cmd,
+        on_exit = show_emulators
+      }:sync()
+    end
+  )
 end
 
 -----------------------------------------------------------------------------//
@@ -204,15 +214,20 @@ local function show_devices(err, result)
 end
 
 function M.list_devices()
-  Job:new {
-    cmd = executable.with("devices"),
-    on_exit = show_devices,
-    on_stderr = function(result)
-      if result then
-        utils.echomsg(result)
-      end
+  executable.with(
+    "devices",
+    function(cmd)
+      Job:new {
+        cmd = cmd,
+        on_exit = show_devices,
+        on_stderr = function(result)
+          if result then
+            utils.echomsg(result)
+          end
+        end
+      }:sync()
     end
-  }:sync()
+  )
 end
 
 return M

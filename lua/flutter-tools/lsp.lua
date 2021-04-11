@@ -109,32 +109,34 @@ function M.attach()
   config.filetypes = {FILETYPE}
 
   local executable = require("flutter-tools.executable")
-  local root_path = executable.dart_sdk_root_path()
+  executable.dart_sdk_root_path(
+    function(root_path)
+      debug_log(fmt("dart_sdk_path: %s", root_path))
 
-  debug_log(fmt("dart_sdk_path: %s", root_path))
+      config.cmd = {executable.dart_bin_name, analysis_server_snapshot_path(root_path), "--lsp"}
+      config.root_patterns = config.root_patterns or {".git", "pubspec.yaml"}
 
-  config.cmd = {executable.dart_bin_name, analysis_server_snapshot_path(root_path), "--lsp"}
-  config.root_patterns = config.root_patterns or {".git", "pubspec.yaml"}
+      local current_dir = fn.expand("%:p:h")
+      config.root_dir = path.find_root(config.root_patterns, current_dir) or current_dir
 
-  local current_dir = fn.expand("%:p:h")
-  config.root_dir = path.find_root(config.root_patterns, current_dir) or current_dir
+      config.capabilities = merge_config(defaults.capabilities, config.capabilities)
+      config.init_options = merge_config(defaults.init_options, config.init_options)
+      config.handlers = merge_config(defaults.handlers, config.handlers)
+      config.settings = merge_config(defaults.settings, {dart = config.settings})
 
-  config.capabilities = merge_config(defaults.capabilities, config.capabilities)
-  config.init_options = merge_config(defaults.init_options, config.init_options)
-  config.handlers = merge_config(defaults.handlers, config.handlers)
-  config.settings = merge_config(defaults.settings, {dart = config.settings})
+      config.on_init = function(client, _)
+        return client.notify("workspace/didChangeConfiguration", {settings = config.settings})
+      end
 
-  config.on_init = function(client, _)
-    return client.notify("workspace/didChangeConfiguration", {settings = config.settings})
-  end
+      local client_id = M.lsps[config.root_dir]
+      if not client_id then
+        client_id = lsp.start_client(config)
+        M.lsps[config.root_dir] = client_id
+      end
 
-  local client_id = M.lsps[config.root_dir]
-  if not client_id then
-    client_id = lsp.start_client(config)
-    M.lsps[config.root_dir] = client_id
-  end
-
-  lsp.buf_attach_client(bufnr, client_id)
+      lsp.buf_attach_client(bufnr, client_id)
+    end
+  )
 end
 
 return M

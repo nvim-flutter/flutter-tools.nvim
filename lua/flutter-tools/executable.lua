@@ -1,6 +1,7 @@
 local utils = require("flutter-tools.utils")
 local path = require("flutter-tools.utils.path")
 local ui = require("flutter-tools.ui")
+local Job = require("flutter-tools.job")
 
 local fn = vim.fn
 
@@ -8,58 +9,67 @@ local M = {
   dart_bin_name = "dart"
 }
 
-local function has_shell_error()
-  return vim.v.shell_error > 0 or vim.v.shell_error == -1
-end
-
 ---Get paths for flutter and dart based on the binary locations
 ---@return string
 ---@return string
 local function get_default_binaries()
-  return fn.resolve(fn.exepath("flutter")), fn.resolve(fn.exepath("dart"))
+  return {
+    flutter_bin = fn.resolve(fn.exepath("flutter")),
+    dart_bin = fn.resolve(fn.exepath("dart"))
+  }
 end
 
+local _paths = nil
 ---Fetch the path to the users flutter installation.
----NOTE: this should not be called before the plugin
----setup has occurred
----@return table<string, string>
-local function get_paths()
+---@param callback fun(paths: table<string, string>)
+---@return nil
+function M.paths(callback)
   local conf = require("flutter-tools.config").get()
+  if _paths then
+    return callback(_paths)
+  end
 
   if conf.flutter_path then
-    return {flutter_bin = conf.flutter_path}
+    _paths = {flutter_bin = conf.flutter_path}
+    return callback(_paths)
   end
 
   if conf.flutter_lookup_cmd then
-    local flutter_sdk_path = utils.remove_newlines(fn.system(conf.flutter_lookup_cmd))
-    if not has_shell_error() then
-      return {
-        dart_bin = path.join(flutter_sdk_path, "bin", "dart"),
-        flutter_bin = path.join(flutter_sdk_path, "bin", "flutter"),
-        flutter_sdk = flutter_sdk_path
-      }
-    else
-      ui.notify({string.format("Error running %s", conf.flutter_lookup_cmd)})
-    end
+    Job:new {
+      cmd = conf.flutter_lookup_cmd,
+      on_stderr = function()
+        ui.notify({string.format("Error running %s", conf.flutter_lookup_cmd)})
+      end,
+      on_exit = function(_, result)
+        local res = result[1]
+        if res then
+          local flutter_sdk_path = utils.remove_newlines(res)
+          _paths = {
+            dart_bin = path.join(flutter_sdk_path, "bin", "dart"),
+            flutter_bin = path.join(flutter_sdk_path, "bin", "flutter"),
+            flutter_sdk = flutter_sdk_path
+          }
+          return callback(_paths)
+        else
+          _paths = get_default_binaries()
+          return callback(_paths)
+        end
+      end
+    }:sync()
+  else
+    _paths = get_default_binaries()
+    return callback(_paths)
   end
-  local flutter_bin, dart_bin = get_default_binaries()
-  return {flutter_bin = flutter_bin, dart_bin = dart_bin}
 end
-
-M.paths = get_paths()
 
 local dart_sdk = path.join("cache", "dart-sdk")
 
-function M.dart_sdk_root_path(user_bin_path)
-  if user_bin_path then
-    return path.join(user_bin_path, dart_sdk)
-  end
-
+local function _dart_sdk_root(paths)
   if utils.executable("flutter") then
-    if M.paths.flutter_sdk then
+    if paths.flutter_sdk then
       -- On Linux installations with snap the dart SDK can be further nested inside a bin directory
       -- so it's /bin/cache/dart-sdk whereas else where it is /cache/dart-sdk
-      local segments = {M.paths.flutter_sdk, "cache"}
+      local segments = {paths.flutter_sdk, "cache"}
       if not path.is_dir(path.join(unpack(segments))) then
         table.insert(segments, 2, "bin")
       end
@@ -82,10 +92,31 @@ function M.dart_sdk_root_path(user_bin_path)
   return ""
 end
 
+--- A function to derive the sdk path for dart
+---@param callback fun(path: string)
+---@param user_bin_path string
+function M.dart_sdk_root_path(callback, user_bin_path)
+  assert(callback and type(callback) == "function", "A function callback must be passed in")
+  if user_bin_path then
+    callback(path.join(user_bin_path, dart_sdk))
+  end
+
+  M.paths(
+    function(paths)
+      callback(_dart_sdk_root(paths))
+    end
+  )
+end
+
 ---Prefix a command with the flutter executable
 ---@param cmd string
-function M.with(cmd)
-  return M.paths.flutter_bin .. " " .. cmd
+function M.with(cmd, callback)
+  assert(callback and type(callback) == "function", "A function callback must be passed in")
+  M.paths(
+    function(paths)
+      callback(paths.flutter_bin .. " " .. cmd)
+    end
+  )
 end
 
 return M

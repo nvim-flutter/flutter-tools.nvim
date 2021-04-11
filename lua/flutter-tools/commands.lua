@@ -89,24 +89,28 @@ end
 
 function M.run(device)
   local cfg = config.get()
-  local cmd = executable.with("run")
-  if state.job then
-    return utils.echomsg("Flutter is already running!")
-  end
-  if device and device.id then
-    cmd = cmd .. " -d " .. device.id
-  end
-  ui.notify {"Starting flutter project..."}
-  state.job =
-    Job:new {
-    cmd = cmd,
-    on_stdout = on_run_data(false, cfg.dev_log),
-    on_stderr = on_run_data(true, cfg.dev_log),
-    on_exit = function(_, result)
-      on_run_exit(result)
-      shutdown()
+  executable.with(
+    "run",
+    function(cmd)
+      if state.job then
+        return utils.echomsg("Flutter is already running!")
+      end
+      if device and device.id then
+        cmd = cmd .. " -d " .. device.id
+      end
+      ui.notify {"Starting flutter project..."}
+      state.job =
+        Job:new {
+        cmd = cmd,
+        on_stdout = on_run_data(false, cfg.dev_log),
+        on_stderr = on_run_data(true, cfg.dev_log),
+        on_exit = function(_, result)
+          on_run_exit(result)
+          shutdown()
+        end
+      }:start()
     end
-  }:start()
+  )
 end
 
 ---@param cmd string
@@ -157,14 +161,19 @@ local pub_get_job = nil
 
 function M.pub_get()
   if not pub_get_job then
-    pub_get_job =
-      Job:new {
-      cmd = executable.with("pub get"),
-      on_exit = function(err, result)
-        on_pub_get(err, result)
-        pub_get_job = nil
+    executable.with(
+      "pub get",
+      function(cmd)
+        pub_get_job =
+          Job:new {
+          cmd = cmd,
+          on_exit = function(err, result)
+            on_pub_get(err, result)
+            pub_get_job = nil
+          end
+        }:sync()
       end
-    }:sync()
+    )
   end
 end
 
