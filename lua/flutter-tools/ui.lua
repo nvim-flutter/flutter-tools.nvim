@@ -276,6 +276,8 @@ function M.popup_create(opts)
   vim.wo[win].winblend = WIN_BLEND
   vim.bo[buf].modifiable = false
   vim.wo[win].cursorline = true
+  --- Positions cursor on the third line i.e. after the title and it's underline
+  api.nvim_win_set_cursor(win, {3, 0})
   api.nvim_win_set_option(win, "winhighlight", "CursorLine:Visual,NormalFloat:Normal")
   api.nvim_buf_set_keymap(
     buf,
