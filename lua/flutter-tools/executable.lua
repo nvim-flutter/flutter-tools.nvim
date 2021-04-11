@@ -93,7 +93,7 @@ local function _dart_sdk_root(paths)
 end
 
 --- A function to derive the sdk path for dart
----@param callback fun(path: string)
+---@param callback fun(cmd: string)
 ---@param user_bin_path string
 function M.dart_sdk_root_path(callback, user_bin_path)
   assert(callback and type(callback) == "function", "A function callback must be passed in")
@@ -110,6 +110,7 @@ end
 
 ---Prefix a command with the flutter executable
 ---@param cmd string
+---@param callback fun(cmd: string)
 function M.with(cmd, callback)
   assert(callback and type(callback) == "function", "A function callback must be passed in")
   M.derive_paths(

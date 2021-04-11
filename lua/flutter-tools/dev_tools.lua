@@ -21,14 +21,12 @@ local activate_cmd = {"pub", "global", "activate", "devtools"}
     }
 }]]
 local function handle_start(_, data)
-  for _, str in ipairs(data) do
-    if #str > 0 then
-      local json = fn.json_decode(str)
-      if json and json.params then
-        local msg =
-          string.format("Serving DevTools at http://%s:%s", json.params.host, json.params.port)
-        ui.notify({msg}, 20000)
-      end
+  if #data > 0 then
+    local json = fn.json_decode(data)
+    if json and json.params then
+      local msg =
+        string.format("Serving DevTools at http://%s:%s", json.params.host, json.params.port)
+      ui.notify({msg}, 20000)
     end
   end
 end
@@ -64,11 +62,11 @@ function M.start()
           cmd = cmd,
           on_stdout = handle_start,
           on_stderr = handle_error,
-          on_exit = function(...)
+          on_exit = function()
             start_id = nil
-            ui.notify{"Dev tools closed"}
+            ui.notify {"Dev tools closed"}
           end
-        }:sync()
+        }:start()
       end
     )
   else
