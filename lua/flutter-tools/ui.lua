@@ -44,7 +44,7 @@ local function create_buf_lookup(buf)
   return lnum_by_line
 end
 
----@param lines table
+---@param lines string[]
 local function pad_lines(lines)
   local formatted = {}
   for _, line in pairs(lines) do
@@ -53,7 +53,7 @@ local function pad_lines(lines)
   return formatted
 end
 
----@param lines table
+---@param lines string[]
 local function calculate_width(lines)
   local max_width = math.ceil(vim.o.columns * 0.8)
   local max_length = 0
@@ -176,12 +176,14 @@ function M.notify(lines, duration)
     end
   end
 
+  local columns = vim.o.columns - vim.wo.numberwidth - 2
+  local notification_width = math.ceil(columns * 0.3)
   local opts = {
     row = row,
-    col = vim.o.columns - vim.wo.numberwidth - 2,
+    col = columns,
     relative = "editor",
     style = "minimal",
-    width = calculate_width(lines),
+    width = math.min(notification_width, calculate_width(lines), 60),
     height = #lines,
     anchor = "SE",
     focusable = false,
@@ -189,7 +191,8 @@ function M.notify(lines, duration)
   }
   local buf = api.nvim_create_buf(false, true)
   local win = api.nvim_open_win(buf, false, opts)
-  api.nvim_win_set_option(win, "winhighlight", "NormalFloat:Normal")
+  vim.wo[win].winhighlight = "NormalFloat:Normal"
+  vim.wo[win].wrap = true
   api.nvim_buf_set_lines(buf, 0, -1, true, lines)
 
   table.insert(state.open_windows, win)
