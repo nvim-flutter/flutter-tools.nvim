@@ -55,6 +55,8 @@ local function on_run_data(err, opts)
   end
 end
 
+---Handle a finished flutter run command
+---@param result string[]
 local function on_run_exit(result)
   local matched_error, msg = has_recoverable_error(result)
   if matched_error then

@@ -162,7 +162,9 @@ end
 
 function M.setup()
   local color = utils.get_hl("Normal", "fg")
-  vim.cmd(fmt("highlight! %s guifg=%s", hl_group, color))
+  if color and color ~= "" then
+    vim.cmd(fmt("highlight! %s guifg=%s", hl_group, color))
+  end
 end
 
 local function is_buf_valid(bufnum)
