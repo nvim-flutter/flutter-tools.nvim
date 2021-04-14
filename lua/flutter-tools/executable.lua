@@ -1,7 +1,8 @@
 local utils = require("flutter-tools.utils")
 local path = require("flutter-tools.utils.path")
 local ui = require("flutter-tools.ui")
-local Job = require("flutter-tools.job")
+---@type Job
+local Job = require("plenary.job")
 
 local fn = vim.fn
 
@@ -10,8 +11,7 @@ local M = {
 }
 
 ---Get paths for flutter and dart based on the binary locations
----@return string
----@return string
+---@return table<string, string>
 local function get_default_binaries()
   return {
     flutter_bin = fn.resolve(fn.exepath("flutter")),
@@ -19,47 +19,58 @@ local function get_default_binaries()
   }
 end
 
+---@type table<string, string>
 local _paths = nil
 ---Fetch the path to the users flutter installation.
 ---@param callback fun(paths: table<string, string>)
 ---@return nil
-function M.derive_paths(callback)
+function M.get(callback)
   local conf = require("flutter-tools.config").get()
   if _paths then
-    return callback(_paths)
+    return callback(_paths.flutter_bin, _paths)
   end
 
   if conf.flutter_path then
     _paths = {flutter_bin = conf.flutter_path}
-    return callback(_paths)
+    return callback(_paths.flutter_bin, _paths)
   end
 
   if conf.flutter_lookup_cmd then
-    Job:new {
-      cmd = conf.flutter_lookup_cmd,
-      on_stderr = function()
-        ui.notify({string.format("Error running %s", conf.flutter_lookup_cmd)})
-      end,
-      on_exit = function(_, result)
-        local res = result[1]
-        if res then
-          local flutter_sdk_path = utils.remove_newlines(res)
-          _paths = {
-            dart_bin = path.join(flutter_sdk_path, "bin", "dart"),
-            flutter_bin = path.join(flutter_sdk_path, "bin", "flutter"),
-            flutter_sdk = flutter_sdk_path
-          }
-          return callback(_paths)
-        else
-          _paths = get_default_binaries()
-          return callback(_paths)
+    local parts = vim.split(conf.flutter_lookup_cmd, " ")
+    local cmd = parts[1]
+    local args = vim.list_slice(parts, #parts)
+    local job = Job:new {command = cmd, args = args}
+    job:after_failure(
+      vim.schedule_wrap(
+        function()
+          ui.notify({string.format("Error running %s", conf.flutter_lookup_cmd)})
         end
-      end
-    }:sync()
-  else
-    _paths = get_default_binaries()
-    return callback(_paths)
+      )
+    )
+    job:after_success(
+      vim.schedule_wrap(
+        function(j, _)
+          local result = j:result()
+          local res = result[1]
+          if res then
+            local flutter_sdk_path = utils.remove_newlines(res)
+            _paths = {
+              dart_bin = path.join(flutter_sdk_path, "bin", "dart"),
+              flutter_bin = path.join(flutter_sdk_path, "bin", "flutter"),
+              flutter_sdk = flutter_sdk_path
+            }
+            return callback(_paths.flutter_bin, _paths)
+          else
+            _paths = get_default_binaries()
+            return callback(_paths.flutter_bin, _paths)
+          end
+        end
+      )
+    )
+    return job:start()
   end
+  _paths = get_default_binaries()
+  return callback(_paths)
 end
 
 local dart_sdk = path.join("cache", "dart-sdk")
@@ -101,9 +112,13 @@ function M.dart_sdk_root_path(callback, user_bin_path)
     callback(path.join(user_bin_path, dart_sdk))
   end
 
-  M.derive_paths(
-    function(paths)
-      callback(_dart_sdk_root(paths))
+  M.get(
+    function(_, paths)
+      vim.schedule(
+        function()
+          callback(_dart_sdk_root(paths))
+        end
+      )
     end
   )
 end
@@ -113,7 +128,7 @@ end
 ---@param callback fun(cmd: string)
 function M.with(cmd, callback)
   assert(callback and type(callback) == "function", "A function callback must be passed in")
-  M.derive_paths(
+  M.get(
     function(paths)
       callback(paths.flutter_bin .. " " .. cmd)
     end

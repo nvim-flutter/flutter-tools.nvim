@@ -1,4 +1,4 @@
-local Job = require("flutter-tools.job")
+local Job = require("plenary.job")
 local ui = require("flutter-tools.ui")
 local utils = require("flutter-tools.utils")
 local devices = require("flutter-tools.devices")
@@ -41,18 +41,19 @@ local function has_recoverable_error(lines)
 end
 
 ---Handle output from flutter run command
----@param err boolean
 ---@param opts table config options for the dev log window
----@return fun(job: Job, data: string): nil
-local function on_run_data(err, opts)
-  return function(_, data)
-    if err then
-      ui.notify({data})
+---@return fun(err: string, data: string, job: Job): nil
+local function on_run_data(opts)
+  return vim.schedule_wrap(
+    function(err, data, _)
+      if err then
+        ui.notify({err})
+      end
+      if not match_error_string(data) then
+        dev_log.log(data, opts)
+      end
     end
-    if not match_error_string(data) then
-      dev_log.log(data, opts)
-    end
-  end
+  )
 end
 
 ---Handle a finished flutter run command
@@ -90,25 +91,30 @@ local function shutdown()
 end
 
 function M.run(device)
+  if state.job then
+    return utils.echomsg("Flutter is already running!")
+  end
   local cfg = config.get()
-  executable.with(
-    "run",
+  executable.get(
     function(cmd)
-      if state.job then
-        return utils.echomsg("Flutter is already running!")
-      end
+      local args = {"run"}
       if device and device.id then
-        cmd = cmd .. " -d " .. device.id
+        vim.list_extend(args, {"-d", device.id})
       end
       ui.notify {"Starting flutter project..."}
       state.job =
         Job:new {
-        cmd = cmd,
-        on_stdout = on_run_data(false, cfg.dev_log),
-        on_stderr = on_run_data(true, cfg.dev_log),
+        command = cmd,
+        args = args,
+        on_stdout = on_run_data(cfg.dev_log),
+        on_stderr = on_run_data(cfg.dev_log),
         on_exit = function(_, result)
-          on_run_exit(result)
-          shutdown()
+          vim.schedule(
+            function()
+              on_run_exit(result)
+              shutdown()
+            end
+          )
         end
       }:start()
     end
@@ -154,7 +160,7 @@ end
 -----------------------------------------------------------------------------//
 -- Pub commands
 -----------------------------------------------------------------------------//
-local function on_pub_get(_, result)
+local function on_pub_get(result)
   ui.notify(result)
 end
 
@@ -163,17 +169,20 @@ local pub_get_job = nil
 
 function M.pub_get()
   if not pub_get_job then
-    executable.with(
-      "pub get",
+    executable.get(
       function(cmd)
-        pub_get_job =
-          Job:new {
-          cmd = cmd,
-          on_exit = function(err, result)
-            on_pub_get(err, result)
-            pub_get_job = nil
+        pub_get_job = Job:new {command = cmd, args = {"pub", "get"}}
+        pub_get_job:after_success(
+          function(j)
+            vim.schedule(
+              function()
+                on_pub_get(j:result())
+                pub_get_job = nil
+              end
+            )
           end
-        }:sync()
+        )
+        pub_get_job:start()
       end
     )
   end

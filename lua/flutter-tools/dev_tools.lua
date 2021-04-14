@@ -1,7 +1,7 @@
 local utils = require("flutter-tools.utils")
 local ui = require("flutter-tools.ui")
 local executable = require("flutter-tools.executable")
-local Job = require("flutter-tools.job")
+local Job = require("plenary.job")
 
 local M = {}
 local fn = vim.fn
@@ -34,13 +34,12 @@ end
 local function handle_error(_, data)
   for _, str in ipairs(data) do
     if str:match("No active package devtools") then
-      executable.with(
-        activate_cmd,
+      executable.get(
         function(cmd)
           ui.notify(
             {
               "Flutter pub global devtools has not been activated.",
-              "Run " .. cmd .. " to activate it."
+              "Run " .. cmd .. table.concat(activate_cmd, " ") .. " to activate it."
             }
           )
         end
@@ -54,12 +53,12 @@ end
 function M.start()
   ui.notify {"Starting dev tools..."}
   if not start_id then
-    executable.with(
-      table.concat({"pub", "global", "run", "devtools", "--machine", "--try-ports", "10"}, " "),
+    executable.get(
       function(cmd)
         start_id =
           Job:new {
-          cmd = cmd,
+          command = cmd,
+          args = {"pub", "global", "run", "devtools", "--machine", "--try-ports", "10"},
           on_stdout = handle_start,
           on_stderr = handle_error,
           on_exit = function()
