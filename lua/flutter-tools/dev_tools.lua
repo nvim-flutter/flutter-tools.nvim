@@ -1,12 +1,14 @@
 local utils = require("flutter-tools.utils")
 local ui = require("flutter-tools.ui")
 local executable = require("flutter-tools.executable")
+---@type Job
 local Job = require("plenary.job")
 
 local M = {}
 local fn = vim.fn
 
-local start_id = nil
+---@type Job
+local job = nil
 
 local activate_cmd = { "pub", "global", "activate", "devtools" }
 
@@ -20,7 +22,11 @@ local activate_cmd = { "pub", "global", "activate", "devtools" }
         protocolVersion = "1.1.0"
     }
 }]]
-local function handle_start(_, data)
+---Open dev tools
+---@param _ number
+---@param data string
+---@param __ Job
+local function handle_start(_, data, __)
   if #data > 0 then
     local json = fn.json_decode(data)
     if json and json.params then
@@ -31,7 +37,11 @@ local function handle_start(_, data)
   end
 end
 
-local function handle_error(_, data)
+---Handler errors whilst opening dev tools
+---@param _ number
+---@param data string
+---@param __ Job
+local function handle_error(_, data, __)
   for _, str in ipairs(data) do
     if str:match("No active package devtools") then
       executable.get(function(cmd)
@@ -48,9 +58,9 @@ end
 
 function M.start()
   ui.notify({ "Starting dev tools..." })
-  if not start_id then
+  if not job then
     executable.get(function(cmd)
-      start_id = Job
+      job = Job
         :new({
           command = cmd,
           args = {
@@ -62,14 +72,15 @@ function M.start()
             "--try-ports",
             "10",
           },
-          on_stdout = handle_start,
-          on_stderr = handle_error,
-          on_exit = function()
-            start_id = nil
+          on_stdout = vim.schedule_wrap(handle_start),
+          on_stderr = vim.schedule_wrap(handle_error),
+          on_exit = vim.schedule_wrap(function()
+            job = nil
             ui.notify({ "Dev tools closed" })
-          end,
+          end),
         })
-        :start()
+
+        job:start()
     end)
   else
     utils.echomsg("DevTools are already running!")
