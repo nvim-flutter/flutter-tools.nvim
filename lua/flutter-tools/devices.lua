@@ -130,7 +130,7 @@ end
 
 function M.close_emulator()
   if M.emulator_job then
-    M.emulator_job:close()
+    M.emulator_job:shutdown()
   end
 end
 

@@ -10,10 +10,8 @@ local api = vim.api
 
 local M = {}
 
-local state = {
-  ---@type Job
-  job = nil,
-}
+---@type Job
+local run_job = nil
 
 local function match_error_string(line)
   if not line then
@@ -79,15 +77,15 @@ local function on_run_exit(result)
 end
 
 local function shutdown()
-  if state.job then
-    state.job:close()
-    state.job = nil
+  if run_job then
+    run_job:shutdown()
+    run_job = nil
   end
   devices.close_emulator()
 end
 
 function M.run(device)
-  if state.job then
+  if run_job then
     return utils.echomsg("Flutter is already running!")
   end
   local cfg = config.get()
@@ -97,18 +95,18 @@ function M.run(device)
       vim.list_extend(args, { "-d", device.id })
     end
     ui.notify({ "Starting flutter project..." })
-    state.job = Job
-      :new({
-        command = cmd,
-        args = args,
-        on_stdout = on_run_data(cfg.dev_log),
-        on_stderr = on_run_data(cfg.dev_log),
-        on_exit = vim.schedule_wrap(function(j, _)
-          on_run_exit(j:result())
-          shutdown()
-        end),
-      })
-      :start()
+    run_job = Job:new({
+      command = cmd,
+      args = args,
+      on_stdout = on_run_data(cfg.dev_log),
+      on_stderr = on_run_data(cfg.dev_log),
+      on_exit = vim.schedule_wrap(function(j, _)
+        on_run_exit(j:result())
+        shutdown()
+      end),
+    })
+
+    run_job:start()
   end)
 end
 
@@ -116,9 +114,11 @@ end
 ---@param quiet boolean
 ---@param on_send function|nil
 local function send(cmd, quiet, on_send)
-  if state.job then
-    state.job:send(cmd)
-    on_send()
+  if run_job then
+    run_job:send(cmd)
+    if on_send then
+      on_send()
+    end
   elseif not quiet then
     utils.echomsg([[Sorry! Flutter is not running]])
   end
@@ -131,7 +131,7 @@ end
 
 ---@param quiet boolean
 function M.restart(quiet)
-  send("R", quiet, function ()
+  send("R", quiet, function()
     if not quiet then
       ui.notify({ "Restarting..." }, 1500)
     end
@@ -140,7 +140,7 @@ end
 
 ---@param quiet boolean
 function M.quit(quiet)
-  send("q", quiet, function ()
+  send("q", quiet, function()
     if not quiet then
       ui.notify({ "Closing flutter application..." }, 1500)
     end
