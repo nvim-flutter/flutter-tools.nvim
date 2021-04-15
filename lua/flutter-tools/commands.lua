@@ -39,12 +39,13 @@ local function has_recoverable_error(lines)
 end
 
 ---Handle output from flutter run command
+---@param is_err boolean if this is stdout or stderr
 ---@param opts table config options for the dev log window
 ---@return fun(err: string, data: string, job: Job): nil
-local function on_run_data(opts)
-  return vim.schedule_wrap(function(err, data, _)
-    if err then
-      ui.notify({ err })
+local function on_run_data(is_err, opts)
+  return vim.schedule_wrap(function(_, data, _)
+    if is_err then
+      ui.notify({ data })
     end
     if not match_error_string(data) then
       dev_log.log(data, opts)
@@ -98,8 +99,8 @@ function M.run(device)
     run_job = Job:new({
       command = cmd,
       args = args,
-      on_stdout = on_run_data(cfg.dev_log),
-      on_stderr = on_run_data(cfg.dev_log),
+      on_stdout = on_run_data(false, cfg.dev_log),
+      on_stderr = on_run_data(true, cfg.dev_log),
       on_exit = vim.schedule_wrap(function(j, _)
         on_run_exit(j:result())
         shutdown()
