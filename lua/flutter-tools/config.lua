@@ -80,7 +80,13 @@ end
 
 local config = setmetatable({}, { __index = defaults })
 
-function M.get()
+---Get the configuration or just a key of the config
+---@param key string
+---@return table|number|boolean
+function M.get(key)
+  if key then
+    return config[key]
+  end
   return config
 end
 

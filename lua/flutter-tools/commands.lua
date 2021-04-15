@@ -89,18 +89,18 @@ function M.run(device)
   if run_job then
     return utils.echomsg("Flutter is already running!")
   end
-  local cfg = config.get()
   executable.get(function(cmd)
     local args = { "run" }
     if device and device.id then
       vim.list_extend(args, { "-d", device.id })
     end
     ui.notify({ "Starting flutter project..." })
+    local conf = config.get('dev_log')
     run_job = Job:new({
       command = cmd,
       args = args,
-      on_stdout = on_run_data(false, cfg.dev_log),
-      on_stderr = on_run_data(true, cfg.dev_log),
+      on_stdout = on_run_data(false, conf),
+      on_stderr = on_run_data(true, conf),
       on_exit = vim.schedule_wrap(function(j, _)
         on_run_exit(j:result())
         shutdown()
