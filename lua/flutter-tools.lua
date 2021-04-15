@@ -20,31 +20,28 @@ local function setup_commands()
 end
 
 local function setup_autocommands()
-  require("flutter-tools.utils").augroup(
-    "FlutterToolsHotReload",
+  require("flutter-tools.utils").augroup("FlutterToolsHotReload", {
     {
-      {
-        events = {"VimLeavePre"},
-        targets = {"*"},
-        command = "lua require('flutter-tools.devices').close_emulator()"
-      },
-      {
-        events = {"BufWritePost"},
-        targets = {"*.dart"},
-        command = "lua require('flutter-tools.commands').reload(true)"
-      },
-      {
-        events = {"BufWritePost"},
-        targets = {"*/pubspec.yaml"},
-        command = "lua require('flutter-tools.commands').pub_get()"
-      },
-      {
-        events = {"BufEnter"},
-        targets = {require("flutter-tools.log").filename},
-        command = "lua require('flutter-tools.log').__resurrect()"
-      }
-    }
-  )
+      events = { "VimLeavePre" },
+      targets = { "*" },
+      command = "lua require('flutter-tools.devices').close_emulator()",
+    },
+    {
+      events = { "BufWritePost" },
+      targets = { "*.dart" },
+      command = "lua require('flutter-tools.commands').reload(true)",
+    },
+    {
+      events = { "BufWritePost" },
+      targets = { "*/pubspec.yaml" },
+      command = "lua require('flutter-tools.commands').pub_get()",
+    },
+    {
+      events = { "BufEnter" },
+      targets = { require("flutter-tools.log").filename },
+      command = "lua require('flutter-tools.log').__resurrect()",
+    },
+  })
 end
 
 function M.setup(user_config)

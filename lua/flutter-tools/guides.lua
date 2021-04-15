@@ -14,7 +14,7 @@ local markers = {
   bottom = "└",
   middle = "├",
   vertical = "│",
-  horizontal = "─"
+  horizontal = "─",
 }
 
 -- These offsets represent the points at which each character
@@ -65,8 +65,8 @@ local function get_guide_character(lnum, end_line, parent_start, indent_size, ch
       return markers.middle .. markers.horizontal:rep(child_indent)
     end
   end
-  return lnum ~= end_line and markers.vertical or
-    markers.bottom .. markers.horizontal:rep(indent_size)
+  return lnum ~= end_line and markers.vertical
+    or markers.bottom .. markers.horizontal:rep(indent_size)
 end
 
 -- Marshal the lsp flutter outline into a table of lines and characters
@@ -136,25 +136,19 @@ local function render_guides(bufnum, guides, conf)
   for lnum, guide in pairs(guides) do
     for start, character in pairs(guide) do
       local success, msg =
-        pcall(
-        api.nvim_buf_set_extmark,
-        bufnum,
-        widget_outline_ns_id,
-        lnum,
-        start,
-        {
-          virt_text = {{character, hl_group}},
+        pcall(api.nvim_buf_set_extmark, bufnum, widget_outline_ns_id, lnum, start, {
+          virt_text = { { character, hl_group } },
           virt_text_pos = "overlay",
-          hl_mode = "combine"
-        }
-      )
+          hl_mode = "combine",
+        })
       if not success and conf.debug then
-        utils.echomsg(
+        utils.echomsg({
           {
-            {fmt("error drawing widget guide at %d, col %d\n", lnum, start), "Title"},
-            {msg, "ErrorMsg"}
-          }
-        )
+            fmt("error drawing widget guide at %d, col %d\n", lnum, start),
+            "Title",
+          },
+          { msg, "ErrorMsg" },
+        })
       end
     end
   end
@@ -168,8 +162,10 @@ function M.setup()
 end
 
 local function is_buf_valid(bufnum)
-  return bufnum and api.nvim_buf_is_valid(bufnum) and not vim.wo.previewwindow and
-    vim.bo.buftype == ""
+  return bufnum
+    and api.nvim_buf_is_valid(bufnum)
+    and not vim.wo.previewwindow
+    and vim.bo.buftype == ""
 end
 
 function M.widget_guides(_, _, data, _)
@@ -188,15 +184,10 @@ function M.widget_guides(_, _, data, _)
 
     local async
 
-    async =
-      vim.loop.new_async(
-      vim.schedule_wrap(
-        function()
-          render_guides(bufnum, collect_guides(lines, data.outline), conf)
-          async:close()
-        end
-      )
-    )
+    async = vim.loop.new_async(vim.schedule_wrap(function()
+      render_guides(bufnum, collect_guides(lines, data.outline), conf)
+      async:close()
+    end))
     async:send()
   end
 end

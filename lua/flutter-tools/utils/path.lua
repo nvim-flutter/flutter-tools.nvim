@@ -56,7 +56,8 @@ do
 end
 
 function M.join(...)
-  local result = table.concat(vim.tbl_flatten {...}, M.path_sep):gsub(M.path_sep .. "+", M.path_sep)
+  local result =
+    table.concat(vim.tbl_flatten({ ... }), M.path_sep):gsub(M.path_sep .. "+", M.path_sep)
   return result
 end
 
@@ -96,7 +97,7 @@ function M.iterate_parents(path)
 end
 
 function M.is_descendant(root, path)
-  if (not path) then
+  if not path then
     return false
   end
 
@@ -110,10 +111,14 @@ function M.is_descendant(root, path)
 end
 
 function M.search_ancestors(startpath, func)
-  vim.validate { func = {func, 'f'} }
-  if func(startpath) then return startpath end
+  vim.validate({ func = { func, "f" } })
+  if func(startpath) then
+    return startpath
+  end
   for path in M.iterate_parents(startpath) do
-    if func(path) then return path end
+    if func(path) then
+      return path
+    end
   end
 end
 
