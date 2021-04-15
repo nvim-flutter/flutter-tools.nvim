@@ -31,7 +31,7 @@ or using `packer.nvim`
 use {'akinsho/flutter-tools.nvim', requires = 'nvim-lua/plenary.nvim'}
 ```
 
-This plugin depends on `plenary.nvim`, please make sure it is installed.
+This plugin depends on [plenary.nvim](https://github.com/nvim-lua/plenary.nvim), please make sure it is installed.
 
 NOTE: flutter tools does not depend on `nvim-lspconfig`. The two can co-exist but please ensure
 you do **NOT** configure `dartls` using `lspconfig`. It will be automatically set up by this
