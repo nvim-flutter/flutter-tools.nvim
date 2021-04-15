@@ -45,6 +45,9 @@ local function setup_autocommands()
   })
 end
 
+---Entry point for this plugin
+---@param user_config table
+---@return nil
 function M.setup(user_config)
   local success = pcall(require, "plenary")
   if not success then

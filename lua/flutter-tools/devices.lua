@@ -31,7 +31,7 @@ end
 ---Highlight each device/emulator in the popup window
 ---@param highlights table
 ---@param line string
----@param device table
+---@param device table<string, string>
 local function add_device_highlights(highlights, line, device)
   return ui.get_line_highlights(line, {
     {
@@ -168,7 +168,7 @@ function M.list_emulators()
       show_emulators(j:result())
     end))
     job:after_failure(vim.schedule_wrap(function(j)
-      return utils.echomsg(j:result())
+      return ui.notify(j:stderr_result())
     end))
     job:start()
   end)

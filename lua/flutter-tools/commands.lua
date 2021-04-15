@@ -79,7 +79,6 @@ end
 
 local function shutdown()
   if run_job then
-    run_job:shutdown()
     run_job = nil
   end
   devices.close_emulator()
@@ -95,7 +94,7 @@ function M.run(device)
       vim.list_extend(args, { "-d", device.id })
     end
     ui.notify({ "Starting flutter project..." })
-    local conf = config.get('dev_log')
+    local conf = config.get("dev_log")
     run_job = Job:new({
       command = cmd,
       args = args,
@@ -144,6 +143,7 @@ function M.quit(quiet)
   send("q", quiet, function()
     if not quiet then
       ui.notify({ "Closing flutter application..." }, 1500)
+      shutdown()
     end
   end)
 end
