@@ -21,6 +21,38 @@ end
 
 ---@type table<string, string>
 local _paths = nil
+
+---Execute user's lookup command and pass it to the job callback
+---@param lookup_cmd string
+---@param callback fun(p: string, t: table<string, string>)
+---@return table<string, string>
+local function path_from_lookup_cmd(lookup_cmd, callback)
+  local paths = {}
+  local parts = vim.split(lookup_cmd, " ")
+  local cmd = parts[1]
+  local args = vim.list_slice(parts, #parts)
+
+  local job = Job:new({ command = cmd, args = args })
+  job:after_failure(vim.schedule_wrap(function()
+    ui.notify({ string.format("Error running %s", lookup_cmd) })
+  end))
+  job:after_success(vim.schedule_wrap(function(j, _)
+    local result = j:result()
+    local flutter_sdk_path = result[1]
+    if flutter_sdk_path then
+      paths.dart_bin = path.join(flutter_sdk_path, "bin", "dart")
+      paths.flutter_bin = path.join(flutter_sdk_path, "bin", "flutter")
+      paths.flutter_sdk = flutter_sdk_path
+      callback(paths.flutter_bin, paths)
+    else
+      paths = get_default_binaries()
+      callback(paths.flutter_bin, paths)
+    end
+    return paths
+  end))
+  job:start()
+end
+
 ---Fetch the path to the users flutter installation.
 ---@param callback fun(paths: table<string, string>)
 ---@return nil
@@ -36,32 +68,16 @@ function M.get(callback)
   end
 
   if conf.flutter_lookup_cmd then
-    local parts = vim.split(conf.flutter_lookup_cmd, " ")
-    local cmd = parts[1]
-    local args = vim.list_slice(parts, #parts)
-    local job = Job:new({ command = cmd, args = args })
-    job:after_failure(vim.schedule_wrap(function()
-      ui.notify({ string.format("Error running %s", conf.flutter_lookup_cmd) })
-    end))
-    job:after_success(vim.schedule_wrap(function(j, _)
-      local result = j:result()
-      local res = result[1]
-      if res then
-        local flutter_sdk_path = utils.remove_newlines(res)
-        _paths = {
-          dart_bin = path.join(flutter_sdk_path, "bin", "dart"),
-          flutter_bin = path.join(flutter_sdk_path, "bin", "flutter"),
-          flutter_sdk = flutter_sdk_path,
-        }
-        return callback(_paths.flutter_bin, _paths)
-      else
-        _paths = get_default_binaries()
-        return callback(_paths.flutter_bin, _paths)
-      end
-    end))
-    return job:start()
+    return path_from_lookup_cmd(conf.flutter_lookup_cmd, function(p, tbl)
+      _paths = tbl
+      callback(p, tbl)
+    end)
   end
-  _paths = get_default_binaries()
+
+  if not _paths then
+    _paths = get_default_binaries()
+  end
+
   return callback(_paths)
 end
 
@@ -111,19 +127,6 @@ function M.dart_sdk_root_path(callback, user_bin_path)
     vim.schedule(function()
       callback(_dart_sdk_root(paths))
     end)
-  end)
-end
-
----Prefix a command with the flutter executable
----@param cmd string
----@param callback fun(cmd: string)
-function M.with(cmd, callback)
-  assert(
-    callback and type(callback) == "function",
-    "A function callback must be passed in"
-  )
-  M.get(function(paths)
-    callback(paths.flutter_bin .. " " .. cmd)
   end)
 end
 
