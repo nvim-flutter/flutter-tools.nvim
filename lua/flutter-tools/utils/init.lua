@@ -29,14 +29,6 @@ function M.display_name(name, platform)
   return symbol .. " " .. name .. (platform and (" " .. symbol .. " ") .. platform or "")
 end
 
---- escape any special characters in text
---- source: https://stackoverflow.com/a/20778724
----@param text string
-function M.escape_pattern(text)
-  local pattern = "([" .. ("%^$().[]*+-?"):gsub("(.)", "%%%1") .. "])"
-  return text:gsub(pattern, "%%%1")
-end
-
 function M.command(name, rhs)
   vim.cmd("command! " .. name .. " " .. rhs)
 end

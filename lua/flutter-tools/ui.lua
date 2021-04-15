@@ -74,7 +74,7 @@ end
 function M.get_line_highlights(line, items, highlights)
   highlights = highlights or {}
   for _, item in ipairs(items) do
-    local match_start, match_end = line:find(utils.escape_pattern(item.word))
+    local match_start, match_end = line:find(vim.pesc(item.word))
     if match_start and match_end then
       highlights[line] = highlights[line] or {}
       table.insert(highlights[line], {
