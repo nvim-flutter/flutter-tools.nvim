@@ -1,7 +1,8 @@
+local utils = require("flutter-tools.utils")
+
 local M = {}
 
 local function setup_commands()
-  local utils = require("flutter-tools.utils")
   -- Commands
   utils.command("FlutterRun", [[lua require('flutter-tools.commands').run()]])
   utils.command("FlutterReload", [[lua require('flutter-tools.commands').reload()]])
@@ -45,6 +46,11 @@ local function setup_autocommands()
 end
 
 function M.setup(user_config)
+  local success = pcall(require, "plenary")
+  if not success then
+    return utils.echomsg("plenary.nvim is a required dependency of this plugin, please ensure it is installed")
+  end
+
   local conf = require("flutter-tools.config").set(user_config)
 
   require("flutter-tools.lsp").setup()
