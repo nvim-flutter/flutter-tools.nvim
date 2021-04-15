@@ -153,6 +153,8 @@ end
 -----------------------------------------------------------------------------//
 -- Pub commands
 -----------------------------------------------------------------------------//
+---Print result of running pub get
+---@param result string[]
 local function on_pub_get(result)
   ui.notify(result)
 end
@@ -164,12 +166,10 @@ function M.pub_get()
   if not pub_get_job then
     executable.get(function(cmd)
       pub_get_job = Job:new({ command = cmd, args = { "pub", "get" } })
-      pub_get_job:after_success(function(j)
-        vim.schedule(function()
-          on_pub_get(j:result())
-          pub_get_job = nil
-        end)
-      end)
+      pub_get_job:after_success(vim.schedule_wrap(function(j)
+        on_pub_get(j:result())
+        pub_get_job = nil
+      end))
       pub_get_job:start()
     end)
   end

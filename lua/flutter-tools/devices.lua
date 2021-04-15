@@ -123,11 +123,9 @@ end
 -- Emulators
 -----------------------------------------------------------------------------//
 
----@param result string[]
-local function handle_launch(err, result)
-  if err then
-    ui.notify(result)
-  end
+---@param job Job
+local function handle_launch(job)
+  ui.notify(job:result())
 end
 
 function M.close_emulator()
