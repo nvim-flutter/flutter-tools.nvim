@@ -103,12 +103,10 @@ function M.run(device)
         args = args,
         on_stdout = on_run_data(cfg.dev_log),
         on_stderr = on_run_data(cfg.dev_log),
-        on_exit = function(_, result)
-          vim.schedule(function()
-            on_run_exit(result)
-            shutdown()
-          end)
-        end,
+        on_exit = vim.schedule_wrap(function(j, _)
+          on_run_exit(j:result())
+          shutdown()
+        end),
       })
       :start()
   end)
@@ -116,9 +114,11 @@ end
 
 ---@param cmd string
 ---@param quiet boolean
-local function send(cmd, quiet)
+---@param on_send function|nil
+local function send(cmd, quiet, on_send)
   if state.job then
     state.job:send(cmd)
+    on_send()
   elseif not quiet then
     utils.echomsg([[Sorry! Flutter is not running]])
   end
@@ -131,18 +131,20 @@ end
 
 ---@param quiet boolean
 function M.restart(quiet)
-  if not quiet then
-    ui.notify({ "Restarting..." }, 1500)
-  end
-  send("R", quiet)
+  send("R", quiet, function ()
+    if not quiet then
+      ui.notify({ "Restarting..." }, 1500)
+    end
+  end)
 end
 
 ---@param quiet boolean
 function M.quit(quiet)
-  if not quiet then
-    ui.notify({ "Closing flutter application..." }, 1500)
-  end
-  send("q", quiet)
+  send("q", quiet, function ()
+    if not quiet then
+      ui.notify({ "Closing flutter application..." }, 1500)
+    end
+  end)
 end
 
 ---@param quiet boolean
