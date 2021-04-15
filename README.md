@@ -21,14 +21,17 @@ to allow users to easily develop flutter apps using neovim.
 using `vim-plug`
 
 ```vim
+Plug 'nvim-lua/plenary.nvim'
 Plug 'akinsho/flutter-tools.nvim'
 ```
 
 or using `packer.nvim`
 
 ```lua
-use "akinsho/flutter-tools.nvim"
+use {'akinsho/flutter-tools.nvim', requires = 'nvim-lua/plenary.nvim'}
 ```
+
+This plugin depends on `plenary.nvim`, please make sure it is installed.
 
 NOTE: flutter tools does not depend on `nvim-lspconfig`. The two can co-exist but please ensure
 you do **NOT** configure `dartls` using `lspconfig`. It will be automatically set up by this
@@ -104,7 +107,6 @@ require("telescope").load_extension("flutter")
 Or alternatively telescope can lazy load extension but the `Telescope` command will not autocomplete lazy loaded modules.
 
 This can be accessed using `Telescope flutter commands` or `require('telescope').extensions.flutter.commands()`
-
 
 # Functionality
 
