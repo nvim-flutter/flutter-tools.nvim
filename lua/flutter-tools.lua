@@ -23,11 +23,6 @@ end
 local function setup_autocommands()
   require("flutter-tools.utils").augroup("FlutterToolsHotReload", {
     {
-      events = { "VimLeavePre" },
-      targets = { "*" },
-      command = "lua require('flutter-tools.devices').close_emulator()",
-    },
-    {
       events = { "BufWritePost" },
       targets = { "*.dart" },
       command = "lua require('flutter-tools.commands').reload(true)",

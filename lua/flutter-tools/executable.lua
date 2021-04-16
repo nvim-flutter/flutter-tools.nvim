@@ -78,7 +78,7 @@ function M.get(callback)
     _paths = get_default_binaries()
   end
 
-  return callback(_paths)
+  return callback(_paths.flutter_bin, _paths)
 end
 
 local dart_sdk = path.join("cache", "dart-sdk")
