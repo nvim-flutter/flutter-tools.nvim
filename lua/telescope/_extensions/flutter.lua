@@ -5,8 +5,8 @@ if not has_telescope then
   error("This plugin requires telescope.nvim (https://github.com/nvim-telescope/telescope.nvim)")
 end
 
-return telescope.register_extension {
+return telescope.register_extension({
   exports = {
-    commands = menu.commands
-  }
-}
+    commands = menu.commands,
+  },
+})

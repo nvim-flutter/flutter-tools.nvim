@@ -1,11 +1,11 @@
-local ui = require "flutter-tools/ui"
-local utils = require "flutter-tools/utils"
+local ui = require("flutter-tools/ui")
+local utils = require("flutter-tools/utils")
 
 local api = vim.api
 
 local M = {
   buf = nil,
-  win = nil
+  win = nil,
 }
 
 M.filename = "__FLUTTER_DEV_LOG__"
@@ -24,29 +24,23 @@ local function create(config)
   local opts = {
     filename = M.filename,
     filetype = "log",
-    open_cmd = config.open_cmd
+    open_cmd = config.open_cmd,
   }
-  ui.open_split(
-    opts,
-    function(buf, win)
-      if not buf then
-        utils.echomsg("Failed to open the dev log as the buffer could not be found")
-        return
-      end
-      M.buf = buf
-      M.win = win
-      utils.augroup(
-        "FlutterToolsBuffer" .. buf,
-        {
-          {
-            events = {"BufWipeout"},
-            targets = {"<buffer>"},
-            command = "lua __flutter_tools_close_dev_log()"
-          }
-        }
-      )
+  ui.open_split(opts, function(buf, win)
+    if not buf then
+      utils.echomsg("Failed to open the dev log as the buffer could not be found")
+      return
     end
-  )
+    M.buf = buf
+    M.win = win
+    utils.augroup("FlutterToolsBuffer" .. buf, {
+      {
+        events = { "BufWipeout" },
+        targets = { "<buffer>" },
+        command = "lua __flutter_tools_close_dev_log()",
+      },
+    })
+  end)
 end
 
 function M.get_content()
@@ -68,7 +62,7 @@ local function autoscroll(bufnr, winnr)
       if api.nvim_get_current_win() == win then
         return
       end
-      local success = pcall(api.nvim_win_set_cursor, win, {buf_length, 0})
+      local success = pcall(api.nvim_win_set_cursor, win, { buf_length, 0 })
       if not success then
         utils.echomsg(("Failed to set cursor for log: win_id: %s, buf_id: %s"):format(win, buf))
       end
@@ -86,14 +80,14 @@ function M.log(data, opts)
     create(opts)
   end
   vim.bo[M.buf].modifiable = true
-  api.nvim_buf_set_lines(M.buf, -1, -1, true, {data})
+  api.nvim_buf_set_lines(M.buf, -1, -1, true, { data })
   autoscroll(M.buf, M.win)
   vim.bo[M.buf].modifiable = false
 end
 
 function M.__resurrect()
   local buf = api.nvim_get_current_buf()
-  vim.cmd [[setfiletype log]]
+  vim.cmd([[setfiletype log]])
   vim.bo[buf].modifiable = false
   vim.bo[buf].modified = false
   vim.bo[buf].buftype = "nofile"

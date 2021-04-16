@@ -1,4 +1,4 @@
-local config = require "flutter-tools/config"
+local config = require("flutter-tools/config")
 
 local api = vim.api
 
@@ -14,15 +14,9 @@ local function render_labels(labels, opts)
 
   for _, item in ipairs(labels) do
     local line = item.range["end"].line
-    api.nvim_buf_set_virtual_text(
-      0,
-      namespace,
-      tonumber(line),
-      {
-        {prefix .. item.label, highlight}
-      },
-      {}
-    )
+    api.nvim_buf_set_virtual_text(0, namespace, tonumber(line), {
+      { prefix .. item.label, highlight },
+    }, {})
   end
 end
 

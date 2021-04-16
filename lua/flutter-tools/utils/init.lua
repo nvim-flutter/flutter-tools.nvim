@@ -6,7 +6,7 @@ function M.echomsg(msg, hl)
   hl = hl or "Title"
   local prefix = "[Flutter-tools]: "
   if type(msg) == "string" then
-    msg = {{prefix .. msg, hl}}
+    msg = { { prefix .. msg, hl } }
   elseif vim.tbl_islist(msg) then
     for i, value in ipairs(msg) do
       if #msg[i] == 2 then
@@ -27,14 +27,6 @@ function M.display_name(name, platform)
   end
   local symbol = "•"
   return symbol .. " " .. name .. (platform and (" " .. symbol .. " ") .. platform or "")
-end
-
---- escape any special characters in text
---- source: https://stackoverflow.com/a/20778724
----@param text string
-function M.escape_pattern(text)
-  local pattern = "([" .. ("%^$().[]*+-?"):gsub("(.)", "%%%1") .. "])"
-  return text:gsub(pattern, "%%%1")
 end
 
 function M.command(name, rhs)
@@ -64,15 +56,13 @@ function M.augroup(name, commands)
   vim.cmd("augroup " .. name)
   vim.cmd("autocmd!")
   for _, c in ipairs(commands) do
-    vim.cmd(
-      string.format(
-        "autocmd %s %s %s %s",
-        table.concat(c.events, ","),
-        table.concat(c.targets or {}, ","),
-        table.concat(c.modifiers or {}, " "),
-        c.command
-      )
-    )
+    vim.cmd(string.format(
+      "autocmd %s %s %s %s",
+      table.concat(c.events, ","),
+      table.concat(c.targets or {}, ","),
+      table.concat(c.modifiers or {}, " "),
+      c.command
+    ))
   end
   vim.cmd("augroup END")
 end

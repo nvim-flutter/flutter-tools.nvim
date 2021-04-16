@@ -7,22 +7,18 @@ local fn = vim.fn
 local outline_filename = "Flutter Outline"
 local outline_filetype = "flutterToolsOutline"
 
-local M =
-  setmetatable(
-  {},
-  {
-    __index = function(_, k)
-      --- if the buffer of the outline file is nil but it *might* exist
-      --- we default to also checking if any file with a similar name exists
-      -- if so we return it's buffer number
-      if k == "buf" then
-        local buf = fn.bufnr(outline_filename)
-        return buf >= 0 and buf or nil
-      end
-      return nil
+local M = setmetatable({}, {
+  __index = function(_, k)
+    --- if the buffer of the outline file is nil but it *might* exist
+    --- we default to also checking if any file with a similar name exists
+    -- if so we return it's buffer number
+    if k == "buf" then
+      local buf = fn.bufnr(outline_filename)
+      return buf >= 0 and buf or nil
     end
-  }
-)
+    return nil
+  end,
+})
 
 -----------------------------------------------------------------------------//
 -- Namespaces
@@ -37,75 +33,67 @@ local markers = {
   bottom = "└",
   middle = "├",
   vertical = "│",
-  horizontal = "─"
+  horizontal = "─",
 }
 
-local icons =
-  setmetatable(
-  {
-    TOP_LEVEL_VARIABLE = "\u{f435}",
-    CLASS = "\u{f0e8}",
-    FIELD = "\u{f93d}",
-    CONSTRUCTOR = "\u{e624}",
-    CONSTRUCTOR_INVOCATION = "\u{fc2a}",
-    FUNCTION = "\u{0192}",
-    METHOD = "\u{f6a6}",
-    GETTER = "\u{f9f}",
-    ENUM = "\u{f779}",
-    ENUM_CONSTANT = "\u{f02b}",
-    DEFAULT = "\u{e612}"
-  },
-  {
-    __index = function(t, _)
-      return t.DEFAULT
-    end
-  }
-)
+local icons = setmetatable({
+  TOP_LEVEL_VARIABLE = "\u{f435}",
+  CLASS = "\u{f0e8}",
+  FIELD = "\u{f93d}",
+  CONSTRUCTOR = "\u{e624}",
+  CONSTRUCTOR_INVOCATION = "\u{fc2a}",
+  FUNCTION = "\u{0192}",
+  METHOD = "\u{f6a6}",
+  GETTER = "\u{f9f}",
+  ENUM = "\u{f779}",
+  ENUM_CONSTANT = "\u{f02b}",
+  DEFAULT = "\u{e612}",
+}, {
+  __index = function(t, _)
+    return t.DEFAULT
+  end,
+})
 
 local hl_prefix = "FlutterToolsOutline"
 
 local icon_highlights = {
   [icons.TOP_LEVEL_VARIABLE] = {
     name = hl_prefix .. "TopLevelVar",
-    link = "Identifier"
+    link = "Identifier",
   },
-  [icons.CLASS] = {name = hl_prefix .. "Class", link = "Type"},
-  [icons.FIELD] = {name = hl_prefix .. "Field", link = "Identifier"},
+  [icons.CLASS] = { name = hl_prefix .. "Class", link = "Type" },
+  [icons.FIELD] = { name = hl_prefix .. "Field", link = "Identifier" },
   [icons.CONSTRUCTOR] = {
     name = hl_prefix .. "Constructor",
-    link = "Identifier"
+    link = "Identifier",
   },
   [icons.CONSTRUCTOR_INVOCATION] = {
     name = hl_prefix .. "ConstructorInvocation",
-    link = "Special"
+    link = "Special",
   },
-  [icons.FUNCTION] = {name = hl_prefix .. "Function", link = "Function"},
-  [icons.METHOD] = {name = hl_prefix .. "Method", link = "Function"},
-  [icons.GETTER] = {name = hl_prefix .. "Getter", link = "Function"},
-  [icons.ENUM] = {name = hl_prefix .. "Enum", link = "Type"},
+  [icons.FUNCTION] = { name = hl_prefix .. "Function", link = "Function" },
+  [icons.METHOD] = { name = hl_prefix .. "Method", link = "Function" },
+  [icons.GETTER] = { name = hl_prefix .. "Getter", link = "Function" },
+  [icons.ENUM] = { name = hl_prefix .. "Enum", link = "Type" },
   [icons.ENUM_CONSTANT] = {
     name = hl_prefix .. "EnumConstant",
-    link = "Type"
+    link = "Type",
   },
   [icons.DEFAULT] = {
     name = hl_prefix .. "Default",
-    link = "Comment"
-  }
+    link = "Comment",
+  },
 }
 
 -----------------------------------------------------------------------------//
 -- State
 -----------------------------------------------------------------------------//
 M.buf = nil
-M.outlines =
-  setmetatable(
-  {},
-  {
-    __index = function()
-      return {}
-    end
-  }
-)
+M.outlines = setmetatable({}, {
+  __index = function()
+    return {}
+  end,
+})
 M.options = {}
 
 ---@param name string
@@ -135,15 +123,12 @@ local function add_segment(list, highlights, item, hl, length, pos)
   if item and item ~= "" then
     local item_length = #item
     local new_length = item_length + length
-    table.insert(
-      highlights,
-      {
-        value = item,
-        highlight = hl,
-        column_start = length + 1,
-        column_end = new_length + 1
-      }
-    )
+    table.insert(highlights, {
+      value = item,
+      highlight = hl,
+      column_start = length + 1,
+      column_end = new_length + 1,
+    })
     if pos then
       table.insert(list, pos, item)
     else
@@ -168,7 +153,7 @@ local function parse_outline(result, node, indent, marker)
   local element = node.element or {}
   local text = {}
   local icon = icons[element.kind]
-  local display_str = {indent, marker, icon}
+  local display_str = { indent, marker, icon }
 
   local hl = {}
   local length = #table.concat(display_str, " ")
@@ -184,26 +169,23 @@ local function parse_outline(result, node, indent, marker)
   table.insert(display_str, table.concat(text, ""))
   local content = table.concat(display_str, " ")
 
-  table.insert(
-    result,
-    {
-      hl = hl,
-      -- this number might be required to be 1 or 0 based
-      -- based on the api call using it as row, col api functions
-      -- can be (1, 0) based. It is stored as 0 based as this is the
-      -- most common requirement but must be one based when manipulating
-      -- the cursor
-      lnum = #result,
-      buf_start = #indent,
-      buf_end = #content,
-      start_line = range.start.line,
-      start_col = range.start.character - 1,
-      end_line = range["end"].line,
-      end_col = range["end"].character - 1,
-      name = element.name,
-      text = content
-    }
-  )
+  table.insert(result, {
+    hl = hl,
+    -- this number might be required to be 1 or 0 based
+    -- based on the api call using it as row, col api functions
+    -- can be (1, 0) based. It is stored as 0 based as this is the
+    -- most common requirement but must be one based when manipulating
+    -- the cursor
+    lnum = #result,
+    buf_start = #indent,
+    buf_end = #content,
+    start_line = range.start.line,
+    start_col = range.start.character - 1,
+    end_line = range["end"].line,
+    end_col = range["end"].character - 1,
+    name = element.name,
+    text = content,
+  })
 
   local children = node.children
   if not children or vim.tbl_isempty(children) then
@@ -234,25 +216,22 @@ local function get_display_props(items)
 end
 
 local function setup_autocommands()
-  utils.augroup(
-    "FlutterToolsOutline",
+  utils.augroup("FlutterToolsOutline", {
     {
-      {
-        events = {"User FlutterOutlineChanged"},
-        command = [[lua __flutter_tools_refresh_outline()]]
-      },
-      {
-        events = {"CursorHold"},
-        targets = {"*.dart"},
-        command = [[lua __flutter_tools_set_current_item()]]
-      },
-      {
-        events = {"BufEnter"},
-        targets = {"*.dart"},
-        command = [[doautocmd User FlutterOutlineChanged]]
-      }
-    }
-  )
+      events = { "User FlutterOutlineChanged" },
+      command = [[lua __flutter_tools_refresh_outline()]],
+    },
+    {
+      events = { "CursorHold" },
+      targets = { "*.dart" },
+      command = [[lua __flutter_tools_set_current_item()]],
+    },
+    {
+      events = { "BufEnter" },
+      targets = { "*.dart" },
+      command = [[doautocmd User FlutterOutlineChanged]],
+    },
+  })
 end
 
 ---@param lines table
@@ -282,7 +261,7 @@ local function setup_outline_window(lines, highlights)
       "n",
       "q",
       "<Cmd>bw!<CR>",
-      {noremap = true, nowait = true, silent = true}
+      { noremap = true, nowait = true, silent = true }
     )
 
     api.nvim_buf_set_keymap(
@@ -290,7 +269,7 @@ local function setup_outline_window(lines, highlights)
       "n",
       "<CR>",
       [[<Cmd>lua __flutter_tools_select_outline_item()<CR>]],
-      {noremap = true, nowait = true, silent = true}
+      { noremap = true, nowait = true, silent = true }
     )
     setup_autocommands()
   end
@@ -335,12 +314,12 @@ function _G.__flutter_tools_select_outline_item()
   local line = fn.line(".")
   local uri = vim.b.outline_uri
   if not uri then
-    return utils.echomsg [[Sorry! this item can't be opened]]
+    return utils.echomsg([[Sorry! this item can't be opened]])
   end
   local outline = M.outlines[uri]
   local item = outline[line]
   if not item then
-    return utils.echomsg [[Sorry! this item can't be opened]]
+    return utils.echomsg([[Sorry! this item can't be opened]])
   end
   vim.cmd("drop " .. vim.uri_to_fname(uri))
   fn.cursor(item.start_line, item.start_col)
@@ -351,18 +330,14 @@ local function highlight_current_item(item)
     return
   end
   ui.clear_highlights(M.buf, outline_ns_id)
-  ui.add_highlights(
-    M.buf,
+  ui.add_highlights(M.buf, {
     {
-      {
-        highlight = hl_prefix .. "SelectedOutlineItem",
-        line_number = item.lnum,
-        column_start = item.buf_start,
-        column_end = item.buf_end + 1 -- add one for padding
-      }
+      highlight = hl_prefix .. "SelectedOutlineItem",
+      line_number = item.lnum,
+      column_start = item.buf_start,
+      column_end = item.buf_end + 1, -- add one for padding
     },
-    outline_ns_id
-  )
+  }, outline_ns_id)
 end
 
 local function is_outline_open()
@@ -396,10 +371,11 @@ function _G.__flutter_tools_set_current_item()
   end
   for _, item in ipairs(outline) do
     if
-      item and not vim.tbl_isempty(item) and
-        (lnum > item.start_line or (lnum == item.start_line and column >= item.start_col)) and
-        (lnum < item.end_line or (lnum == item.end_line and column < item.end_col))
-     then
+      item
+      and not vim.tbl_isempty(item)
+      and (lnum > item.start_line or (lnum == item.start_line and column >= item.start_col))
+      and (lnum < item.end_line or (lnum == item.end_line and column < item.end_col))
+    then
       current_item = item
     end
   end
@@ -412,7 +388,7 @@ function _G.__flutter_tools_set_current_item()
     local win = fn.bufwinid(M.buf)
     -- nvim_win_set_cursor is a 1,0 based method i.e.
     -- the row should be one based and the column 0 based
-    api.nvim_win_set_cursor(win, {current_item.lnum + 1, current_item.buf_start})
+    api.nvim_win_set_cursor(win, { current_item.lnum + 1, current_item.buf_start })
   end
 end
 
@@ -421,18 +397,15 @@ function M.open()
   local options = cfg.outline
   local ok, lines, highlights, outline = get_outline_content()
   if not ok then
-    return utils.echomsg [[Sorry! There is no outline for this file]]
+    return utils.echomsg([[Sorry! There is no outline for this file]])
   end
   local buf_loaded = utils.buf_valid(M.buf)
   if not buf_loaded and not vim.tbl_isempty(lines) then
-    ui.open_split(
-      {
-        open_cmd = options.open_cmd,
-        filetype = outline_filetype,
-        filename = outline_filename
-      },
-      setup_outline_window(lines, highlights)
-    )
+    ui.open_split({
+      open_cmd = options.open_cmd,
+      filetype = outline_filetype,
+      filename = outline_filename,
+    }, setup_outline_window(lines, highlights))
   else
     replace(M.buf, lines, highlights)
   end
@@ -450,7 +423,7 @@ function M.document_outline(_, _, data, _)
   end
   result.uri = data.uri
   M.outlines[data.uri] = result
-  vim.cmd [[doautocmd User FlutterOutlineChanged]]
+  vim.cmd([[doautocmd User FlutterOutlineChanged]])
 end
 
 return M

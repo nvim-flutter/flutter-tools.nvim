@@ -5,11 +5,11 @@ local fmt = string.format
 
 --- @param prefs table user preferences
 local function validate_prefs(prefs)
-  vim.validate {
-    outline = {prefs.outline, "table", true},
-    dev_log = {prefs.dev_log, "table", true},
-    closing_tags = {prefs.closing_tags, "table", true}
-  }
+  vim.validate({
+    outline = { prefs.outline, "table", true },
+    dev_log = { prefs.dev_log, "table", true },
+    closing_tags = { prefs.closing_tags, "table", true },
+  })
 end
 
 ---Create a proportional split using a percentage specified as a float
@@ -22,7 +22,7 @@ end
 
 M.debug_levels = {
   DEBUG = 1,
-  WARN = 2
+  WARN = 2,
 }
 
 local defaults = {
@@ -30,44 +30,38 @@ local defaults = {
   flutter_lookup_cmd = path.is_linux and "flutter sdk-path" or nil,
   widget_guides = {
     enabled = false,
-    debug = false
+    debug = false,
   },
   debugger = {
-    enabled = false
+    enabled = false,
   },
   closing_tags = {
     highlight = "Comment",
-    prefix = "// "
+    prefix = "// ",
   },
   lsp = {
-    debug = M.debug_levels.WARN
+    debug = M.debug_levels.WARN,
   },
-  outline = setmetatable(
-    {},
-    {
-      __index = function(_, k)
-        return k == "open_cmd" and get_split_cmd(0.3, 40) or nil
-      end
-    }
-  ),
-  dev_log = setmetatable(
-    {},
-    {
-      __index = function(_, k)
-        return k == "open_cmd" and get_split_cmd(0.4, 50) or nil
-      end
-    }
-  ),
+  outline = setmetatable({}, {
+    __index = function(_, k)
+      return k == "open_cmd" and get_split_cmd(0.3, 40) or nil
+    end,
+  }),
+  dev_log = setmetatable({}, {
+    __index = function(_, k)
+      return k == "open_cmd" and get_split_cmd(0.4, 50) or nil
+    end,
+  }),
   experimental = {
-    lsp_derive_paths = false
-  }
+    lsp_derive_paths = false,
+  },
 }
 
 local deprecations = {
   flutter_outline = {
     fallback = "widget_guides",
-    message = "please use 'widget_guides' instead"
-  }
+    message = "please use 'widget_guides' instead",
+  },
 }
 
 local function handle_deprecation(key, value, config)
@@ -76,20 +70,23 @@ local function handle_deprecation(key, value, config)
   if not deprecation then
     return
   end
-  vim.defer_fn(
-    function()
-      echomsg(fmt("%s is deprecated: %s", key, deprecation.message), "WarningMsg")
-    end,
-    1000
-  )
+  vim.defer_fn(function()
+    echomsg(fmt("%s is deprecated: %s", key, deprecation.message), "WarningMsg")
+  end, 1000)
   if deprecation.fallback then
     config[deprecation.fallback] = value
   end
 end
 
-local config = setmetatable({}, {__index = defaults})
+local config = setmetatable({}, { __index = defaults })
 
-function M.get()
+---Get the configuration or just a key of the config
+---@param key string
+---@return table|number|boolean
+function M.get(key)
+  if key then
+    return config[key]
+  end
   return config
 end
 
@@ -100,11 +97,11 @@ function M.set(user_config)
   for key, value in pairs(user_config) do
     handle_deprecation(key, value, user_config)
     if user_config[key] and type(user_config[key]) == "table" then
-      setmetatable(user_config[key], {__index = defaults[key]})
+      setmetatable(user_config[key], { __index = defaults[key] })
     end
   end
   validate_prefs(user_config)
-  config = setmetatable(user_config, {__index = defaults})
+  config = setmetatable(user_config, { __index = defaults })
   return config
 end
 

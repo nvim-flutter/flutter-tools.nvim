@@ -1,7 +1,8 @@
+local utils = require("flutter-tools.utils")
+
 local M = {}
 
 local function setup_commands()
-  local utils = require("flutter-tools.utils")
   -- Commands
   utils.command("FlutterRun", [[lua require('flutter-tools.commands').run()]])
   utils.command("FlutterReload", [[lua require('flutter-tools.commands').reload()]])
@@ -20,34 +21,34 @@ local function setup_commands()
 end
 
 local function setup_autocommands()
-  require("flutter-tools.utils").augroup(
-    "FlutterToolsHotReload",
+  require("flutter-tools.utils").augroup("FlutterToolsHotReload", {
     {
-      {
-        events = {"VimLeavePre"},
-        targets = {"*"},
-        command = "lua require('flutter-tools.devices').close_emulator()"
-      },
-      {
-        events = {"BufWritePost"},
-        targets = {"*.dart"},
-        command = "lua require('flutter-tools.commands').reload(true)"
-      },
-      {
-        events = {"BufWritePost"},
-        targets = {"*/pubspec.yaml"},
-        command = "lua require('flutter-tools.commands').pub_get()"
-      },
-      {
-        events = {"BufEnter"},
-        targets = {require("flutter-tools.log").filename},
-        command = "lua require('flutter-tools.log').__resurrect()"
-      }
-    }
-  )
+      events = { "BufWritePost" },
+      targets = { "*.dart" },
+      command = "lua require('flutter-tools.commands').reload(true)",
+    },
+    {
+      events = { "BufWritePost" },
+      targets = { "*/pubspec.yaml" },
+      command = "lua require('flutter-tools.commands').pub_get()",
+    },
+    {
+      events = { "BufEnter" },
+      targets = { require("flutter-tools.log").filename },
+      command = "lua require('flutter-tools.log').__resurrect()",
+    },
+  })
 end
 
+---Entry point for this plugin
+---@param user_config table
+---@return nil
 function M.setup(user_config)
+  local success = pcall(require, "plenary")
+  if not success then
+    return utils.echomsg("plenary.nvim is a required dependency of this plugin, please ensure it is installed")
+  end
+
   local conf = require("flutter-tools.config").set(user_config)
 
   require("flutter-tools.lsp").setup()

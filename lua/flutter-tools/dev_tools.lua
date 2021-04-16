@@ -1,14 +1,16 @@
 local utils = require("flutter-tools.utils")
 local ui = require("flutter-tools.ui")
 local executable = require("flutter-tools.executable")
-local Job = require("flutter-tools.job")
+---@type Job
+local Job = require("plenary.job")
 
 local M = {}
 local fn = vim.fn
 
-local start_id = nil
+---@type Job
+local job = nil
 
-local activate_cmd = {"pub", "global", "activate", "devtools"}
+local activate_cmd = { "pub", "global", "activate", "devtools" }
 
 --[[ {
     event = "server.started",
@@ -20,57 +22,68 @@ local activate_cmd = {"pub", "global", "activate", "devtools"}
         protocolVersion = "1.1.0"
     }
 }]]
-local function handle_start(_, data)
+---Open dev tools
+---@param _ number
+---@param data string
+---@param __ Job
+local function handle_start(_, data, __)
   if #data > 0 then
     local json = fn.json_decode(data)
     if json and json.params then
       local msg =
         string.format("Serving DevTools at http://%s:%s", json.params.host, json.params.port)
-      ui.notify({msg}, 20000)
+      ui.notify({ msg }, 20000)
     end
   end
 end
 
-local function handle_error(_, data)
+---Handler errors whilst opening dev tools
+---@param _ number
+---@param data string
+---@param __ Job
+local function handle_error(_, data, __)
   for _, str in ipairs(data) do
     if str:match("No active package devtools") then
-      executable.with(
-        activate_cmd,
-        function(cmd)
-          ui.notify(
-            {
-              "Flutter pub global devtools has not been activated.",
-              "Run " .. cmd .. " to activate it."
-            }
-          )
-        end
-      )
+      executable.get(function(cmd)
+        ui.notify({
+          "Flutter pub global devtools has not been activated.",
+          "Run " .. cmd .. table.concat(activate_cmd, " ") .. " to activate it.",
+        })
+      end)
     else
-      ui.notify({"Sorry! devtools couldn't be opened", unpack(data)})
+      ui.notify({ "Sorry! devtools couldn't be opened", unpack(data) })
     end
   end
 end
 
 function M.start()
-  ui.notify {"Starting dev tools..."}
-  if not start_id then
-    executable.with(
-      table.concat({"pub", "global", "run", "devtools", "--machine", "--try-ports", "10"}, " "),
-      function(cmd)
-        start_id =
-          Job:new {
-          cmd = cmd,
-          on_stdout = handle_start,
-          on_stderr = handle_error,
-          on_exit = function()
-            start_id = nil
-            ui.notify {"Dev tools closed"}
-          end
-        }:start()
-      end
-    )
+  ui.notify({ "Starting dev tools..." })
+  if not job then
+    executable.get(function(cmd)
+      job = Job
+        :new({
+          command = cmd,
+          args = {
+            "pub",
+            "global",
+            "run",
+            "devtools",
+            "--machine",
+            "--try-ports",
+            "10",
+          },
+          on_stdout = vim.schedule_wrap(handle_start),
+          on_stderr = vim.schedule_wrap(handle_error),
+          on_exit = vim.schedule_wrap(function()
+            job = nil
+            ui.notify({ "Dev tools closed" })
+          end),
+        })
+
+        job:start()
+    end)
   else
-    utils.echomsg "DevTools are already running!"
+    utils.echomsg("DevTools are already running!")
   end
 end
 

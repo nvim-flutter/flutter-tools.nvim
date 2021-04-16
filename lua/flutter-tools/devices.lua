@@ -1,4 +1,5 @@
-local Job = require("flutter-tools.job")
+---@type Job
+local Job = require("plenary.job")
 local ui = require("flutter-tools/ui")
 local utils = require("flutter-tools/utils")
 local executable = require("flutter-tools/executable")
@@ -8,7 +9,7 @@ local fn = vim.fn
 
 local M = {
   ---@type Job
-  emulator_job = nil
+  emulator_job = nil,
 }
 
 local EMULATOR = 1
@@ -30,22 +31,18 @@ end
 ---Highlight each device/emulator in the popup window
 ---@param highlights table
 ---@param line string
----@param device table
+---@param device table<string, string>
 local function add_device_highlights(highlights, line, device)
-  return ui.get_line_highlights(
-    line,
+  return ui.get_line_highlights(line, {
     {
-      {
-        word = device.name,
-        highlight = "Type"
-      },
-      {
-        word = device.platform,
-        highlight = "Comment"
-      }
+      word = device.name,
+      highlight = "Type",
     },
-    highlights
-  )
+    {
+      word = device.platform,
+      highlight = "Comment",
+    },
+  }, highlights)
 end
 
 ---@param line string
@@ -61,7 +58,7 @@ function M.parse(line, device_type)
       id = vim.trim(parts[id_index]),
       platform = vim.trim(parts[3]),
       system = vim.trim(parts[4]),
-      type = device_type
+      type = device_type,
     }
   end
 end
@@ -102,7 +99,7 @@ local function setup_window(devices, buf, _)
     "n",
     "<CR>",
     ":lua __flutter_tools_select_device()<CR>",
-    {silent = true, noremap = true}
+    { silent = true, noremap = true }
   )
 end
 
@@ -126,16 +123,14 @@ end
 -- Emulators
 -----------------------------------------------------------------------------//
 
----@param result string[]
-local function handle_launch(err, result)
-  if err then
-    ui.notify(result)
-  end
+---@param job Job
+local function handle_launch(job)
+  ui.notify(job:result())
 end
 
 function M.close_emulator()
   if M.emulator_job then
-    M.emulator_job:close()
+    M.emulator_job:shutdown()
   end
 end
 
@@ -144,90 +139,71 @@ function M.launch_emulator(emulator)
   if not emulator then
     return
   end
-  executable.with(
-    "emulators --launch " .. emulator.id,
-    function(cmd)
-      M.emulator_job =
-        Job:new {
-        cmd = cmd,
-        on_exit = handle_launch
-      }:sync()
-    end
-  )
+  executable.get(function(cmd)
+    M.emulator_job = Job:new({ command = cmd, args = { "emulators", "--launch", emulator.id } })
+    M.emulator_job:after_success(vim.schedule_wrap(handle_launch))
+    M.emulator_job:start()
+  end)
 end
 
----@param err boolean
 ---@param result string[]
-local function show_emulators(err, result)
-  if err then
-    return utils.echomsg(result)
-  end
+local function show_emulators(result)
   local lines, emulators, highlights = M.extract_device_props(result, EMULATOR)
   if #lines > 0 then
-    ui.popup_create(
-      {
-        title = "Flutter emulators",
-        lines = lines,
-        highlights = highlights,
-        on_create = function(buf, _)
-          setup_window(emulators, buf)
-        end
-      }
-    )
+    ui.popup_create({
+      title = "Flutter emulators",
+      lines = lines,
+      highlights = highlights,
+      on_create = function(buf, _)
+        setup_window(emulators, buf)
+      end,
+    })
   end
 end
 
 function M.list_emulators()
-  executable.with(
-    "emulators",
-    function(cmd)
-      Job:new {
-        cmd = cmd,
-        on_exit = show_emulators
-      }:sync()
-    end
-  )
+  executable.get(function(cmd)
+    local job = Job:new({ command = cmd, args = { "emulators" } })
+    job:after_success(vim.schedule_wrap(function(j)
+      show_emulators(j:result())
+    end))
+    job:after_failure(vim.schedule_wrap(function(j)
+      return ui.notify(j:stderr_result())
+    end))
+    job:start()
+  end)
 end
 
 -----------------------------------------------------------------------------//
 -- Devices
 -----------------------------------------------------------------------------//
----@param err boolean
----@param result table list of devices
-local function show_devices(err, result)
-  if err then
-    return utils.echomsg(result)
-  end
+---@param job Job
+local function show_devices(job)
+  local result = job:result()
   local lines, devices, highlights = M.extract_device_props(result, DEVICE)
   if #lines > 0 then
-    ui.popup_create(
-      {
-        title = "Flutter devices",
-        lines = lines,
-        highlights = highlights,
-        on_create = function(buf, _)
-          setup_window(devices, buf)
-        end
-      }
-    )
+    ui.popup_create({
+      title = "Flutter devices",
+      lines = lines,
+      highlights = highlights,
+      on_create = function(buf, _)
+        setup_window(devices, buf)
+      end,
+    })
   end
 end
 
 function M.list_devices()
-  executable.with(
-    "devices",
-    function(cmd)
-      Job:new {
-        cmd = cmd,
-        on_exit = show_devices,
-        on_stderr = function(result)
-          if result then
-            utils.echomsg(result)
-          end
-        end
-      }:sync()
-    end
-  )
+  executable.get(function(cmd)
+    local job = Job:new({ command = cmd, args = { "devices" } })
+    job:after_success(vim.schedule_wrap(show_devices))
+    job:after_failure(vim.schedule_wrap(function(j)
+      local result = j:result()
+      local message = not vim.tbl_isempty(result) and result or j:stderr_result()
+      ui.notify(message)
+    end))
+    job:start()
+  end)
 end
 
 return M

@@ -1,4 +1,4 @@
-local utils = require "flutter-tools/utils"
+local utils = require("flutter-tools/utils")
 
 local M = {}
 
@@ -12,7 +12,7 @@ local state = {
   ---@type number[] list of open windows, so we can operate on them all
   open_windows = {},
   ---@type number
-  last_opened = nil
+  last_opened = nil,
 }
 
 local border_chars = {
@@ -24,12 +24,12 @@ local border_chars = {
     "╯",
     "─",
     "╰",
-    "│"
-  }
+    "│",
+  },
 }
 
 function _G.__flutter_tools_close(buf)
-  vim.api.nvim_buf_delete(buf, {force = true})
+  vim.api.nvim_buf_delete(buf, { force = true })
 end
 
 ---Create a reverse look up to find a lines number in a buffer
@@ -74,17 +74,14 @@ end
 function M.get_line_highlights(line, items, highlights)
   highlights = highlights or {}
   for _, item in ipairs(items) do
-    local match_start, match_end = line:find(utils.escape_pattern(item.word))
+    local match_start, match_end = line:find(vim.pesc(item.word))
     if match_start and match_end then
       highlights[line] = highlights[line] or {}
-      table.insert(
-        highlights[line],
-        {
-          highlight = item.highlight,
-          column_start = match_start,
-          column_end = match_end + 1
-        }
-      )
+      table.insert(highlights[line], {
+        highlight = item.highlight,
+        column_start = match_start,
+        column_end = match_end + 1,
+      })
     end
   end
   return highlights
@@ -128,13 +125,9 @@ end
 ---Update notification window state
 ---@param win integer
 local function update_win_state(win)
-  state.open_windows =
-    vim.tbl_filter(
-    function(id)
-      return id ~= win
-    end,
-    state.open_windows
-  )
+  state.open_windows = vim.tbl_filter(function(id)
+    return id ~= win
+  end, state.open_windows)
   if state.last_opened == win then
     state.last_opened = nil
   end
@@ -145,7 +138,7 @@ end
 ---@param duration integer
 function M.notify(lines, duration)
   if type(lines) ~= "table" then
-    utils.echomsg [[lines passed to notify should be a list of strings]]
+    utils.echomsg([[lines passed to notify should be a list of strings]])
     return
   end
   duration = duration or 3000
@@ -166,7 +159,7 @@ function M.notify(lines, duration)
         if #state.open_windows > 1 then
           for _, win in ipairs(state.open_windows) do
             if api.nvim_win_is_valid(win) then
-              api.nvim_win_close(win, {force = true})
+              api.nvim_win_close(win, { force = true })
             end
           end
         end
@@ -187,7 +180,7 @@ function M.notify(lines, duration)
     height = #lines,
     anchor = "SE",
     focusable = false,
-    border = "single"
+    border = "single",
   }
   local buf = api.nvim_create_buf(false, true)
   local win = api.nvim_open_win(buf, false, opts)
@@ -200,15 +193,12 @@ function M.notify(lines, duration)
 
   vim.wo[win].winblend = WIN_BLEND
   vim.bo[buf].modifiable = false
-  fn.timer_start(
-    duration,
-    function()
-      if api.nvim_win_is_valid(win) then
-        api.nvim_win_close(win, true)
-      end
-      update_win_state(win)
+  fn.timer_start(duration, function()
+    if api.nvim_win_is_valid(win) then
+      api.nvim_win_close(win, true)
     end
-  )
+    update_win_state(win)
+  end)
 end
 
 ---@param opts table
@@ -217,10 +207,7 @@ function M.popup_create(opts)
     error("An options table must be passed to popup create!")
   end
   local title, lines, on_create, highlights =
-    opts.title,
-    opts.lines,
-    opts.on_create,
-    opts.highlights
+    opts.title, opts.lines, opts.on_create, opts.highlights
   if not lines or #lines < 1 or invalid_lines(lines) then
     return
   end
@@ -228,23 +215,18 @@ function M.popup_create(opts)
   local width = calculate_width(lines)
   local height = 10
   local buf = api.nvim_create_buf(false, true)
-  lines = {title, string.rep(border_chars.curved[2], width), unpack(lines)}
+  lines = { title, string.rep(border_chars.curved[2], width), unpack(lines) }
 
   api.nvim_buf_set_lines(buf, 0, -1, true, lines)
-  local win =
-    api.nvim_open_win(
-    buf,
-    true,
-    {
-      row = (vim.o.lines - height) / 2,
-      col = (vim.o.columns - width) / 2,
-      relative = "editor",
-      style = "minimal",
-      width = width,
-      height = height,
-      border = "single"
-    }
-  )
+  local win = api.nvim_open_win(buf, true, {
+    row = (vim.o.lines - height) / 2,
+    col = (vim.o.columns - width) / 2,
+    relative = "editor",
+    style = "minimal",
+    width = width,
+    height = height,
+    border = "single",
+  })
 
   local buf_highlights = {}
   local lookup = create_buf_lookup(buf)
@@ -258,36 +240,33 @@ function M.popup_create(opts)
     end
   end
 
-  M.add_highlights(
-    buf,
+  M.add_highlights(buf, {
     {
-      {
-        highlight = "Title",
-        line_number = 0,
-        column_end = #title,
-        column_start = 0
-      },
-      {
-        highlight = "FloatBorder",
-        line_number = 1,
-        column_start = 0,
-        column_end = -1
-      },
-      unpack(buf_highlights)
-    }
-  )
+      highlight = "Title",
+      line_number = 0,
+      column_end = #title,
+      column_start = 0,
+    },
+    {
+      highlight = "FloatBorder",
+      line_number = 1,
+      column_start = 0,
+      column_end = -1,
+    },
+    unpack(buf_highlights),
+  })
   vim.wo[win].winblend = WIN_BLEND
   vim.bo[buf].modifiable = false
   vim.wo[win].cursorline = true
   --- Positions cursor on the third line i.e. after the title and it's underline
-  api.nvim_win_set_cursor(win, {3, 0})
+  api.nvim_win_set_cursor(win, { 3, 0 })
   api.nvim_win_set_option(win, "winhighlight", "CursorLine:Visual,NormalFloat:Normal")
   api.nvim_buf_set_keymap(
     buf,
     "n",
     "<ESC>",
     ":lua __flutter_tools_close(" .. buf .. ")<CR>",
-    {silent = true, noremap = true}
+    { silent = true, noremap = true }
   )
   vim.cmd(string.format([[autocmd! WinLeave <buffer> silent! execute 'bw %d']], buf))
   if on_create then
@@ -306,7 +285,7 @@ function M.open_split(opts, on_open)
   local buf = api.nvim_get_current_buf()
   local success = pcall(api.nvim_buf_set_name, buf, name)
   if not success then
-    return utils.echomsg [[Sorry! a split couldn't be opened]]
+    return utils.echomsg([[Sorry! a split couldn't be opened]])
   end
   vim.bo[buf].swapfile = false
   vim.bo[buf].buftype = "nofile"

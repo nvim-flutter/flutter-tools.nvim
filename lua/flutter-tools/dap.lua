@@ -3,7 +3,7 @@ local path = require("flutter-tools.utils.path")
 
 local success, dap = pcall(require, "dap")
 if not success then
-  utils.echomsg({{"nvim-dap is not installed!\n", "Title"}, {dap, "ErrorMsg"}})
+  utils.echomsg({ { "nvim-dap is not installed!\n", "Title" }, { dap, "ErrorMsg" } })
   return nil
 end
 
@@ -33,7 +33,7 @@ function M.install_debugger(silent)
   end
 
   -- run install commands in a terminal
-  vim.cmd [[15new]]
+  vim.cmd([[15new]])
   local clone = fmt("git clone %s %s", dart_code_git, debugger_dir)
   local build = fmt("cd %s && npm install && npx webpack --mode development", debugger_dir)
   fn.termopen(fmt("%s && %s", clone, build))
@@ -44,26 +44,24 @@ function M.setup(_)
 
   local executable = require("flutter-tools.executable")
   local flutter_sdk_path = executable.flutter_sdk_path
-  executable.dart_sdk_root_path(
-    function(dart_sdk_path)
-      dap.adapters.dart = {
-        type = "executable",
-        command = "node",
-        args = {debugger_path, "flutter"}
-      }
-      dap.configurations.dart = {
-        {
-          type = "dart",
-          request = "launch",
-          name = "Launch flutter",
-          dartSdkPath = dart_sdk_path,
-          flutterSdkPath = flutter_sdk_path,
-          program = "${workspaceFolder}/lib/main.dart",
-          cwd = "${workspaceFolder}"
-        }
-      }
-    end
-  )
+  executable.dart_sdk_root_path(function(dart_sdk_path)
+    dap.adapters.dart = {
+      type = "executable",
+      command = "node",
+      args = { debugger_path, "flutter" },
+    }
+    dap.configurations.dart = {
+      {
+        type = "dart",
+        request = "launch",
+        name = "Launch flutter",
+        dartSdkPath = dart_sdk_path,
+        flutterSdkPath = flutter_sdk_path,
+        program = "${workspaceFolder}/lib/main.dart",
+        cwd = "${workspaceFolder}",
+      },
+    }
+  end)
 end
 
 return M
