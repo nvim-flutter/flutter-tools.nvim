@@ -30,7 +30,7 @@ local function path_from_lookup_cmd(lookup_cmd, callback)
   local paths = {}
   local parts = vim.split(lookup_cmd, " ")
   local cmd = parts[1]
-  local args = vim.list_slice(parts, #parts)
+  local args = vim.list_slice(parts, 2, #parts)
 
   local job = Job:new({ command = cmd, args = args })
   job:after_failure(vim.schedule_wrap(function()
