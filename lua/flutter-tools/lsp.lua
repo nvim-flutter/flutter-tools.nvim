@@ -40,7 +40,7 @@ end
 local function create_debug_log(level)
   return function(msg)
     local levels = require("flutter-tools.config").debug_levels
-    if level >= levels.DEBUG then
+    if level <= levels.DEBUG then
       utils.echomsg(msg)
     end
   end
