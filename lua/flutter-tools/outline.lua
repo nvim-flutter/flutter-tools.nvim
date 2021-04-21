@@ -37,17 +37,17 @@ local markers = {
 }
 
 local icons = setmetatable({
-  TOP_LEVEL_VARIABLE = "\u{f435}",
-  CLASS = "\u{f0e8}",
-  FIELD = "\u{f93d}",
-  CONSTRUCTOR = "\u{e624}",
-  CONSTRUCTOR_INVOCATION = "\u{fc2a}",
-  FUNCTION = "\u{0192}",
-  METHOD = "\u{f6a6}",
-  GETTER = "\u{f9f}",
-  ENUM = "\u{f779}",
-  ENUM_CONSTANT = "\u{f02b}",
-  DEFAULT = "\u{e612}",
+  TOP_LEVEL_VARIABLE = "",
+  CLASS = "",
+  FIELD = "綠",
+  CONSTRUCTOR = "",
+  CONSTRUCTOR_INVOCATION = "ﰪ",
+  FUNCTION = "ƒ",
+  METHOD = "",
+  GETTER = "ྟ",
+  ENUM = "",
+  ENUM_CONSTANT = "",
+  DEFAULT = ""
 }, {
   __index = function(t, _)
     return t.DEFAULT
