@@ -173,6 +173,10 @@ function M.pub_get()
         on_pub_get(j:result())
         pub_get_job = nil
       end))
+      pub_get_job:after_failure(vim.schedule_wrap(function(j)
+        on_pub_get(j:stderr_result())
+        pub_get_job = nil
+      end))
       pub_get_job:start()
     end)
   end
