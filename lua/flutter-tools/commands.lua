@@ -81,7 +81,6 @@ local function shutdown()
   if run_job then
     run_job = nil
   end
-  devices.close_emulator()
 end
 
 function M.run(device)
