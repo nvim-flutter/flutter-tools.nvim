@@ -142,9 +142,10 @@ local function render_guides(bufnum, guides, conf)
           hl_mode = "combine",
         })
       if not success and conf.debug then
+        local name = api.nvim_buf_get_name(bufnum)
         utils.echomsg({
           {
-            fmt("error drawing widget guide at %d, col %d\n", lnum, start),
+            fmt("error drawing widget guide for %s at line %d, col %d\n", name, lnum, start),
             "Title",
           },
           { msg, "ErrorMsg" },
