@@ -2,11 +2,6 @@
 
 Build flutter and dart applications in neovim using the native lsp.
 
-#### NOTE:
-
-This plugin is under active development. I plan to try and keep things _relatively_ stable
-but ultimately there might still need to be some breaking changes.
-
 # Inspiration
 
 This plugin draws inspiration from [`emacs-lsp/lsp-dart`](https://github.com/emacs-lsp/lsp-dart), [`coc-flutter`](https://github.com/iamcco/coc-flutter) and [`nvim-metals`](https://github.com/scalameta/nvim-metals), the idea being
@@ -56,14 +51,14 @@ require("flutter-tools").setup {
     enabled = false,
   },
   closing_tags = {
-    highlight = "ErrorMsg",
-    prefix = ">"
+    highlight = "ErrorMsg", -- highlight for the closing tag
+    prefix = ">" -- character to use for close tag e.g. > Widget
   },
   dev_log = {
-    open_cmd = "tabedit",
+    open_cmd = "tabedit", -- command to use to open the log buffer
   },
   outline = {
-    open_cmd = "30vnew",
+    open_cmd = "30vnew", -- command to use to open the outline buffer
   },
   lsp = {
     on_attach = my_custom_on_attach,
