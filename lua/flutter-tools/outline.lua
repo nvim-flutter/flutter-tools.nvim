@@ -47,7 +47,7 @@ local icons = setmetatable({
   GETTER = "ྟ",
   ENUM = "",
   ENUM_CONSTANT = "",
-  DEFAULT = ""
+  DEFAULT = "",
 }, {
   __index = function(t, _)
     return t.DEFAULT

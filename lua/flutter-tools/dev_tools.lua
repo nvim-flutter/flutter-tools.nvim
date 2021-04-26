@@ -60,27 +60,26 @@ function M.start()
   ui.notify({ "Starting dev tools..." })
   if not job then
     executable.get(function(cmd)
-      job = Job
-        :new({
-          command = cmd,
-          args = {
-            "pub",
-            "global",
-            "run",
-            "devtools",
-            "--machine",
-            "--try-ports",
-            "10",
-          },
-          on_stdout = vim.schedule_wrap(handle_start),
-          on_stderr = vim.schedule_wrap(handle_error),
-          on_exit = vim.schedule_wrap(function()
-            job = nil
-            ui.notify({ "Dev tools closed" })
-          end),
-        })
+      job = Job:new({
+        command = cmd,
+        args = {
+          "pub",
+          "global",
+          "run",
+          "devtools",
+          "--machine",
+          "--try-ports",
+          "10",
+        },
+        on_stdout = vim.schedule_wrap(handle_start),
+        on_stderr = vim.schedule_wrap(handle_error),
+        on_exit = vim.schedule_wrap(function()
+          job = nil
+          ui.notify({ "Dev tools closed" })
+        end),
+      })
 
-        job:start()
+      job:start()
     end)
   else
     utils.echomsg("DevTools are already running!")
