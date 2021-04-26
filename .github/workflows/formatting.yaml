@@ -1,6 +1,6 @@
 name: stylua
 on:
-  push: {branches: ["master"]}
+  push: {branches: ["main"]}
 
 jobs:
   stylua:
