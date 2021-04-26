@@ -102,7 +102,7 @@ local function _dart_sdk_root(paths)
     end
   end
 
-  if utils.executable("dart") then
+  if utils.executable("flutter") then
     local flutter_path = fn.resolve(fn.exepath("flutter"))
     local flutter_bin = fn.fnamemodify(flutter_path, ":h")
     return path.join(flutter_bin, dart_sdk)
