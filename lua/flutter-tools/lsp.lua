@@ -106,10 +106,12 @@ function M.attach()
   config.filetypes = { FILETYPE }
 
   local executable = require("flutter-tools.executable")
+  --- TODO if a user specifies a command we do not need to call
+  --- executable.dart_sdk_root_path
   executable.dart_sdk_root_path(function(root_path)
     debug_log(fmt("dart_sdk_path: %s", root_path))
 
-    config.cmd = {
+    config.cmd = config.cmd or {
       executable.dart_bin_name,
       analysis_server_snapshot_path(root_path),
       "--lsp",
