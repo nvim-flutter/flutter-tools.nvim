@@ -103,8 +103,9 @@ local function collect_guides(lines, data, guides)
     for lnum = start_lnum, end_lnum, 1 do
       -- TODO: skip empty lines since currently extmarks,
       -- cannot be set where there is no existing text
-      if lines[lnum + 1] ~= "" then
-        local end_index = first_marker_index(lines, lnum, END_OFFSET)
+      -- 2. if we get an invalid end index don't bother trying to draw guides
+      local end_index = first_marker_index(lines, lnum, END_OFFSET)
+      if lines[lnum + 1] ~= "" and end_index ~= -1 then
         local indent_size = end_index - start_index
         indent_size = indent_size > 0 and indent_size - 1 or indent_size
 
