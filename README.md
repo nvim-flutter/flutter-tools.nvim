@@ -141,7 +141,7 @@ NOTE: To configure the highlight colour you can override the `FlutterWidgetGuide
 - `FlutterQuit` - Ends a running session
 - `FlutterOutline` - Opens an outline window showing the widget tree for the given file
 
-## Debugging (WIP)
+## Debugging
 
 _Requires nvim-dap_
 
@@ -152,12 +152,11 @@ use 'mfussenegger/nvim-dap'
 
 This plugin integrates with [nvim-dap](https://github.com/mfussenegger/nvim-dap) to provide debug capabilities.
 Currently if `debugger` is set to `true` in the user's config **it will expect `nvim-dap` to be installed**.
-If `dap` is installed the plugin will attempt to install the debugger (Dart-Code's debugger)
+If `dap` is installed the plugin will attempt to install the debugger (Dart-Code's debugger).
 
-For now this should setup `dap` so that once you have _already started a flutter app_. You should be able
-to use `dap` commands to begin to debug it.
+To use the debugger you need to run `:lua require('dap').continue()<CR>`. This will start your app. You should then be able
+to use `dap` commands to begin to debug it. For more information on how to use `nvim-dap` please read the project's README
+or see `:h dap`.
 
-### TODO
-
-- [ ] Add wrapper functions/commands around dab functionality to simplify.
-- [ ] Investigate sporadic debugger crash.
+Also see:
+- [nvim-dap-ui](https://github.com/rcarriga/nvim-dap-ui) - a plugin which provides a nice UI for `nvim-dap`.
