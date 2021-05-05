@@ -87,7 +87,7 @@ function M.run(device)
   if run_job then
     return utils.echomsg("Flutter is already running!")
   end
-  executable.get(function(cmd)
+  executable.flutter(function(cmd)
     local args = { "run" }
     if device and device.id then
       vim.list_extend(args, { "-d", device.id })
@@ -166,7 +166,7 @@ local pub_get_job = nil
 
 function M.pub_get()
   if not pub_get_job then
-    executable.get(function(cmd)
+    executable.flutter(function(cmd)
       pub_get_job = Job:new({ command = cmd, args = { "pub", "get" } })
       pub_get_job:after_success(vim.schedule_wrap(function(j)
         on_pub_get(j:result())

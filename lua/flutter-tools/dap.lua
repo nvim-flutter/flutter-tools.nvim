@@ -42,9 +42,7 @@ end
 function M.setup(_)
   M.install_debugger(true)
 
-  local executable = require("flutter-tools.executable")
-  local flutter_sdk_path = executable.flutter_sdk_path
-  executable.dart_sdk_root_path(function(dart_sdk_path)
+  require("flutter-tools.executable").get(function(paths)
     dap.adapters.dart = {
       type = "executable",
       command = "node",
@@ -55,8 +53,8 @@ function M.setup(_)
         type = "dart",
         request = "launch",
         name = "Launch flutter",
-        dartSdkPath = dart_sdk_path,
-        flutterSdkPath = flutter_sdk_path,
+        dartSdkPath = paths.dart_sdk,
+        flutterSdkPath = paths.flutter_sdk,
         program = "${workspaceFolder}/lib/main.dart",
         cwd = "${workspaceFolder}",
       },

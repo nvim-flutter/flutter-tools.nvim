@@ -44,7 +44,7 @@ end
 local function handle_error(_, data, __)
   for _, str in ipairs(data) do
     if str:match("No active package devtools") then
-      executable.get(function(cmd)
+      executable.flutter(function(cmd)
         ui.notify({
           "Flutter pub global devtools has not been activated.",
           "Run " .. cmd .. table.concat(activate_cmd, " ") .. " to activate it.",
@@ -59,7 +59,7 @@ end
 function M.start()
   ui.notify({ "Starting dev tools..." })
   if not job then
-    executable.get(function(cmd)
+    executable.flutter(function(cmd)
       job = Job:new({
         command = cmd,
         args = {

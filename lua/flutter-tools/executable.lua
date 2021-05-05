@@ -10,6 +10,8 @@ local M = {
   dart_bin_name = "dart",
 }
 
+local dart_sdk = path.join("cache", "dart-sdk")
+
 ---Get paths for flutter and dart based on the binary locations
 ---@return table<string, string>
 local function get_default_binaries()
@@ -43,49 +45,15 @@ local function path_from_lookup_cmd(lookup_cmd, callback)
       paths.dart_bin = path.join(flutter_sdk_path, "bin", "dart")
       paths.flutter_bin = path.join(flutter_sdk_path, "bin", "flutter")
       paths.flutter_sdk = flutter_sdk_path
-      callback(paths.flutter_bin, paths)
+      callback(paths)
     else
       paths = get_default_binaries()
-      callback(paths.flutter_bin, paths)
+      callback(paths)
     end
     return paths
   end))
   job:start()
 end
-
----Fetch the path to the users flutter installation.
----@param callback fun(paths: table<string, string>)
----@return nil
-function M.get(callback)
-  local conf = require("flutter-tools.config").get()
-  if _paths then
-    return callback(_paths.flutter_bin, _paths)
-  end
-
-  if conf.flutter_path then
-    _paths = {
-      flutter_bin = conf.flutter_path,
-      -- convert path/to/flutter/bin/flutter into path/to/flutter
-      flutter_sdk = fn.fnamemodify(conf.flutter_path, ":h:h"),
-    }
-    return callback(_paths.flutter_bin, _paths)
-  end
-
-  if conf.flutter_lookup_cmd then
-    return path_from_lookup_cmd(conf.flutter_lookup_cmd, function(p, tbl)
-      _paths = tbl
-      callback(p, tbl)
-    end)
-  end
-
-  if not _paths then
-    _paths = get_default_binaries()
-  end
-
-  return callback(_paths.flutter_bin, _paths)
-end
-
-local dart_sdk = path.join("cache", "dart-sdk")
 
 local function _dart_sdk_root(paths)
   if paths.flutter_sdk then
@@ -115,22 +83,47 @@ local function _dart_sdk_root(paths)
   return ""
 end
 
---- A function to derive the sdk path for dart
----@param callback fun(cmd: string)
----@param user_bin_path string
-function M.dart_sdk_root_path(callback, user_bin_path)
-  assert(
-    callback and type(callback) == "function",
-    "A function callback must be passed in"
-  )
-  if user_bin_path then
-    return callback(path.join(user_bin_path, dart_sdk))
+---Fetch the paths to the users binaries.
+---@param callback fun(paths: table<string, string>)
+---@return nil
+function M.get(callback)
+  local conf = require("flutter-tools.config").get()
+  if _paths then
+    return callback(_paths)
   end
 
-  M.get(function(_, paths)
-    vim.schedule(function()
-      callback(_dart_sdk_root(paths))
+  if conf.flutter_path then
+    _paths = {
+      flutter_bin = conf.flutter_path,
+      -- convert path/to/flutter/bin/flutter into path/to/flutter
+      flutter_sdk = fn.fnamemodify(conf.flutter_path, ":h:h"),
+    }
+    _paths.dart_sdk = _dart_sdk_root(_paths)
+    return callback(_paths)
+  end
+
+  if conf.flutter_lookup_cmd then
+    return path_from_lookup_cmd(conf.flutter_lookup_cmd, function(paths)
+      _paths = paths
+      _paths.dart_sdk = _dart_sdk_root(_paths)
+      callback(_paths)
     end)
+  end
+
+  if not _paths then
+    _paths = get_default_binaries()
+    _paths.dart_sdk = _dart_sdk_root(_paths)
+  end
+
+  return callback(_paths)
+end
+
+---Fetch the path to the users flutter installation.
+---@param callback fun(paths: table<string, string>)
+---@return nil
+function M.flutter(callback)
+  M.get(function (paths)
+    callback(paths.flutter_bin)
   end)
 end
 

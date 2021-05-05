@@ -139,7 +139,7 @@ function M.launch_emulator(emulator)
   if not emulator then
     return
   end
-  executable.get(function(cmd)
+  executable.flutter(function(cmd)
     M.emulator_job = Job:new({ command = cmd, args = { "emulators", "--launch", emulator.id } })
     M.emulator_job:after_success(vim.schedule_wrap(handle_launch))
     M.emulator_job:start()
@@ -162,7 +162,7 @@ local function show_emulators(result)
 end
 
 function M.list_emulators()
-  executable.get(function(cmd)
+  executable.flutter(function(cmd)
     local job = Job:new({ command = cmd, args = { "emulators" } })
     job:after_success(vim.schedule_wrap(function(j)
       show_emulators(j:result())
@@ -194,7 +194,7 @@ local function show_devices(job)
 end
 
 function M.list_devices()
-  executable.get(function(cmd)
+  executable.flutter(function(cmd)
     local job = Job:new({ command = cmd, args = { "devices" } })
     job:after_success(vim.schedule_wrap(show_devices))
     job:after_failure(vim.schedule_wrap(function(j)
