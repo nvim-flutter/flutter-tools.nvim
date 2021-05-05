@@ -122,7 +122,7 @@ end
 ---@param callback fun(paths: table<string, string>)
 ---@return nil
 function M.flutter(callback)
-  M.get(function (paths)
+  M.get(function(paths)
     callback(paths.flutter_bin)
   end)
 end
