@@ -58,6 +58,15 @@ function M.setup(_)
         program = "${workspaceFolder}/lib/main.dart",
         cwd = "${workspaceFolder}",
       },
+      {
+        type = "dart",
+        request = "attach",
+        name = "Connect flutter",
+        dartSdkPath = paths.dart_sdk,
+        flutterSdkPath = paths.flutter_sdk,
+        program = "${workspaceFolder}/lib/main.dart",
+        cwd = "${workspaceFolder}",
+      },
     }
   end)
 end
