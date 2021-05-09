@@ -1,5 +1,3 @@
-local config = require("flutter-tools/config")
-
 local api = vim.api
 
 local M = {}
@@ -22,9 +20,9 @@ end
 
 --- returns a function which handles rendering floating labels
 function M.closing_tags(err, _, response)
-  local cfg = config.get()
-  local opts = cfg.closing_tags
-  if err then
+  local conf = require("flutter-tools.config").get()
+  local opts = conf.closing_tags
+  if err or not opts.enabled then
     return
   end
   local uri = response.uri

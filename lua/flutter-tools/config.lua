@@ -38,6 +38,7 @@ local defaults = {
   closing_tags = {
     highlight = "Comment",
     prefix = "// ",
+    enabled = true,
   },
   lsp = {
     debug = M.debug_levels.WARN,
