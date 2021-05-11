@@ -157,8 +157,9 @@ end
 -----------------------------------------------------------------------------//
 ---Print result of running pub get
 ---@param result string[]
-local function on_pub_get(result)
-  ui.notify(result)
+local function on_pub_get(result, err)
+  local timeout = err and 10000 or nil
+  ui.notify(result, timeout)
 end
 
 ---@type Job
@@ -173,7 +174,7 @@ function M.pub_get()
         pub_get_job = nil
       end))
       pub_get_job:after_failure(vim.schedule_wrap(function(j)
-        on_pub_get(j:stderr_result())
+        on_pub_get(j:stderr_result(), true)
         pub_get_job = nil
       end))
       pub_get_job:start()
