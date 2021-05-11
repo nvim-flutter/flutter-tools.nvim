@@ -137,10 +137,13 @@ NOTE: To configure the highlight colour you can override the `FlutterWidgetGuide
 - `FlutterRun` - Run the current project. This needs to be run from within a flutter project.
 - `FlutterDevices` - Brings up a list of connected devices to select from.
 - `FlutterEmulators` - Similar to devices but shows a list of emulators to choose from.
-- `FlutterReload` - Reload the running project
-- `FlutterRestart` - Restart the current project
-- `FlutterQuit` - Ends a running session
-- `FlutterOutline` - Opens an outline window showing the widget tree for the given file
+- `FlutterReload` - Reload the running project.
+- `FlutterRestart` - Restart the current project.
+- `FlutterQuit` - Ends a running session.
+- `FlutterOutline` - Opens an outline window showing the widget tree for the given file.
+- `FlutterDevTools` - Starts a Dart Dev Tools server.
+- `FlutterCopyProfilerUrl` - Copies the profiler url to your system clipboard (+ register). Note that commands `FlutterRun` and
+`FlutterDevTools` must be executed first.
 
 ## Debugging
 

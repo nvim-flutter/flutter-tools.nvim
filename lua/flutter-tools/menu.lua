@@ -111,6 +111,13 @@ function M.commands(opts)
       command = require("flutter-tools.dev_tools").start,
     },
     {
+      id = "flutter-tools-copy-profiler-url",
+      label = "Flutter tools: Copy Profiler Url",
+      hint = "Run the app and the DevTools first",
+      command = require("flutter-tools.commands").copy_profiler_url,
+    },
+
+    {
       id = "flutter-tools-clear-dev-log",
       label = "Flutter tools: Clear Dev Log",
       hint = "Clear previous logs in the output buffer",

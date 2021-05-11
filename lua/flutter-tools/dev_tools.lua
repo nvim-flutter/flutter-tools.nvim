@@ -10,6 +10,9 @@ local fn = vim.fn
 ---@type Job
 local job = nil
 
+---@type string
+local devtools_url = nil;
+
 local activate_cmd = { "pub", "global", "activate", "devtools" }
 
 --[[ {
@@ -30,8 +33,8 @@ local function handle_start(_, data, __)
   if #data > 0 then
     local json = fn.json_decode(data)
     if json and json.params then
-      local msg =
-        string.format("Serving DevTools at http://%s:%s", json.params.host, json.params.port)
+      devtools_url = string.format("http://%s:%s", json.params.host, json.params.port)
+      local msg = string.format("Serving DevTools at %s", devtools_url)
       ui.notify({ msg }, 20000)
     end
   end
@@ -84,6 +87,11 @@ function M.start()
   else
     utils.echomsg("DevTools are already running!")
   end
+end
+
+---@return string
+function M.get_url()
+  return devtools_url
 end
 
 return M
