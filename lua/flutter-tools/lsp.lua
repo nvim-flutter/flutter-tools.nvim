@@ -75,8 +75,8 @@ local function get_defaults()
         properties = {
           "documentation",
           "detail",
-          "additionalTextEdits"
-        }
+          "additionalTextEdits",
+        },
       }
       return capabilities
     end)(),
