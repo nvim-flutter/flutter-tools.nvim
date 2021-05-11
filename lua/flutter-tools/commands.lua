@@ -126,6 +126,11 @@ function M.run(device)
     if device and device.id then
       vim.list_extend(args, { "-d", device.id })
     end
+
+    local dev_url = dev_tools.get_url()
+    if dev_url then
+      vim.list_extend(args, { "--devtools-server-address", dev_url })
+    end
     ui.notify({ "Starting flutter project..." })
     local conf = config.get("dev_log")
     run_job = Job:new({

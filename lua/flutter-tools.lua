@@ -25,7 +25,7 @@ local function setup_commands()
 end
 
 local function setup_autocommands()
-  require("flutter-tools.utils").augroup("FlutterToolsHotReload", {
+  utils.augroup("FlutterToolsHotReload", {
     {
       events = { "BufWritePost" },
       targets = { "*.dart" },
@@ -41,6 +41,14 @@ local function setup_autocommands()
       targets = { require("flutter-tools.log").filename },
       command = "lua require('flutter-tools.log').__resurrect()",
     },
+  })
+
+  utils.augroup("FlutterToolsOnClose", {
+    {
+      events = { "VimLeavePre" },
+      targets = { "*" },
+      command = "lua require('flutter-tools.dev_tools').stop()"
+    }
   })
 end
 

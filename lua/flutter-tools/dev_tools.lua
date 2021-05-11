@@ -13,6 +13,9 @@ local job = nil
 ---@type string
 local devtools_url = nil
 
+---@type number
+local devtools_pid = nil
+
 local activate_cmd = { "pub", "global", "activate", "devtools" }
 
 --[[ {
@@ -33,6 +36,7 @@ local function handle_start(_, data, __)
   if #data > 0 then
     local json = fn.json_decode(data)
     if json and json.params then
+      devtools_pid = json.params.pid
       devtools_url = string.format("http://%s:%s", json.params.host, json.params.port)
       local msg = string.format("Serving DevTools at %s", devtools_url)
       ui.notify({ msg }, 20000)
@@ -86,6 +90,15 @@ function M.start()
     end)
   else
     utils.echomsg("DevTools are already running!")
+  end
+end
+
+function M.stop()
+  if devtools_pid then
+    local uv = vim.loop
+    uv.kill(devtools_pid, uv.constants.SIGTERM)
+    devtools_pid = nil
+    devtools_url = nil
   end
 end
 
