@@ -11,7 +11,7 @@ local fn = vim.fn
 local job = nil
 
 ---@type string
-local devtools_url = nil;
+local devtools_url = nil
 
 local activate_cmd = { "pub", "global", "activate", "devtools" }
 

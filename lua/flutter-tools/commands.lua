@@ -27,20 +27,20 @@ local function search_profiler_url(data)
   -- Chrome
   -- Debug service listening on ws://127.0.0.1:44293/heXbxLM_lhM=/ws
   local m = data:match("Debug service listening on (ws%:%/%/127%.0%.0%.1%:%d+/.+/ws)$")
-  if(not m) then
+  if not m then
     -- Android
     -- An Observatory debugger and profiler on sdk gphone x86 arm is available at: http://127.0.0.1:46051/NvCev-HjyX4=/
-    m = data:match("An Observatory debugger and profiler on .+ is available at:%s(https?://127%.0%.0%.1:%d+/.+/)$")
+    m =
+      data:match("An Observatory debugger and profiler on .+ is available at:%s(https?://127%.0%.0%.1:%d+/.+/)$")
     -- Android when flutter run starts a new devtools process
     -- Flutter DevTools, a Flutter debugger and profiler, on sdk gphone x86 arm is available at: http://127.0.0.1:9102?uri=http%3A%2F%2F127.0.0.1%3A46051%2FNvCev-HjyX4%3D%2F
     -- m = data:match("Flutter DevTools, a Flutter debugger and profiler, on .+ is available at:%s(https?://127%.0%.0%.1:%d+%?uri=.+)$")
   end
 
-  if(m) then
+  if m then
     profiler_url = m
   end
 end
-
 
 local function match_error_string(line)
   if not line then
@@ -187,25 +187,24 @@ function M.visual_debug(quiet)
 end
 
 function M.copy_profiler_url()
-  if(not run_job) then
+  if not run_job then
     ui.notify({ "You must run the app first!" })
     return
   end
 
   local dev_url = dev_tools.get_url()
-  if(not dev_url) then
+  if not dev_url then
     ui.notify({ "You must start the DevTools server first!" })
     return
   end
 
-  if(profiler_url) then
+  if profiler_url then
     local res = string.format("%s/?uri=%s", dev_url, profiler_url)
-    vim.cmd("let @+='".. res .."'")
+    vim.cmd("let @+='" .. res .. "'")
     ui.notify({ "Profiler url copied to clipboard!" })
-    else
-      ui.notify({"Could not find the profiler url", "Wait until the app is initialized"})
+  else
+    ui.notify({ "Could not find the profiler url", "Wait until the app is initialized" })
   end
-
 end
 
 -----------------------------------------------------------------------------//
