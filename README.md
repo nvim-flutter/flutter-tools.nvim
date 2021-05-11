@@ -143,7 +143,7 @@ NOTE: To configure the highlight colour you can override the `FlutterWidgetGuide
 - `FlutterOutline` - Opens an outline window showing the widget tree for the given file.
 - `FlutterDevTools` - Starts a Dart Dev Tools server.
 - `FlutterCopyProfilerUrl` - Copies the profiler url to your system clipboard (+ register). Note that commands `FlutterRun` and
-`FlutterDevTolls` must be executed first.
+`FlutterDevTools` must be executed first.
 
 ## Debugging
 
