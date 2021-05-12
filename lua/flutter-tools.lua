@@ -1,8 +1,8 @@
-local utils = require("flutter-tools.utils")
 
 local M = {}
 
 local function setup_commands()
+  local utils = require("flutter-tools.utils")
   -- Commands
   utils.command("FlutterRun", [[lua require('flutter-tools.commands').run()]])
   utils.command("FlutterReload", [[lua require('flutter-tools.commands').reload()]])
@@ -25,6 +25,7 @@ local function setup_commands()
 end
 
 local function setup_autocommands()
+  local utils = require("flutter-tools.utils")
   utils.augroup("FlutterToolsHotReload", {
     {
       events = { "BufWritePost" },
