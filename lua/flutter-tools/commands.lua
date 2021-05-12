@@ -17,6 +17,10 @@ local run_job = nil
 ---@type string
 local profiler_url = nil
 
+function M.is_running()
+  return run_job ~= nil
+end
+
 ---@param data string
 local function search_profiler_url(data)
   -- We already have it, stop checking messages

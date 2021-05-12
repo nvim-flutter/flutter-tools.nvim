@@ -94,4 +94,9 @@ function M.get_url()
   return devtools_url
 end
 
+---@return boolean
+function M.is_running()
+  return devtools_url ~= nil
+end
+
 return M
