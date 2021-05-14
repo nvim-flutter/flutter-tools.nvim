@@ -57,6 +57,7 @@ end
 ---@param user_config table
 ---@return nil
 function M.setup(user_config)
+  local utils = require("flutter-tools.utils")
   local success = pcall(require, "plenary")
   if not success then
     return utils.echomsg("plenary.nvim is a required dependency of this plugin, please ensure it is installed")
