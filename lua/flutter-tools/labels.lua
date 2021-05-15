@@ -7,13 +7,24 @@ local namespace = api.nvim_create_namespace("flutter_tools_closing_labels")
 local function render_labels(labels, opts)
   api.nvim_buf_clear_namespace(0, namespace, 0, -1)
   opts = opts or {}
-  local highlight = opts and opts.highlight or "Comment"
-  local prefix = opts and opts.prefix or "// "
+  local highlight = opts.highlight or "Comment"
+
+  local prefix = opts.prefix
+  local format = opts.format
+  if prefix and format then
+    error(
+      "[flutter-tools.labels] Cannot have both prefix and format specified" .. vim.inspect(opts)
+    )
+  end
+
+  if not format then
+    format = prefix .. "%s"
+  end
 
   for _, item in ipairs(labels) do
     local line = item.range["end"].line
     api.nvim_buf_set_virtual_text(0, namespace, tonumber(line), {
-      { prefix .. item.label, highlight },
+      { string.format(format, item.label), highlight },
     }, {})
   end
 end

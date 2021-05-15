@@ -37,7 +37,7 @@ local defaults = {
   },
   closing_tags = {
     highlight = "Comment",
-    prefix = "// ",
+    format = "// %s",
     enabled = true,
   },
   lsp = {
