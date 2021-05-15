@@ -9,16 +9,25 @@ local function render_labels(labels, opts)
   opts = opts or {}
   local highlight = opts.highlight or "Comment"
 
+  -- Have ot use `rawget` to override what the default format is that we provide in config.
+  local user_format = rawget(opts, "format")
+
   local prefix = opts.prefix
-  local format = opts.format
-  if prefix and format then
+  if prefix and user_format then
     error(
       "[flutter-tools.labels] Cannot have both prefix and format specified" .. vim.inspect(opts)
     )
   end
 
-  if not format then
+  -- A bit complicated, but basically just keeps backwards compat of passing "prefix"
+  -- while still allowing users to pass "format" instead.
+  local format
+  if user_format then
+    format = user_format
+  elseif prefix then
     format = prefix .. "%s"
+  else
+    format = opts.format
   end
 
   for _, item in ipairs(labels) do
