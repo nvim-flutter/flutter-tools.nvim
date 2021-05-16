@@ -14,36 +14,8 @@ local M = {}
 ---@type Job
 local run_job = nil
 
----@type string
-local profiler_url = nil
-
 function M.is_running()
   return run_job ~= nil
-end
-
----@param data string
-local function search_profiler_url(data)
-  -- We already have it, stop checking messages
-  if profiler_url then
-    return
-  end
-
-  -- Chrome
-  -- Debug service listening on ws://127.0.0.1:44293/heXbxLM_lhM=/ws
-  local m = data:match("Debug service listening on (ws%:%/%/127%.0%.0%.1%:%d+/.+/ws)$")
-  if not m then
-    -- Android
-    -- An Observatory debugger and profiler on sdk gphone x86 arm is available at: http://127.0.0.1:46051/NvCev-HjyX4=/
-    m =
-      data:match("An Observatory debugger and profiler on .+ is available at:%s(https?://127%.0%.0%.1:%d+/.+/)$")
-    -- Android when flutter run starts a new devtools process
-    -- Flutter DevTools, a Flutter debugger and profiler, on sdk gphone x86 arm is available at: http://127.0.0.1:9102?uri=http%3A%2F%2F127.0.0.1%3A46051%2FNvCev-HjyX4%3D%2F
-    -- m = data:match("Flutter DevTools, a Flutter debugger and profiler, on .+ is available at:%s(https?://127%.0%.0%.1:%d+%?uri=.+)$")
-  end
-
-  if m then
-    profiler_url = m
-  end
 end
 
 local function match_error_string(line)
@@ -81,7 +53,7 @@ local function on_run_data(is_err, opts)
       ui.notify({ data })
     end
     if not match_error_string(data) then
-      search_profiler_url(data)
+      dev_tools.handle_log(data)
       dev_log.log(data, opts)
     end
   end)
@@ -115,10 +87,7 @@ local function shutdown()
   if run_job then
     run_job = nil
   end
-
-  if profiler_url then
-    profiler_url = nil
-  end
+  dev_tools.on_flutter_shutdown()
 end
 
 function M.run(device)
@@ -129,6 +98,11 @@ function M.run(device)
     local args = { "run" }
     if device and device.id then
       vim.list_extend(args, { "-d", device.id })
+    end
+
+    local dev_url = dev_tools.get_url()
+    if dev_url then
+      vim.list_extend(args, { "--devtools-server-address", dev_url })
     end
     ui.notify({ "Starting flutter project..." })
     local conf = config.get("dev_log")
@@ -196,18 +170,15 @@ function M.copy_profiler_url()
     return
   end
 
-  local dev_url = dev_tools.get_url()
-  if not dev_url then
-    ui.notify({ "You must start the DevTools server first!" })
-    return
-  end
+  local url, is_running = dev_tools.get_profiler_url()
 
-  if profiler_url then
-    local res = string.format("%s/?uri=%s", dev_url, profiler_url)
-    vim.cmd("let @+='" .. res .. "'")
+  if url then
+    vim.cmd("let @+='" .. url .. "'")
     ui.notify({ "Profiler url copied to clipboard!" })
+  elseif is_running then
+    ui.notify({ "Wait while the app starts", "please try again later" })
   else
-    ui.notify({ "Could not find the profiler url", "Wait until the app is initialized" })
+    ui.notify({ "You must start the DevTools server first!" })
   end
 end
 
