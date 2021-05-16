@@ -14,6 +14,10 @@ local M = {}
 ---@type Job
 local run_job = nil
 
+function M.is_running()
+  return run_job ~= nil
+end
+
 local function match_error_string(line)
   if not line then
     return false

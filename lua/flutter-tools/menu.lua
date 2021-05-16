@@ -55,37 +55,48 @@ local function get_max_length(commands)
 end
 
 function M.commands(opts)
-  local commands = {
-    {
-      id = "flutter-tools-run",
-      label = "Flutter tools: Run",
-      hint = "Start a flutter project",
-      command = require("flutter-tools.commands").run,
-    },
-    {
-      id = "flutter-tools-hot-reload",
-      label = "Flutter tools: Hot reload",
-      hint = "Reload a running flutter project",
-      command = require("flutter-tools.commands").reload,
-    },
-    {
-      id = "flutter-tools-hot-restart",
-      label = "Flutter tools: Hot restart",
-      hint = "Restart a running flutter project",
-      command = require("flutter-tools.commands").restart,
-    },
-    {
-      id = "flutter-tools-quit",
-      label = "Flutter tools: Quit",
-      hint = "Quit running flutter project",
-      command = require("flutter-tools.commands").quit,
-    },
-    {
-      id = "flutter-tools-visual-debug",
-      label = "Flutter tools: Visual Debug",
-      hint = "Add the visual debugging overlay",
-      command = require("flutter-tools.commands").visual_debug,
-    },
+  local commands = { }
+
+  local commands_module = require("flutter-tools.commands")
+  if commands_module.is_running() then
+    commands = {
+      {
+        id = "flutter-tools-hot-reload",
+        label = "Flutter tools: Hot reload",
+        hint = "Reload a running flutter project",
+        command = require("flutter-tools.commands").reload,
+      },
+      {
+        id = "flutter-tools-hot-restart",
+        label = "Flutter tools: Hot restart",
+        hint = "Restart a running flutter project",
+        command = require("flutter-tools.commands").restart,
+      },
+      {
+        id = "flutter-tools-visual-debug",
+        label = "Flutter tools: Visual Debug",
+        hint = "Add the visual debugging overlay",
+        command = require("flutter-tools.commands").visual_debug,
+      },
+      {
+        id = "flutter-tools-quit",
+        label = "Flutter tools: Quit",
+        hint = "Quit running flutter project",
+        command = require("flutter-tools.commands").quit,
+      },
+    }
+  else
+    commands = {
+      {
+        id = "flutter-tools-run",
+        label = "Flutter tools: Run",
+        hint = "Start a flutter project",
+        command = require("flutter-tools.commands").run,
+      },
+    }
+  end
+
+  vim.list_extend(commands, {
     {
       id = "flutter-tools-list-devices",
       label = "Flutter tools: List Devices",
@@ -105,25 +116,34 @@ function M.commands(opts)
       command = require("flutter-tools.outline").open,
     },
     {
-      id = "flutter-tools-start-dev-tools",
-      label = "Flutter tools: Start Dev Tools",
-      hint = "Open flutter dev tools in the browser",
-      command = require("flutter-tools.dev_tools").start,
-    },
-    {
-      id = "flutter-tools-copy-profiler-url",
-      label = "Flutter tools: Copy Profiler Url",
-      hint = "Run the app and the DevTools first",
-      command = require("flutter-tools.commands").copy_profiler_url,
-    },
-
-    {
       id = "flutter-tools-clear-dev-log",
       label = "Flutter tools: Clear Dev Log",
       hint = "Clear previous logs in the output buffer",
       command = require("flutter-tools.log").clear,
     },
-  }
+  })
+
+  local dev_tools = require("flutter-tools.dev_tools")
+
+  if dev_tools.is_running() then
+      vim.list_extend(commands, {
+        {
+          id = "flutter-tools-copy-profiler-url",
+          label = "Flutter tools: Copy Profiler Url",
+          hint = "Run the app and the DevTools first",
+          command = require("flutter-tools.commands").copy_profiler_url,
+        },
+      })
+  else
+      vim.list_extend(commands, {
+        {
+          id = "flutter-tools-start-dev-tools",
+          label = "Flutter tools: Start Dev Tools",
+          hint = "Open flutter dev tools in the browser",
+          command = require("flutter-tools.dev_tools").start,
+        },
+      })
+  end
 
   opts = opts and not vim.tbl_isempty(opts) and opts or themes.get_dropdown({
     previewer = false,
