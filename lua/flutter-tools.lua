@@ -1,8 +1,8 @@
-local utils = require("flutter-tools.utils")
 
 local M = {}
 
 local function setup_commands()
+  local utils = require("flutter-tools.utils")
   -- Commands
   utils.command("FlutterRun", [[lua require('flutter-tools.commands').run()]])
   utils.command("FlutterReload", [[lua require('flutter-tools.commands').reload()]])
@@ -25,7 +25,8 @@ local function setup_commands()
 end
 
 local function setup_autocommands()
-  require("flutter-tools.utils").augroup("FlutterToolsHotReload", {
+  local utils = require("flutter-tools.utils")
+  utils.augroup("FlutterToolsHotReload", {
     {
       events = { "BufWritePost" },
       targets = { "*.dart" },
@@ -42,12 +43,21 @@ local function setup_autocommands()
       command = "lua require('flutter-tools.log').__resurrect()",
     },
   })
+
+  utils.augroup("FlutterToolsOnClose", {
+    {
+      events = { "VimLeavePre" },
+      targets = { "*" },
+      command = "lua require('flutter-tools.dev_tools').stop()"
+    }
+  })
 end
 
 ---Entry point for this plugin
 ---@param user_config table
 ---@return nil
 function M.setup(user_config)
+  local utils = require("flutter-tools.utils")
   local success = pcall(require, "plenary")
   if not success then
     return utils.echomsg("plenary.nvim is a required dependency of this plugin, please ensure it is installed")
