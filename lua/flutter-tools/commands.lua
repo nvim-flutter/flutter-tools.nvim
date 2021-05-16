@@ -172,7 +172,7 @@ function M.copy_profiler_url()
     vim.cmd("let @+='" .. url .. "'")
     ui.notify({ "Profiler url copied to clipboard!" })
   elseif is_running then
-    ui.notify({ "Wait while the app starts", "and again later" })
+    ui.notify({ "Wait while the app starts", "please try again later" })
   else
     ui.notify({ "You must start the DevTools server first!" })
   end
