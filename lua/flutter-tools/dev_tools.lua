@@ -180,4 +180,9 @@ function M.on_flutter_shutdown()
 
 end
 
+---@return boolean
+function M.is_running()
+  return devtools_profiler_url ~= nil and devtools_url ~= nil
+end
+
 return M
