@@ -160,7 +160,8 @@ end
 
 ---@return boolean
 function M.is_running()
-  return devtools_profiler_url ~= nil or devtools_url ~= nil 
+  return devtools_profiler_url ~= nil or devtools_url ~= nil
+end
 
 ---@return string? devtools_profiler_url the url including the devtools url and the app url. Follows the format `devtools_url/?uri=app_url`
 ---@return boolean? server_running true if there is a `devtools_url` available but couldn't build the url
@@ -177,12 +178,6 @@ end
 function M.on_flutter_shutdown()
   profiler_url = nil
   devtools_profiler_url = nil
-
-end
-
----@return boolean
-function M.is_running()
-  return devtools_profiler_url ~= nil and devtools_url ~= nil
 end
 
 return M
