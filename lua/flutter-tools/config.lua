@@ -53,6 +53,9 @@ local defaults = {
       return k == "open_cmd" and get_split_cmd(0.4, 50) or nil
     end,
   }),
+  dev_tools = {
+    autostart = false,
+  },
   experimental = {
     lsp_derive_paths = false,
   },
