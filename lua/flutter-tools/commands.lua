@@ -71,13 +71,10 @@ local function on_run_exit(result)
       highlights = highlights,
       on_create = function(buf, _)
         vim.b.devices = win_devices
-        api.nvim_buf_set_keymap(
-          buf,
-          "n",
-          "<CR>",
-          ":lua __flutter_tools_select_device()<CR>",
-          { silent = true, noremap = true }
-        )
+        api.nvim_buf_set_keymap(buf, "n", "<CR>", ":lua __flutter_tools_select_device()<CR>", {
+          silent = true,
+          noremap = true,
+        })
       end,
     })
   end

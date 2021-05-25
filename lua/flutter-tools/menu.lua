@@ -55,7 +55,7 @@ local function get_max_length(commands)
 end
 
 function M.commands(opts)
-  local commands = { }
+  local commands = {}
 
   local commands_module = require("flutter-tools.commands")
   if commands_module.is_running() then
@@ -126,29 +126,30 @@ function M.commands(opts)
   local dev_tools = require("flutter-tools.dev_tools")
 
   if dev_tools.is_running() then
-      vim.list_extend(commands, {
-        {
-          id = "flutter-tools-copy-profiler-url",
-          label = "Flutter tools: Copy Profiler Url",
-          hint = "Run the app and the DevTools first",
-          command = require("flutter-tools.commands").copy_profiler_url,
-        },
-      })
+    vim.list_extend(commands, {
+      {
+        id = "flutter-tools-copy-profiler-url",
+        label = "Flutter tools: Copy Profiler Url",
+        hint = "Run the app and the DevTools first",
+        command = require("flutter-tools.commands").copy_profiler_url,
+      },
+    })
   else
-      vim.list_extend(commands, {
-        {
-          id = "flutter-tools-start-dev-tools",
-          label = "Flutter tools: Start Dev Tools",
-          hint = "Open flutter dev tools in the browser",
-          command = require("flutter-tools.dev_tools").start,
-        },
-      })
+    vim.list_extend(commands, {
+      {
+        id = "flutter-tools-start-dev-tools",
+        label = "Flutter tools: Start Dev Tools",
+        hint = "Open flutter dev tools in the browser",
+        command = require("flutter-tools.dev_tools").start,
+      },
+    })
   end
 
-  opts = opts and not vim.tbl_isempty(opts) and opts or themes.get_dropdown({
-    previewer = false,
-    results_height = #commands,
-  })
+  opts = opts and not vim.tbl_isempty(opts) and opts
+    or themes.get_dropdown({
+      previewer = false,
+      results_height = #commands,
+    })
 
   pickers.new(opts, {
     prompt_title = "Flutter tools commands",

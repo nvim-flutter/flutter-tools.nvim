@@ -13,7 +13,6 @@ local job = nil
 ---@type number?
 local devtools_pid = nil
 
-
 ---@type string?
 local devtools_url = nil
 
@@ -26,7 +25,6 @@ local devtools_profiler_url = nil
 
 local activate_cmd = { "pub", "global", "activate", "devtools" }
 
-
 -- Android when flutter run starts a new devtools process
 -- Flutter DevTools, a Flutter debugger and profiler, on sdk gphone x86 arm is available at: http://127.0.0.1:9102?uri=http%3A%2F%2F127.0.0.1%3A46051%2FNvCev-HjyX4%3D%2F
 local function try_get_tools_flutter(data)
@@ -38,9 +36,8 @@ end
 ---@param data string
 ---@return string?
 local function try_get_profiler_url(data)
-  return
-    data:match("An Observatory debugger and profiler on .+ is available at:%s(https?://127%.0%.0%.1:%d+/.+/)$") or
-    data:match("Debug service listening on (ws%:%/%/127%.0%.0%.1%:%d+/.+/ws)$")
+  return data:match("An Observatory debugger and profiler on .+ is available at:%s(https?://127%.0%.0%.1:%d+/.+/)$")
+    or data:match("Debug service listening on (ws%:%/%/127%.0%.0%.1%:%d+/.+/ws)$")
 end
 
 function M.handle_log(data)
@@ -51,14 +48,14 @@ function M.handle_log(data)
   devtools_profiler_url = try_get_tools_flutter(data)
 
   if devtools_profiler_url then
-    ui.notify({"Detected devtools url", "Execute FlutterCopyProfilerUrl to copy it"})
+    ui.notify({ "Detected devtools url", "Execute FlutterCopyProfilerUrl to copy it" })
     return
   end
 
   profiler_url = try_get_profiler_url(data)
 
   if profiler_url then
-    ui.notify({"Profiler url detected: ", profiler_url})
+    ui.notify({ "Profiler url detected: ", profiler_url })
   end
 end
 
@@ -87,7 +84,6 @@ local function handle_start(_, data, __)
     end
   end
 end
-
 
 ---Handler errors whilst opening dev tools
 ---@param _ number
@@ -156,7 +152,6 @@ end
 function M.get_url()
   return devtools_url
 end
-
 
 ---@return boolean
 function M.is_running()

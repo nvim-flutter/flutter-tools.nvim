@@ -264,13 +264,11 @@ local function setup_outline_window(lines, highlights)
       { noremap = true, nowait = true, silent = true }
     )
 
-    api.nvim_buf_set_keymap(
-      buf,
-      "n",
-      "<CR>",
-      [[<Cmd>lua __flutter_tools_select_outline_item()<CR>]],
-      { noremap = true, nowait = true, silent = true }
-    )
+    api.nvim_buf_set_keymap(buf, "n", "<CR>", [[<Cmd>lua __flutter_tools_select_outline_item()<CR>]], {
+      noremap = true,
+      nowait = true,
+      silent = true,
+    })
     setup_autocommands()
   end
 end
@@ -405,7 +403,10 @@ function M.open()
       open_cmd = options.open_cmd,
       filetype = outline_filetype,
       filename = outline_filename,
-    }, setup_outline_window(lines, highlights))
+    }, setup_outline_window(
+      lines,
+      highlights
+    ))
   else
     replace(M.buf, lines, highlights)
   end

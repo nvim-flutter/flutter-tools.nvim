@@ -56,8 +56,10 @@ do
 end
 
 function M.join(...)
-  local result =
-    table.concat(vim.tbl_flatten({ ... }), M.path_sep):gsub(M.path_sep .. "+", M.path_sep)
+  local result = table.concat(vim.tbl_flatten({ ... }), M.path_sep):gsub(
+    M.path_sep .. "+",
+    M.path_sep
+  )
   return result
 end
 
