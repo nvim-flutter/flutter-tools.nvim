@@ -52,10 +52,17 @@ function M.handle_log(data)
     return
   end
 
+  if profiler_url then
+    return
+  end
+
   profiler_url = try_get_profiler_url(data)
 
   if profiler_url then
-    ui.notify({ "Profiler url detected: ", profiler_url })
+    local autostart = require("flutter-tools.config").get("dev_tools").autostart
+    if autostart then
+      M.start()
+    end
   end
 end
 

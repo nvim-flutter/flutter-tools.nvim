@@ -58,6 +58,9 @@ require("flutter-tools").setup {
   dev_log = {
     open_cmd = "tabedit", -- command to use to open the log buffer
   },
+  dev_tools = {
+    autostart = false, -- autostart devtools server if not detected
+  },
   outline = {
     open_cmd = "30vnew", -- command to use to open the outline buffer
   },
