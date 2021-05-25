@@ -65,10 +65,8 @@ local function get_guide_character(lnum, end_line, parent_start, indent_size, ch
       return markers.middle .. markers.horizontal:rep(child_indent)
     end
   end
-  return lnum ~= end_line
-    and markers.vertical
-    or markers.bottom
-    .. markers.horizontal:rep(indent_size)
+  return lnum ~= end_line and markers.vertical
+    or markers.bottom .. markers.horizontal:rep(indent_size)
 end
 
 -- Marshal the lsp flutter outline into a table of lines and characters
@@ -112,8 +110,14 @@ local function collect_guides(lines, data, guides)
         guides[lnum] = guides[lnum] or {}
         -- Don't do the work to get characters we already have
         if not guides[lnum][start_index] then
-          guides[lnum][start_index] =
-            get_guide_character(lnum, end_lnum, start_index, indent_size, data.children, lines)
+          guides[lnum][start_index] = get_guide_character(
+            lnum,
+            end_lnum,
+            start_index,
+            indent_size,
+            data.children,
+            lines
+          )
         end
       end
     end
@@ -148,12 +152,7 @@ local function render_guides(bufnum, guides, conf)
         local name = api.nvim_buf_get_name(bufnum)
         utils.echomsg({
           {
-            fmt(
-              "error drawing widget guide for %s at line %d, col %d\n",
-              name,
-              lnum,
-              start
-            ),
+            fmt("error drawing widget guide for %s at line %d, col %d\n", name, lnum, start),
             "Title",
           },
           { msg, "ErrorMsg" },

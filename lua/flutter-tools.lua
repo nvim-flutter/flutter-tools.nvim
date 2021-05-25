@@ -1,4 +1,3 @@
-
 local M = {}
 
 local function setup_commands()
@@ -48,8 +47,8 @@ local function setup_autocommands()
     {
       events = { "VimLeavePre" },
       targets = { "*" },
-      command = "lua require('flutter-tools.dev_tools').stop()"
-    }
+      command = "lua require('flutter-tools.dev_tools').stop()",
+    },
   })
 end
 

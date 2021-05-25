@@ -261,13 +261,10 @@ function M.popup_create(opts)
   --- Positions cursor on the third line i.e. after the title and it's underline
   api.nvim_win_set_cursor(win, { 3, 0 })
   api.nvim_win_set_option(win, "winhighlight", "CursorLine:Visual,NormalFloat:Normal")
-  api.nvim_buf_set_keymap(
-    buf,
-    "n",
-    "<ESC>",
-    ":lua __flutter_tools_close(" .. buf .. ")<CR>",
-    { silent = true, noremap = true }
-  )
+  api.nvim_buf_set_keymap(buf, "n", "<ESC>", ":lua __flutter_tools_close(" .. buf .. ")<CR>", {
+    silent = true,
+    noremap = true,
+  })
   vim.cmd(string.format([[autocmd! WinLeave <buffer> silent! execute 'bw %d']], buf))
   if on_create then
     on_create(buf, win)

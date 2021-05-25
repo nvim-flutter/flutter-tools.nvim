@@ -7,19 +7,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
+    - uses: JohnnyMorganz/stylua-action@1.0.0
       with:
-        fetch-depth: 0
-    - name: Install and run stylua
-      run: |
-        wget "https://github.com/JohnnyMorganz/StyLua/releases/download/v0.6.0/stylua-0.6.0-linux.zip" -O /home/runner/stylua.zip
-        unzip /home/runner/stylua.zip -d /home/runner
-        chmod +x /home/runner/stylua
-        find ./ -type f -name '*.lua' -exec /home/runner/stylua --config-path=stylua.toml {} +
+        token: ${{ secrets.GITHUB_TOKEN }}
+        args: --config-path=stylua.toml lua/
     - name: Commit files
       run: |
         git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
         git config --local user.name "github-actions[bot]"
-        git commit -m "Format lua" lua/*
+        if ! [[ -z $(git status -s) ]]; then
+          git commit -m "Format lua" lua/*
+        fi
     - name: Push changes
       uses: ad-m/github-push-action@master
       with:
