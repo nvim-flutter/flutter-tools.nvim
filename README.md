@@ -1,11 +1,10 @@
 # flutter-tools.nvim
 
-Build flutter and dart applications in neovim using the native lsp.
+Build flutter and dart applications in neovim using the native LSP. It adds the ability to easily
+launch flutter applications, debug them, as well as extending/exposing LSP functionality such as the
+widget guides, an outline view of your widgets, and hot reloading.
 
-# Inspiration
-
-This plugin draws inspiration from [`emacs-lsp/lsp-dart`](https://github.com/emacs-lsp/lsp-dart), [`coc-flutter`](https://github.com/iamcco/coc-flutter) and [`nvim-metals`](https://github.com/scalameta/nvim-metals), the idea being
-to allow users to easily develop flutter apps using neovim.
+This plugin draws inspiration from [`emacs-lsp/lsp-dart`](https://github.com/emacs-lsp/lsp-dart), [`coc-flutter`](https://github.com/iamcco/coc-flutter) and [`nvim-metals`](https://github.com/scalameta/nvim-metals).
 
 ## Prerequisites
 
@@ -28,21 +27,22 @@ use {'akinsho/flutter-tools.nvim', requires = 'nvim-lua/plenary.nvim'}
 
 This plugin depends on [plenary.nvim](https://github.com/nvim-lua/plenary.nvim), please make sure it is installed.
 
-NOTE: flutter tools does not depend on `nvim-lspconfig`. The two can co-exist but please ensure
-you do **NOT** configure `dartls` using `lspconfig`. It will be automatically set up by this
-plugin instead.
+## Warning
 
-To set it up
+- flutter tools does not depend on `nvim-lspconfig`. The two can co-exist but please ensure
+  you do **NOT** configure `dartls` using `lspconfig`. It will be automatically set up by this
+  plugin instead.
+
+- You might encounter issues using this plugin on the `master` channel of flutter.
+
+## Setup
 
 ```lua
 require("flutter-tools").setup{} -- use defaults
 
 -- alternatively you can override the default configs
 require("flutter-tools").setup {
-  experimental = { -- map of feature flags
-    lsp_derive_paths = false, -- experimental: Attempt to find the user's flutter SDK
-  },
-  debugger = { -- experimental: integrate with nvim dap
+  debugger = { -- integrate with nvim dap + install dart code debugger
     enabled = false,
   },
   flutter_path = "<full/path/if/needed>", -- <-- this takes priority over the lookup
@@ -83,13 +83,14 @@ it and adds some extra `flutter` specific handlers and utilisation options.
 In order to run flutter commands you _might_ need to pass either a _path_ or a _command_ to the plugin so it can find your
 installation of flutter. Most people will not need this since it will find the executable path of `flutter` if it is in your `$PATH`.
 
-If using something like `asdf` or some other version manager, or you installed flutter via `snap` or in some other custom way,
+If using something like `asdf` or some other version manager or in some other custom way,
 then you need to pass in a command by specifying `flutter_lookup_cmd = <my-command>`.
 If you have a full path already you can pass it in using `flutter_path`.
 
-If using a `snap` installation set your `flutter_lookup_cmd` to `"echo $HOME/snap/flutter/common/flutter/bin/flutter"`
-which is where this is usually installed by `snap`. Alternatively you can use the `experimental.lsp_derive_paths` option
-which should auto-magically find your flutter installation.
+If you are on linux, this plugin will automatically set the `flutter_lookup_cmd` to `flutter sdk-path` which allows finding
+`snap` installations of flutter. If this doesn't work for any reason likely an old version of flutter before this command
+was added, you can set your `flutter_lookup_cmd` to `"echo $HOME/snap/flutter/common/flutter/bin/flutter"`
+which is where this is usually installed by `snap`.
 
 ### Telescope Integration
 
@@ -146,7 +147,7 @@ NOTE: To configure the highlight colour you can override the `FlutterWidgetGuide
 - `FlutterOutline` - Opens an outline window showing the widget tree for the given file.
 - `FlutterDevTools` - Starts a Dart Dev Tools server.
 - `FlutterCopyProfilerUrl` - Copies the profiler url to your system clipboard (+ register). Note that commands `FlutterRun` and
-`FlutterDevTools` must be executed first.
+  `FlutterDevTools` must be executed first.
 
 ## Debugging
 
@@ -166,4 +167,5 @@ to use `dap` commands to begin to debug it. For more information on how to use `
 or see `:h dap`.
 
 Also see:
+
 - [nvim-dap-ui](https://github.com/rcarriga/nvim-dap-ui) - a plugin which provides a nice UI for `nvim-dap`.
