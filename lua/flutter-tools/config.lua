@@ -20,6 +20,11 @@ local function get_split_cmd(percentage, fallback)
   return string.format("botright %dvnew", math.max(vim.o.columns * percentage, fallback))
 end
 
+local function get_default_lookup()
+  local utils = require("flutter-tools.utils")
+  return (path.is_linux and utils.executable("snap")) and "flutter sdk-path" or nil
+end
+
 M.debug_levels = {
   DEBUG = 1,
   WARN = 2,
@@ -27,7 +32,7 @@ M.debug_levels = {
 
 local defaults = {
   flutter_path = nil,
-  flutter_lookup_cmd = path.is_linux and "flutter sdk-path" or nil,
+  flutter_lookup_cmd = get_default_lookup(),
   widget_guides = {
     enabled = false,
     debug = false,
@@ -55,9 +60,6 @@ local defaults = {
   }),
   dev_tools = {
     autostart = false,
-  },
-  experimental = {
-    lsp_derive_paths = false,
   },
 }
 
