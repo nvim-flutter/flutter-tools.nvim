@@ -27,10 +27,15 @@ function M.setup()
 end
 
 ---Merge a set of default configurations with a user's own settings
+---NOTE: a user can specify a function in which case this will be used
+---to determine how to merge the defaults with a user's config
 ---@param default table
----@param user table
+---@param user table|function
 ---@return table
 local function merge_config(default, user)
+  if type(user) == "function" then
+    return user(default)
+  end
   if not user or vim.tbl_isempty(user) then
     return default
   end

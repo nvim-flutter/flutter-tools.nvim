@@ -67,6 +67,11 @@ require("flutter-tools").setup {
   lsp = {
     on_attach = my_custom_on_attach,
     capabilities = my_custom_capabilities -- e.g. lsp_status capabilities
+    --- OR you can specify a function to deactivate or change or control how the config is created
+    capabilities = function(config)
+      config.specificThingIDontWant = false
+      return config
+    end,
     settings = {
       showTodos = true,
       completeFunctionCalls = true -- NOTE: this is WIP and doesn't work currently
