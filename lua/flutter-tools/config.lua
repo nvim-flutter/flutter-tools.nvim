@@ -1,6 +1,7 @@
 local path = require("flutter-tools.utils.path")
 local M = {}
 
+local fn = vim.fn
 local fmt = string.format
 
 --- @param prefs table user preferences
@@ -21,8 +22,9 @@ local function get_split_cmd(percentage, fallback)
 end
 
 local function get_default_lookup()
-  local utils = require("flutter-tools.utils")
-  return (path.is_linux and utils.executable("snap")) and "flutter sdk-path" or nil
+  local exepath = fn.exepath("snap")
+  local is_snap_installation = exepath and exepath:match('snap') or false
+  return (path.is_linux and is_snap_installation) and "flutter sdk-path" or nil
 end
 
 M.debug_levels = {
