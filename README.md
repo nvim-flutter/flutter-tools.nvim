@@ -70,6 +70,9 @@ require("flutter-tools").setup{} -- use defaults
 ### Full Configuration
 Please note you do *not* need to copy and paste this whole block, this is just to show what options are available
 You can add keys from the block beneath if there is any behaviour you would like to override or change.
+
+**NOTE:** Only one of `flutter_path` and `flutter_lookup_cmd` should be set. These two keys are two ways of solving the same
+problem so will conflict if both are set.
 ```lua
 
 -- alternatively you can override the default configs
@@ -124,9 +127,9 @@ If using something like `asdf` or some other version manager or in some other cu
 then you need to pass in a command by specifying `flutter_lookup_cmd = <my-command>`.
 If you have a full path already you can pass it in using `flutter_path`.
 
-If you are on linux, this plugin will automatically set the `flutter_lookup_cmd` to `flutter sdk-path` which allows finding
+If you are on linux and using `snap`, this plugin will automatically set the `flutter_lookup_cmd` to `flutter sdk-path` which allows finding
 `snap` installations of flutter. If this doesn't work for any reason likely an old version of flutter before this command
-was added, you can set your `flutter_lookup_cmd` to `"echo $HOME/snap/flutter/common/flutter/bin/flutter"`
+was added, you can set your `flutter_path` to `"<INSERT-HOME-DIRECTORY>/snap/flutter/common/flutter/bin/flutter"`
 which is where this is usually installed by `snap`.
 
 ### Telescope Integration

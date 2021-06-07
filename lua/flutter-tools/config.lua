@@ -6,6 +6,14 @@ local fmt = string.format
 
 --- @param prefs table user preferences
 local function validate_prefs(prefs)
+  if prefs.flutter_path and prefs.flutter_lookup_cmd then
+    vim.schedule(function()
+      vim.notify(
+        'Only one of "flutter_path" and "flutter_lookup_cmd" are required. Please remove one of the keys',
+        vim.log.levels.ERROR
+      )
+    end)
+  end
   vim.validate({
     outline = { prefs.outline, "table", true },
     dev_log = { prefs.dev_log, "table", true },
@@ -102,13 +110,13 @@ function M.set(user_config)
   if not user_config or type(user_config) ~= "table" then
     return config
   end
+  validate_prefs(user_config)
   for key, value in pairs(user_config) do
     handle_deprecation(key, value, user_config)
     if user_config[key] and type(user_config[key]) == "table" then
       setmetatable(user_config[key], { __index = defaults[key] })
     end
   end
-  validate_prefs(user_config)
   config = setmetatable(user_config, { __index = defaults })
   return config
 end
