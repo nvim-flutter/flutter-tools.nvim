@@ -55,8 +55,22 @@ This plugin depends on [plenary.nvim](https://github.com/nvim-lua/plenary.nvim),
 
 ## Setup
 
+### Vimscript
+```vim
+lua << EOF
+  require("flutter-tools").setup{} -- use defaults
+EOF
+
+```
+### Lua
 ```lua
 require("flutter-tools").setup{} -- use defaults
+```
+
+### Full Configuration
+Please note you do *not* need to copy and paste this whole block, this is just to show what options are available
+You can add keys from the block beneath if there is any behaviour you would like to override or change.
+```lua
 
 -- alternatively you can override the default configs
 require("flutter-tools").setup {
