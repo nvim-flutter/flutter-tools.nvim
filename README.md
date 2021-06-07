@@ -6,6 +6,24 @@ widget guides, an outline view of your widgets, and hot reloading.
 
 This plugin draws inspiration from [`emacs-lsp/lsp-dart`](https://github.com/emacs-lsp/lsp-dart), [`coc-flutter`](https://github.com/iamcco/coc-flutter) and [`nvim-metals`](https://github.com/scalameta/nvim-metals).
 
+## New to Neovim's LSP Client?
+*Skip this section if you have already configured nvim lsp.*
+
+If you haven't set up nvim's lsp client before there are a few things you should know/steps to follow
+before setting up this plugin.
+
+This plugin only enhances and adds to the functionality provided by nvim. It does not by itself provide autocompletion
+or configure how errors from the language server are displayed etc. This is all handled by configuring the lsp client.
+
+This plugin handles things like starting and managing flutter application processes allowing for hot reloading, hot restarting,
+selecting devices/emulators to run as well as niceties like an outline window, widget guides etc. Other core lsp functionality has to be
+configured via nvim lsp.
+
+To set up the lsp client there are a few things to do/read:
+1. Read the lsp documentation this can be found in `:h lsp` or a short summary can be found [here](https://github.com/neovim/nvim-lspconfig#lsp-overview).
+1. Install an autocompletion plugin such as [`nvim-compe`](https://github.com/hrsh7th/nvim-compe).
+1. (Optional) Install an LSP UI plugin such as [`lspsaga`](https://github.com/glepnir/lspsaga.nvim)
+
 ## Prerequisites
 
 - `neovim 0.5+` (nightly)
