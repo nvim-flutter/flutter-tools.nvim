@@ -47,6 +47,9 @@ local defaults = {
     enabled = false,
     debug = false,
   },
+  ui = {
+    border = "curved",
+  },
   debugger = {
     enabled = false,
   },

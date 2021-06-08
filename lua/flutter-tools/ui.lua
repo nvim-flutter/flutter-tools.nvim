@@ -1,4 +1,4 @@
-local utils = require("flutter-tools/utils")
+local utils = require("flutter-tools.utils")
 
 local M = {}
 
@@ -133,6 +133,12 @@ local function update_win_state(win)
   end
 end
 
+---@return string | string[]
+local function get_border()
+  local user_border = require("flutter-tools.config").get("ui").border
+  return border_chars[user_border] and border_chars[user_border] or user_border or "single"
+end
+
 ---Create a popup window to notify the user of an event
 ---@param lines table
 ---@param duration integer
@@ -180,7 +186,7 @@ function M.notify(lines, duration)
     height = #lines,
     anchor = "SE",
     focusable = false,
-    border = "single",
+    border = get_border(),
   }
   local buf = api.nvim_create_buf(false, true)
   local win = api.nvim_open_win(buf, false, opts)
@@ -225,7 +231,7 @@ function M.popup_create(opts)
     style = "minimal",
     width = width,
     height = height,
-    border = "single",
+    border = get_border(),
   })
 
   local buf_highlights = {}

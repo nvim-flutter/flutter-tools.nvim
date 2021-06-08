@@ -77,6 +77,11 @@ problem so will conflict if both are set.
 
 -- alternatively you can override the default configs
 require("flutter-tools").setup {
+  ui = {
+    -- the border type to use for all floating windows, "curved" is custom all the other options/formats
+    -- the same is used for ":h nvim_open_win" e.g. "single" | "shadow" | {<table-of-eight-chars>}
+    border = "curved",
+  },
   debugger = { -- integrate with nvim dap + install dart code debugger
     enabled = false,
   },
