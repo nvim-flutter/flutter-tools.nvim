@@ -30,7 +30,7 @@ local function get_split_cmd(percentage, fallback)
 end
 
 local function get_default_lookup()
-  local exepath = fn.exepath("snap")
+  local exepath = fn.exepath("flutter")
   local is_snap_installation = exepath and exepath:match("snap") or false
   return (path.is_linux and is_snap_installation) and "flutter sdk-path" or nil
 end
