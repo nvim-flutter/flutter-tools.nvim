@@ -114,7 +114,7 @@ require("flutter-tools").setup {
     end,
     settings = {
       showTodos = true,
-      completeFunctionCalls = true
+      completeFunctionCalls = true,
       analysisExcludedFolders = {<path-to-flutter-sdk-packages>}
     }
   }
