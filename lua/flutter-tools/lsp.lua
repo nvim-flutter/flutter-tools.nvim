@@ -51,7 +51,11 @@ local function create_debug_log(level)
   end
 end
 
-local function get_defaults()
+---Create default config for dartls
+---@param opts table
+---@return table
+local function get_defaults(opts)
+  local flutter_sdk_path = opts.flutter_sdk
   local config = {
     init_options = {
       onlyAnalyzeProjectsWithOpenFiles = true,
@@ -64,6 +68,7 @@ local function get_defaults()
       dart = {
         completeFunctionCalls = true,
         showTodos = true,
+        analysisExcludedFolders = { path.join(flutter_sdk_path, "packages") },
       },
     },
     handlers = {
@@ -94,7 +99,6 @@ end
 function M.attach()
   local conf = require("flutter-tools.config").get()
   local user_config = conf.lsp
-  local defaults = get_defaults()
   local debug_log = create_debug_log(user_config.debug)
 
   debug_log("attaching LSP")
@@ -122,15 +126,15 @@ function M.attach()
   --- TODO if a user specifies a command we do not need to call
   --- executable.dart_sdk_root_path
   executable.get(function(paths)
+    local defaults = get_defaults({ flutter_sdk = paths.flutter_sdk })
     local root_path = paths.dart_sdk
     debug_log(fmt("dart_sdk_path: %s", root_path))
 
-    config.cmd = config.cmd
-      or {
-        executable.dart_bin_name,
-        analysis_server_snapshot_path(root_path),
-        "--lsp",
-      }
+    config.cmd = config.cmd or {
+      executable.dart_bin_name,
+      analysis_server_snapshot_path(root_path),
+      "--lsp",
+    }
     config.root_patterns = config.root_patterns or { ".git", "pubspec.yaml" }
 
     local current_dir = fn.expand("%:p:h")

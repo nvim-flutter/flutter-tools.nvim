@@ -114,7 +114,8 @@ require("flutter-tools").setup {
     end,
     settings = {
       showTodos = true,
-      completeFunctionCalls = true -- NOTE: this is WIP and doesn't work currently
+      completeFunctionCalls = true
+      analysisExcludedFolders = {<path-to-flutter-sdk-packages>}
     }
   }
 }
@@ -122,6 +123,12 @@ require("flutter-tools").setup {
 
 You can override any options available in the `lspconfig` setup, this call essentially wraps
 it and adds some extra `flutter` specific handlers and utilisation options.
+
+**NOTE:**
+By default this plugin excludes analysis of the packages in the flutter SDK. If for example
+you jump to the definition of `StatelessWidget`, the lsp will not try and index the 100s (maybe 1000s) of
+files in that directory. If for some reason you would like this behaviour set `analysisExcludedFolders = {}`
+You cannot/should not edit the files in the sdk directly so diagnostic analysis of these file is pointless.
 
 #### Flutter binary
 

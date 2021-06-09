@@ -55,6 +55,9 @@ do
   end
 end
 
+---Join path segments using the os separator
+---@vararg string
+---@return string
 function M.join(...)
   local result = table.concat(vim.tbl_flatten({ ... }), M.path_sep):gsub(
     M.path_sep .. "+",
