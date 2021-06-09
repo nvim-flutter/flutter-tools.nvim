@@ -130,11 +130,12 @@ function M.attach()
     local root_path = paths.dart_sdk
     debug_log(fmt("dart_sdk_path: %s", root_path))
 
-    config.cmd = config.cmd or {
-      executable.dart_bin_name,
-      analysis_server_snapshot_path(root_path),
-      "--lsp",
-    }
+    config.cmd = config.cmd
+      or {
+        executable.dart_bin_name,
+        analysis_server_snapshot_path(root_path),
+        "--lsp",
+      }
     config.root_patterns = config.root_patterns or { ".git", "pubspec.yaml" }
 
     local current_dir = fn.expand("%:p:h")
