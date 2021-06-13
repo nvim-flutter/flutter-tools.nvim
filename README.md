@@ -92,7 +92,7 @@ require("flutter-tools").setup {
   },
   closing_tags = {
     highlight = "ErrorMsg", -- highlight for the closing tag
-    prefix = ">" -- character to use for close tag e.g. > Widget
+    prefix = ">", -- character to use for close tag e.g. > Widget
     enabled = true -- set to false to disable
   },
   dev_log = {
@@ -100,6 +100,7 @@ require("flutter-tools").setup {
   },
   dev_tools = {
     autostart = false, -- autostart devtools server if not detected
+    autoopen_browser = true, -- Automatically opens devtools in the browser
   },
   outline = {
     open_cmd = "30vnew", -- command to use to open the outline buffer
