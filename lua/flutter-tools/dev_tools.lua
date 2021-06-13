@@ -47,11 +47,11 @@ end
 
 local function start_browser()
 
-  local autoopen_browser = require("flutter-tools.config").get("dev_tools").autoopen_browser
-  if not autoopen_browser then return end
+  local auto_open_browser = require("flutter-tools.config").get("dev_tools").auto_open_browser
+  if not auto_open_browser then return end
   local url = M.get_profiler_url()
   if url then
-    vim.fn.system(string.format("xdg-open '%s'", url))
+    vim.fn.jobstart({"xdg-open", url}, {detach = true})
   end
 end
 
