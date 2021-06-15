@@ -98,6 +98,12 @@ function M.commands(opts)
 
   vim.list_extend(commands, {
     {
+      id = "flutter-tools-pub-get",
+      label = "Flutter tools: pub get",
+      hint = "Run pub get in the project directory",
+      command = require('flutter-tools.commands').pub_get,
+    },
+    {
       id = "flutter-tools-list-devices",
       label = "Flutter tools: List Devices",
       hint = "Show the available physical devices",

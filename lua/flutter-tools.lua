@@ -19,6 +19,7 @@ local function setup_commands()
     "FlutterCopyProfilerUrl",
     [[lua require('flutter-tools.commands').copy_profiler_url()]]
   )
+  utils.command("FlutterPubGet", [[lua require('flutter-tools.commands').pub_get()]])
   --- Log
   utils.command("FlutterLogClear", [[lua require('flutter-tools.log').clear()]])
 end
