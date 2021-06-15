@@ -29,7 +29,7 @@ function M.install_debugger(silent)
   end
 
   if not has("npx") or not has("git") then
-    return utils.echomsg('You need "NPM" > 5.2.0 and "git" in order to install the debugger')
+    return utils.echomsg('You need npm > 5.2.0, npx and git in order to install the debugger')
   end
 
   -- run install commands in a terminal
