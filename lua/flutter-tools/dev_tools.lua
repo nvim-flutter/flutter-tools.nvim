@@ -28,7 +28,9 @@ local activate_cmd = { "pub", "global", "activate", "devtools" }
 -- Android when flutter run starts a new devtools process
 -- Flutter DevTools, a Flutter debugger and profiler, on sdk gphone x86 arm is available at: http://127.0.0.1:9102?uri=http%3A%2F%2F127.0.0.1%3A46051%2FNvCev-HjyX4%3D%2F
 local function try_get_tools_flutter(data)
-  return data:match("Flutter DevTools, a Flutter debugger and profiler, on .+ is available at:%s(https?://127%.0%.0%.1:%d+%?uri=.+)$")
+  return data:match(
+    "Flutter DevTools, a Flutter debugger and profiler, on .+ is available at:%s(https?://127%.0%.0%.1:%d+%?uri=.+)$"
+  )
 end
 
 --- Debug service listening on ws://127.0.0.1:44293/heXbxLM_lhM=/ws
@@ -36,8 +38,9 @@ end
 ---@param data string
 ---@return string?
 local function try_get_profiler_url(data)
-  return data:match("An Observatory debugger and profiler on .+ is available at:%s(https?://127%.0%.0%.1:%d+/.+/)$")
-    or data:match("Debug service listening on (ws%:%/%/127%.0%.0%.1%:%d+/.+/ws)$")
+  return data:match(
+    "An Observatory debugger and profiler on .+ is available at:%s(https?://127%.0%.0%.1:%d+/.+/)$"
+  ) or data:match("Debug service listening on (ws%:%/%/127%.0%.0%.1%:%d+/.+/ws)$")
 end
 
 function M.handle_log(data)

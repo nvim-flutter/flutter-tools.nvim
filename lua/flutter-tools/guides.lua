@@ -65,8 +65,9 @@ local function get_guide_character(lnum, end_line, parent_start, indent_size, ch
       return markers.middle .. markers.horizontal:rep(child_indent)
     end
   end
-  return lnum ~= end_line and markers.vertical
-    or markers.bottom .. markers.horizontal:rep(indent_size)
+  return lnum ~= end_line and markers.vertical or markers.bottom .. markers.horizontal:rep(
+    indent_size
+  )
 end
 
 -- Marshal the lsp flutter outline into a table of lines and characters
@@ -143,11 +144,18 @@ local function render_guides(bufnum, guides, conf)
   for lnum, guide in pairs(guides) do
     for start, character in pairs(guide) do
       local success, msg =
-        pcall(api.nvim_buf_set_extmark, bufnum, widget_outline_ns_id, lnum, start, {
-          virt_text = { { character, hl_group } },
-          virt_text_pos = "overlay",
-          hl_mode = "combine",
-        })
+        pcall(
+          api.nvim_buf_set_extmark,
+          bufnum,
+          widget_outline_ns_id,
+          lnum,
+          start,
+          {
+            virt_text = { { character, hl_group } },
+            virt_text_pos = "overlay",
+            hl_mode = "combine",
+          }
+        )
       if not success and conf.debug then
         local name = api.nvim_buf_get_name(bufnum)
         utils.echomsg({

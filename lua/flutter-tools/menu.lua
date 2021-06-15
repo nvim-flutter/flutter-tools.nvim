@@ -101,7 +101,7 @@ function M.commands(opts)
       id = "flutter-tools-pub-get",
       label = "Flutter tools: pub get",
       hint = "Run pub get in the project directory",
-      command = require('flutter-tools.commands').pub_get,
+      command = require("flutter-tools.commands").pub_get,
     },
     {
       id = "flutter-tools-list-devices",
