@@ -1,10 +1,12 @@
-local ui = require("flutter-tools/ui")
-local utils = require("flutter-tools/utils")
+local ui = require("flutter-tools.ui")
+local utils = require("flutter-tools.utils")
 
 local api = vim.api
 
 local M = {
+  --@type number
   buf = nil,
+  --@type number
   win = nil,
 }
 
@@ -87,7 +89,7 @@ end
 
 function M.__resurrect()
   local buf = api.nvim_get_current_buf()
-  vim.cmd([[setfiletype log]])
+  vim.cmd("setfiletype log")
   vim.bo[buf].modifiable = false
   vim.bo[buf].modified = false
   vim.bo[buf].buftype = "nofile"

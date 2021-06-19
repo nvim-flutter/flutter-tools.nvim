@@ -1,8 +1,7 @@
----@type Job
 local Job = require("plenary.job")
-local ui = require("flutter-tools/ui")
-local utils = require("flutter-tools/utils")
-local executable = require("flutter-tools/executable")
+local ui = require("flutter-tools.ui")
+local utils = require("flutter-tools.utils")
+local executable = require("flutter-tools.executable")
 
 local api = vim.api
 local fn = vim.fn
