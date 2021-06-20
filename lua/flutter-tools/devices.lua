@@ -89,7 +89,10 @@ function M.extract_device_props(result, device_type)
   return lines, devices_by_line, highlights
 end
 
-local function setup_window(devices, buf, _)
+---Run commands and setup options after a popup is opened
+---@param devices table[]
+---@param buf number
+local function setup_window(devices, buf)
   if not vim.tbl_isempty(devices) then
     api.nvim_buf_set_var(buf, "devices", devices)
   end

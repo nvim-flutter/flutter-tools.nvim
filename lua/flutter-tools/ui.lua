@@ -207,7 +207,13 @@ function M.notify(lines, duration)
   end)
 end
 
----@param opts table
+---@class PopupOpts
+---@field title string
+---@field lines string[]
+---@field on_create fun(buf: number, win:number):nil
+---@field highlights table[]
+
+---@param opts PopupOpts
 function M.popup_create(opts)
   if not opts then
     error("An options table must be passed to popup create!")
