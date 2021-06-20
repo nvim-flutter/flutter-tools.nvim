@@ -26,7 +26,10 @@ function M.display_name(name, platform)
     return ""
   end
   local symbol = "•"
-  return symbol .. " " .. name .. (platform and (" " .. symbol .. " ") .. platform or "")
+  return symbol
+    .. " "
+    .. name
+    .. (platform and platform ~= "" and (" " .. symbol .. " ") .. platform or "")
 end
 
 function M.command(name, rhs)
