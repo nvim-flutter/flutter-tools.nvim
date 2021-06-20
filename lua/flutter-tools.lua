@@ -62,9 +62,17 @@ local function setup_autocommands()
   })
 end
 
+local started = false
+
 function M.__start()
+  if started then
+    return
+  else
+    started = true
+  end
+
+  setup_commands()
   local conf = require("flutter-tools.config").get()
-  require("flutter-tools.lsp").setup()
 
   if conf.debugger.enabled then
     require("flutter-tools.dap").setup(conf)
@@ -85,8 +93,8 @@ function M.setup(user_config)
   end
 
   require("flutter-tools.config").set(user_config)
-
-  setup_commands()
+  -- Setup LSP autocommands to attach to dart files
+  require("flutter-tools.lsp").setup()
   setup_autocommands()
 end
 
