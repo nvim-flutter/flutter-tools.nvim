@@ -215,9 +215,7 @@ end
 
 ---@param opts PopupOpts
 function M.popup_create(opts)
-  if not opts then
-    error("An options table must be passed to popup create!")
-  end
+  assert(opts ~= nil, "An options table must be passed to popup create!")
   local title, lines, on_create, highlights =
     opts.title, opts.lines, opts.on_create, opts.highlights
   if not lines or #lines < 1 or invalid_lines(lines) then
