@@ -216,7 +216,10 @@ function M.popup_create(opts)
     border = require("flutter-tools.config").get("ui").border,
   })
 
-  local buf_highlights = {}
+  local buf_highlights = {
+    { highlight = "Title", line_number = 0, column_end = #title, column_start = 0 },
+    { highlight = "FloatBorder", line_number = 1, column_start = 0, column_end = -1 },
+  }
   local lookup = create_buf_lookup(buf)
   for key, value in pairs(highlights) do
     local lnum = lookup[fn.trim(key)]
@@ -228,21 +231,8 @@ function M.popup_create(opts)
     end
   end
 
-  M.add_highlights(buf, {
-    {
-      highlight = "Title",
-      line_number = 0,
-      column_end = #title,
-      column_start = 0,
-    },
-    {
-      highlight = "FloatBorder",
-      line_number = 1,
-      column_start = 0,
-      column_end = -1,
-    },
-    unpack(buf_highlights),
-  })
+  M.add_highlights(buf, buf_highlights)
+
   vim.wo[win].winblend = WIN_BLEND
   vim.bo[buf].modifiable = false
   vim.wo[win].cursorline = true
