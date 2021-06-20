@@ -15,19 +15,6 @@ local state = {
   last_opened = nil,
 }
 
-local border_chars = {
-  curved = {
-    "╭",
-    "─",
-    "╮",
-    "│",
-    "╯",
-    "─",
-    "╰",
-    "│",
-  },
-}
-
 function _G.__flutter_tools_close(buf)
   vim.api.nvim_buf_delete(buf, { force = true })
 end
@@ -133,20 +120,11 @@ local function update_win_state(win)
   end
 end
 
----@return string | string[]
-local function get_border()
-  local user_border = require("flutter-tools.config").get("ui").border
-  return border_chars[user_border] and border_chars[user_border] or user_border or "single"
-end
-
 ---Create a popup window to notify the user of an event
----@param lines table
+---@param lines string[]
 ---@param duration integer
 function M.notify(lines, duration)
-  if type(lines) ~= "table" then
-    utils.echomsg([[lines passed to notify should be a list of strings]])
-    return
-  end
+  assert(type(lines) == "table", "lines passed to notify should be a list of strings")
   duration = duration or 3000
   if not lines or #lines < 1 or invalid_lines(lines) then
     return
@@ -186,7 +164,7 @@ function M.notify(lines, duration)
     height = #lines,
     anchor = "SE",
     focusable = false,
-    border = get_border(),
+    border = require("flutter-tools.config").get("ui").border,
   }
   local buf = api.nvim_create_buf(false, true)
   local win = api.nvim_open_win(buf, false, opts)
@@ -225,7 +203,7 @@ function M.popup_create(opts)
   local width = calculate_width(lines)
   local height = 10
   local buf = api.nvim_create_buf(false, true)
-  lines = { title, string.rep(border_chars.curved[2], width), unpack(lines) }
+  lines = { title, string.rep("─", width), unpack(lines) }
 
   api.nvim_buf_set_lines(buf, 0, -1, true, lines)
   local win = api.nvim_open_win(buf, true, {
@@ -235,7 +213,7 @@ function M.popup_create(opts)
     style = "minimal",
     width = width,
     height = height,
-    border = get_border(),
+    border = require("flutter-tools.config").get("ui").border,
   })
 
   local buf_highlights = {}
