@@ -24,8 +24,17 @@ local function setup_commands()
   utils.command("FlutterLogClear", [[lua require('flutter-tools.log').clear()]])
 end
 
+---Create autocommands for the plugin
 local function setup_autocommands()
   local utils = require("flutter-tools.utils")
+  utils.augroup("FlutterToolsStart", {
+    {
+      events = { "BufEnter" },
+      targets = { "*.dart" },
+      modifiers = { "++once" },
+      command = "lua require('flutter-tools').__start()",
+    },
+  })
   utils.augroup("FlutterToolsHotReload", {
     {
       events = { "BufWritePost" },
@@ -53,20 +62,8 @@ local function setup_autocommands()
   })
 end
 
----Entry point for this plugin
----@param user_config table
----@return nil
-function M.setup(user_config)
-  local utils = require("flutter-tools.utils")
-  local success = pcall(require, "plenary")
-  if not success then
-    return utils.echomsg(
-      "plenary.nvim is a required dependency of this plugin, please ensure it is installed"
-    )
-  end
-
-  local conf = require("flutter-tools.config").set(user_config)
-
+function M.__start()
+  local conf = require("flutter-tools.config").get()
   require("flutter-tools.lsp").setup()
 
   if conf.debugger.enabled then
@@ -74,8 +71,20 @@ function M.setup(user_config)
   end
 
   if conf.widget_guides.enabled then
-    require("flutter-tools.guides").setup(conf)
+    require("flutter-tools.guides").setup()
   end
+end
+
+---Entry point for this plugin
+---@param user_config table
+function M.setup(user_config)
+  if not pcall(require, "plenary") then
+    return require("flutter-tools.utils").echomsg(
+      "plenary.nvim is a required dependency of this plugin, please ensure it is installed"
+    )
+  end
+
+  require("flutter-tools.config").set(user_config)
 
   setup_commands()
   setup_autocommands()
