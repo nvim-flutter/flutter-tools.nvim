@@ -26,27 +26,20 @@ local devtools_profiler_url = nil
 local activate_cmd = { "pub", "global", "activate", "devtools" }
 
 -- Android when flutter run starts a new devtools process
--- Flutter DevTools, a Flutter debugger and profiler, on sdk gphone x86 arm is available at: http://127.0.0.1:9102?uri=http%3A%2F%2F127.0.0.1%3A46051%2FNvCev-HjyX4%3D%2F
+-- OLD: Flutter DevTools, a Flutter debugger and profiler, on sdk gphone x86 arm is available at: http://127.0.0.1:9102?uri=http%3A%2F%2F127.0.0.1%3A46051%2FNvCev-HjyX4%3D%2F
+-- NEW: The Flutter DevTools debugger and profiler on sdk gphone x86 arm is available at: http://127.0.0.1:9100?uri=http%3A%2F%2F127.0.0.1%3A35479%2FgQ0BNyM2xB8%3D%2F
 local function try_get_tools_flutter(data)
-  return data:match("Flutter DevTools, a Flutter debugger and profiler, on .+ is available at:%s(https?://127%.0%.0%.1:%d+%?uri=.+)$")
-end
-
---- An Observatory debugger and profiler on sdk gphone x86 arm is available at: http://127.0.0.1:46051/NvCev-HjyX4=/
----@param data string
----@return string?
-local function try_get_profiler_url(data)
-  return data:match("An Observatory debugger and profiler on .+ is available at:%s(https?://127%.0%.0%.1:%d+/.+/)$")
+  return data:match("(https?://127%.0%.0%.1:%d+%?uri=.+)$")
 end
 
 --- Debug service listening on ws://127.0.0.1:44293/heXbxLM_lhM=/ws
------@param data string
----@return string?
+--- @param data string
+--- @return string?
 local function try_get_profiler_url_chrome(data)
-    return data:match("Debug service listening on (ws%:%/%/127%.0%.0%.1%:%d+/.+/ws)$")
+    return data:match("(ws%:%/%/127%.0%.0%.1%:%d+/.+/ws)$")
 end
 
 local function start_browser()
-
   local auto_open_browser = require("flutter-tools.config").get("dev_tools").auto_open_browser
   if not auto_open_browser then return end
   local url = M.get_profiler_url()
