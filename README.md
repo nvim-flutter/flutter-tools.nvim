@@ -28,7 +28,12 @@ To set up the lsp client there are a few things to do/read:
 
 ## Prerequisites
 
-- `neovim 0.5+` (nightly)
+- `neovim 0.5+` (nightly) - Until nvim-0.5 is officially released please ensure you keep your nightly version up to date.
+
+## Notices
+
+- The `curved` window border style has been removed in favour of the native `rounded` option added in neovim nightly. Please update your
+  neovim version if you encounter errors regarding the `rounded` option as it likely means your version is out of date.
 
 ## Installation
 
