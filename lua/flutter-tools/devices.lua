@@ -1,8 +1,7 @@
----@type Job
 local Job = require("plenary.job")
-local ui = require("flutter-tools/ui")
-local utils = require("flutter-tools/utils")
-local executable = require("flutter-tools/executable")
+local ui = require("flutter-tools.ui")
+local utils = require("flutter-tools.utils")
+local executable = require("flutter-tools.executable")
 
 local api = vim.api
 local fn = vim.fn
@@ -90,7 +89,10 @@ function M.extract_device_props(result, device_type)
   return lines, devices_by_line, highlights
 end
 
-local function setup_window(devices, buf, _)
+---Run commands and setup options after a popup is opened
+---@param devices table[]
+---@param buf number
+local function setup_window(devices, buf)
   if not vim.tbl_isempty(devices) then
     api.nvim_buf_set_var(buf, "devices", devices)
   end

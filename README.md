@@ -7,7 +7,8 @@ widget guides, an outline view of your widgets, and hot reloading.
 This plugin draws inspiration from [`emacs-lsp/lsp-dart`](https://github.com/emacs-lsp/lsp-dart), [`coc-flutter`](https://github.com/iamcco/coc-flutter) and [`nvim-metals`](https://github.com/scalameta/nvim-metals).
 
 ## New to Neovim's LSP Client?
-*Skip this section if you have already configured nvim lsp.*
+
+_Skip this section if you have already configured nvim lsp._
 
 If you haven't set up nvim's lsp client before there are a few things you should know/steps to follow
 before setting up this plugin.
@@ -20,6 +21,7 @@ selecting devices/emulators to run as well as niceties like an outline window, w
 configured via nvim lsp.
 
 To set up the lsp client there are a few things to do/read:
+
 1. Read the lsp documentation this can be found in `:h lsp` or a short summary can be found [here](https://github.com/neovim/nvim-lspconfig#lsp-overview).
 1. Install an autocompletion plugin such as [`nvim-compe`](https://github.com/hrsh7th/nvim-compe).
 1. (Optional) Install an LSP UI plugin such as [`lspsaga`](https://github.com/glepnir/lspsaga.nvim)
@@ -56,31 +58,36 @@ This plugin depends on [plenary.nvim](https://github.com/nvim-lua/plenary.nvim),
 ## Setup
 
 ### Vimscript
+
 ```vim
 lua << EOF
   require("flutter-tools").setup{} -- use defaults
 EOF
 
 ```
+
 ### Lua
+
 ```lua
 require("flutter-tools").setup{} -- use defaults
 ```
 
 ### Full Configuration
-Please note you do *not* need to copy and paste this whole block, this is just to show what options are available
+
+Please note you do _not_ need to copy and paste this whole block, this is just to show what options are available
 You can add keys from the block beneath if there is any behaviour you would like to override or change.
 
 **NOTE:** Only one of `flutter_path` and `flutter_lookup_cmd` should be set. These two keys are two ways of solving the same
 problem so will conflict if both are set.
+
 ```lua
 
 -- alternatively you can override the default configs
 require("flutter-tools").setup {
   ui = {
-    -- the border type to use for all floating windows, "curved" is custom all the other options/formats
-    -- the same is used for ":h nvim_open_win" e.g. "single" | "shadow" | {<table-of-eight-chars>}
-    border = "curved",
+    -- the border type to use for all floating windows, the same options/formats
+    -- used for ":h nvim_open_win" e.g. "single" | "shadow" | {<table-of-eight-chars>}
+    border = "rounded",
   },
   debugger = { -- integrate with nvim dap + install dart code debugger
     enabled = false,

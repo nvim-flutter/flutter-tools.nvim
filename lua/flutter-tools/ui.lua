@@ -15,19 +15,6 @@ local state = {
   last_opened = nil,
 }
 
-local border_chars = {
-  curved = {
-    "╭",
-    "─",
-    "╮",
-    "│",
-    "╯",
-    "─",
-    "╰",
-    "│",
-  },
-}
-
 function _G.__flutter_tools_close(buf)
   vim.api.nvim_buf_delete(buf, { force = true })
 end
@@ -133,20 +120,11 @@ local function update_win_state(win)
   end
 end
 
----@return string | string[]
-local function get_border()
-  local user_border = require("flutter-tools.config").get("ui").border
-  return border_chars[user_border] and border_chars[user_border] or user_border or "single"
-end
-
 ---Create a popup window to notify the user of an event
----@param lines table
+---@param lines string[]
 ---@param duration integer
 function M.notify(lines, duration)
-  if type(lines) ~= "table" then
-    utils.echomsg([[lines passed to notify should be a list of strings]])
-    return
-  end
+  assert(type(lines) == "table", "lines passed to notify should be a list of strings")
   duration = duration or 3000
   if not lines or #lines < 1 or invalid_lines(lines) then
     return
@@ -186,7 +164,7 @@ function M.notify(lines, duration)
     height = #lines,
     anchor = "SE",
     focusable = false,
-    border = get_border(),
+    border = require("flutter-tools.config").get("ui").border,
   }
   local buf = api.nvim_create_buf(false, true)
   local win = api.nvim_open_win(buf, false, opts)
@@ -207,11 +185,15 @@ function M.notify(lines, duration)
   end)
 end
 
----@param opts table
+---@class PopupOpts
+---@field title string
+---@field lines string[]
+---@field on_create fun(buf: number, win:number):nil
+---@field highlights table[]
+
+---@param opts PopupOpts
 function M.popup_create(opts)
-  if not opts then
-    error("An options table must be passed to popup create!")
-  end
+  assert(opts ~= nil, "An options table must be passed to popup create!")
   local title, lines, on_create, highlights =
     opts.title, opts.lines, opts.on_create, opts.highlights
   if not lines or #lines < 1 or invalid_lines(lines) then
@@ -221,7 +203,7 @@ function M.popup_create(opts)
   local width = calculate_width(lines)
   local height = 10
   local buf = api.nvim_create_buf(false, true)
-  lines = { title, string.rep(border_chars.curved[2], width), unpack(lines) }
+  lines = { title, string.rep("─", width), unpack(lines) }
 
   api.nvim_buf_set_lines(buf, 0, -1, true, lines)
   local win = api.nvim_open_win(buf, true, {
@@ -231,10 +213,13 @@ function M.popup_create(opts)
     style = "minimal",
     width = width,
     height = height,
-    border = get_border(),
+    border = require("flutter-tools.config").get("ui").border,
   })
 
-  local buf_highlights = {}
+  local buf_highlights = {
+    { highlight = "Title", line_number = 0, column_end = #title, column_start = 0 },
+    { highlight = "FloatBorder", line_number = 1, column_start = 0, column_end = -1 },
+  }
   local lookup = create_buf_lookup(buf)
   for key, value in pairs(highlights) do
     local lnum = lookup[fn.trim(key)]
@@ -246,30 +231,23 @@ function M.popup_create(opts)
     end
   end
 
-  M.add_highlights(buf, {
-    {
-      highlight = "Title",
-      line_number = 0,
-      column_end = #title,
-      column_start = 0,
-    },
-    {
-      highlight = "FloatBorder",
-      line_number = 1,
-      column_start = 0,
-      column_end = -1,
-    },
-    unpack(buf_highlights),
-  })
+  M.add_highlights(buf, buf_highlights)
+
   vim.wo[win].winblend = WIN_BLEND
   vim.bo[buf].modifiable = false
   vim.wo[win].cursorline = true
   --- Positions cursor on the third line i.e. after the title and it's underline
   api.nvim_win_set_cursor(win, { 3, 0 })
   api.nvim_win_set_option(win, "winhighlight", "CursorLine:Visual,NormalFloat:Normal")
+  api.nvim_buf_set_keymap(buf, "n", "q", ":lua __flutter_tools_close(" .. buf .. ")<CR>", {
+    silent = true,
+    noremap = true,
+    nowait = true,
+  })
   api.nvim_buf_set_keymap(buf, "n", "<ESC>", ":lua __flutter_tools_close(" .. buf .. ")<CR>", {
     silent = true,
     noremap = true,
+    nowait = true,
   })
   vim.cmd(string.format([[autocmd! WinLeave <buffer> silent! execute 'bw %d']], buf))
   if on_create then

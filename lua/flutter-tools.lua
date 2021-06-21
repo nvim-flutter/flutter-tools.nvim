@@ -19,12 +19,22 @@ local function setup_commands()
     "FlutterCopyProfilerUrl",
     [[lua require('flutter-tools.commands').copy_profiler_url()]]
   )
+  utils.command("FlutterPubGet", [[lua require('flutter-tools.commands').pub_get()]])
   --- Log
   utils.command("FlutterLogClear", [[lua require('flutter-tools.log').clear()]])
 end
 
+---Create autocommands for the plugin
 local function setup_autocommands()
   local utils = require("flutter-tools.utils")
+  utils.augroup("FlutterToolsStart", {
+    {
+      events = { "BufEnter" },
+      targets = { "*.dart" },
+      modifiers = { "++once" },
+      command = "lua require('flutter-tools').__start()",
+    },
+  })
   utils.augroup("FlutterToolsHotReload", {
     {
       events = { "BufWritePost" },
@@ -52,29 +62,39 @@ local function setup_autocommands()
   })
 end
 
----Entry point for this plugin
----@param user_config table
----@return nil
-function M.setup(user_config)
-  local utils = require("flutter-tools.utils")
-  local success = pcall(require, "plenary")
-  if not success then
-    return utils.echomsg("plenary.nvim is a required dependency of this plugin, please ensure it is installed")
+local started = false
+
+function M.__start()
+  if started then
+    return
+  else
+    started = true
   end
 
-  local conf = require("flutter-tools.config").set(user_config)
-
-  require("flutter-tools.lsp").setup()
+  setup_commands()
+  local conf = require("flutter-tools.config").get()
 
   if conf.debugger.enabled then
     require("flutter-tools.dap").setup(conf)
   end
 
   if conf.widget_guides.enabled then
-    require("flutter-tools.guides").setup(conf)
+    require("flutter-tools.guides").setup()
+  end
+end
+
+---Entry point for this plugin
+---@param user_config table
+function M.setup(user_config)
+  if not pcall(require, "plenary") then
+    return require("flutter-tools.utils").echomsg(
+      "plenary.nvim is a required dependency of this plugin, please ensure it is installed"
+    )
   end
 
-  setup_commands()
+  require("flutter-tools.config").set(user_config)
+  -- Setup LSP autocommands to attach to dart files
+  require("flutter-tools.lsp").setup()
   setup_autocommands()
 end
 
