@@ -48,7 +48,7 @@ local defaults = {
     debug = false,
   },
   ui = {
-    border = "rounded",
+    border = "single",
   },
   debugger = {
     enabled = false,
