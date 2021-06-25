@@ -44,7 +44,7 @@ local function start_browser()
   if not auto_open_browser then return end
   local url = M.get_profiler_url()
   if url then
-    local open_cmd = vim.loop.os_uname() == "Darwin" and "open" or "xdg-open"
+    local open_cmd = vim.loop.os_uname().sysname == "Darwin" and "open" or "xdg-open"
     vim.fn.jobstart({open_cmd, url}, {detach = true})
   end
 end
