@@ -114,4 +114,16 @@ function M.get_hl(name, attribute)
   return fn.synIDattr(fn.hlID("Normal"), "fg")
 end
 
+--- TODO: this presumes that there are no other unames and windows is safe to fallback to but it isn't
+M.os, M.open_command = (function()
+  local sysname = vim.loop.os_uname().sysname
+  if sysname == "Darwin" then
+    return "mac", "open"
+  end
+  if sysname == "Linux" then
+    return "linux", "xdg-open"
+  end
+  return "window", "explorer"
+end)()
+
 return M
