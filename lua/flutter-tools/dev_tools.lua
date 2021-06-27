@@ -26,22 +26,29 @@ local devtools_profiler_url = nil
 local activate_cmd = { "pub", "global", "activate", "devtools" }
 
 -- Android when flutter run starts a new devtools process
--- Flutter DevTools, a Flutter debugger and profiler, on sdk gphone x86 arm is available at: http://127.0.0.1:9102?uri=http%3A%2F%2F127.0.0.1%3A46051%2FNvCev-HjyX4%3D%2F
+-- OLD: Flutter DevTools, a Flutter debugger and profiler, on sdk gphone x86 arm is available at: http://127.0.0.1:9102?uri=http%3A%2F%2F127.0.0.1%3A46051%2FNvCev-HjyX4%3D%2F
+-- NEW: The Flutter DevTools debugger and profiler on sdk gphone x86 arm is available at: http://127.0.0.1:9100?uri=http%3A%2F%2F127.0.0.1%3A35479%2FgQ0BNyM2xB8%3D%2F
 local function try_get_tools_flutter(data)
-  return data:match(
-    "Flutter DevTools, a Flutter debugger and profiler, on .+ is available at:%s(https?://127%.0%.0%.1:%d+%?uri=.+)$"
-  )
+  return data:match("(https?://127%.0%.0%.1:%d+%?uri=.+)$")
 end
 
 --- Debug service listening on ws://127.0.0.1:44293/heXbxLM_lhM=/ws
---- An Observatory debugger and profiler on sdk gphone x86 arm is available at: http://127.0.0.1:46051/NvCev-HjyX4=/
----@param data string
----@return string?
-local function try_get_profiler_url(data)
-  return data:match(
-    "An Observatory debugger and profiler on .+ is available at:%s(https?://127%.0%.0%.1:%d+/.+/)$"
-  ) or data:match("Debug service listening on (ws%:%/%/127%.0%.0%.1%:%d+/.+/ws)$")
+--- @param data string
+--- @return string?
+local function try_get_profiler_url_chrome(data)
+    return data:match("(ws%:%/%/127%.0%.0%.1%:%d+/.+/ws)$")
 end
+
+local function start_browser()
+  local auto_open_browser = require("flutter-tools.config").get("dev_tools").auto_open_browser
+  if not auto_open_browser then return end
+  local url = M.get_profiler_url()
+  if url then
+    local open_cmd = vim.loop.os_uname().sysname == "Darwin" and "open" or "xdg-open"
+    vim.fn.jobstart({open_cmd, url}, {detach = true})
+  end
+end
+
 
 function M.handle_log(data)
   if devtools_profiler_url or (profiler_url and devtools_url) then
@@ -51,6 +58,7 @@ function M.handle_log(data)
   devtools_profiler_url = try_get_tools_flutter(data)
 
   if devtools_profiler_url then
+    start_browser()
     ui.notify({ "Detected devtools url", "Execute FlutterCopyProfilerUrl to copy it" })
     return
   end
@@ -59,7 +67,7 @@ function M.handle_log(data)
     return
   end
 
-  profiler_url = try_get_profiler_url(data)
+  profiler_url = try_get_profiler_url_chrome(data)
 
   if profiler_url then
     local autostart = require("flutter-tools.config").get("dev_tools").autostart
@@ -89,6 +97,7 @@ local function handle_start(_, data, __)
     if json and json.params then
       devtools_pid = json.params.pid
       devtools_url = string.format("http://%s:%s", json.params.host, json.params.port)
+      start_browser()
       local msg = string.format("Serving DevTools at %s", devtools_url)
       ui.notify({ msg }, 20000)
     end
