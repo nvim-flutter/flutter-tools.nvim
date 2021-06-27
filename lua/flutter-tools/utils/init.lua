@@ -123,7 +123,7 @@ M.os, M.open_command = (function()
   if sysname == "Linux" then
     return "linux", "xdg-open"
   end
-  return "window", "explorer"
+  return "windows", "explorer"
 end)()
 
 return M
