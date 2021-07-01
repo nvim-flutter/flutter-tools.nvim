@@ -77,6 +77,45 @@ EOF
 require("flutter-tools").setup{} -- use defaults
 ```
 
+# Functionality
+
+#### Run flutter app with hot reloading
+
+![hot reload](./.github/hot_reload.gif)
+
+#### Start emulators or connected devices
+
+![flutter-devices](https://user-images.githubusercontent.com/22454918/112320203-b5f31a80-8ca6-11eb-90b8-9ac934a842da.png)
+
+#### Visualise logs
+
+![dev log](./.github/dev_log.png)
+
+#### Widget guides (experimental, default: disabled)
+
+![Widget guides](./.github/outline_guide.png)
+
+#### Outline window
+
+![Outline window](./.github/outline.gif)
+
+#### Closing Tags
+
+![closing tags](./.github/closing_tags.png)
+
+# Usage
+
+- `FlutterRun` - Run the current project. This needs to be run from within a flutter project.
+- `FlutterDevices` - Brings up a list of connected devices to select from.
+- `FlutterEmulators` - Similar to devices but shows a list of emulators to choose from.
+- `FlutterReload` - Reload the running project.
+- `FlutterRestart` - Restart the current project.
+- `FlutterQuit` - Ends a running session.
+- `FlutterOutline` - Opens an outline window showing the widget tree for the given file.
+- `FlutterDevTools` - Starts a Dart Dev Tools server.
+- `FlutterCopyProfilerUrl` - Copies the profiler url to your system clipboard (+ register). Note that commands `FlutterRun` and
+  `FlutterDevTools` must be executed first.
+
 ### Full Configuration
 
 Please note you do _not_ need to copy and paste this whole block, this is just to show what options are available
@@ -157,6 +196,19 @@ If you are on linux and using `snap`, this plugin will automatically set the `fl
 was added, you can set your `flutter_path` to `"<INSERT-HOME-DIRECTORY>/snap/flutter/common/flutter/bin/flutter"`
 which is where this is usually installed by `snap`.
 
+### Highlights
+
+#### Widget guides
+
+To configure the highlight colour you can override the `FlutterWidgetGuides` highlight group.
+
+#### Notifications
+
+The highlights for flutter-tools notifications can be changed by overriding the default highlight groups
+
+- `FlutterNotificationNormal` - this changes the highlight of the content.
+- `FlutterNotificationBorder` - this changes the highlight of the border.
+
 ### Telescope Integration
 
 ![telescope picker](https://user-images.githubusercontent.com/22454918/113897929-495a3e80-97c3-11eb-959f-9574319cd93c.png)
@@ -172,47 +224,6 @@ require("telescope").load_extension("flutter")
 Or alternatively telescope can lazy load extension but the `Telescope` command will not autocomplete lazy loaded modules.
 
 This can be accessed using `Telescope flutter commands` or `require('telescope').extensions.flutter.commands()`
-
-# Functionality
-
-#### Run flutter app with hot reloading
-
-![hot reload](./.github/hot_reload.gif)
-
-#### Start emulators or connected devices
-
-![flutter-devices](https://user-images.githubusercontent.com/22454918/112320203-b5f31a80-8ca6-11eb-90b8-9ac934a842da.png)
-
-#### Visualise logs
-
-![dev log](./.github/dev_log.png)
-
-#### Widget guides (experimental, default: disabled)
-
-![Widget guides](./.github/outline_guide.png)
-
-NOTE: To configure the highlight colour you can override the `FlutterWidgetGuides` highlight group
-
-#### Outline window
-
-![Outline window](./.github/outline.gif)
-
-#### Closing Tags
-
-![closing tags](./.github/closing_tags.png)
-
-# Usage
-
-- `FlutterRun` - Run the current project. This needs to be run from within a flutter project.
-- `FlutterDevices` - Brings up a list of connected devices to select from.
-- `FlutterEmulators` - Similar to devices but shows a list of emulators to choose from.
-- `FlutterReload` - Reload the running project.
-- `FlutterRestart` - Restart the current project.
-- `FlutterQuit` - Ends a running session.
-- `FlutterOutline` - Opens an outline window showing the widget tree for the given file.
-- `FlutterDevTools` - Starts a Dart Dev Tools server.
-- `FlutterCopyProfilerUrl` - Copies the profiler url to your system clipboard (+ register). Note that commands `FlutterRun` and
-  `FlutterDevTools` must be executed first.
 
 ## Debugging
 
