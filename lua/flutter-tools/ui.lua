@@ -157,7 +157,7 @@ function M.notify(lines, duration)
   local notification_width = math.ceil(columns * 0.3)
   local opts = {
     row = row,
-    col = columns,
+    col = vim.o.columns - 2,
     relative = "editor",
     style = "minimal",
     width = math.min(notification_width, calculate_width(lines), 60),
@@ -168,7 +168,13 @@ function M.notify(lines, duration)
   }
   local buf = api.nvim_create_buf(false, true)
   local win = api.nvim_open_win(buf, false, opts)
-  vim.wo[win].winhighlight = "NormalFloat:Normal"
+  vim.bo[buf].filetype = "flutter_tools_notification"
+  vim.wo[win].winhighlight = table.concat({
+    "NormalFloat:FlutterNotificationNormal",
+    "Normal:FlutterNotificationNormal",
+    "EndOfBuffer:FlutterNotificationNormal",
+    "FloatBorder:FlutterNotificationBorder",
+  }, ",")
   vim.wo[win].wrap = true
   api.nvim_buf_set_lines(buf, 0, -1, true, lines)
 
