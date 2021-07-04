@@ -1,6 +1,7 @@
 local M = {}
 local fn = vim.fn
 local api = vim.api
+local fmt = string.format
 
 function M.echomsg(msg, hl)
   hl = hl or "Title"
@@ -32,8 +33,14 @@ function M.display_name(name, platform)
     .. (platform and platform ~= "" and (" " .. symbol .. " ") .. platform or "")
 end
 
-function M.command(name, rhs)
-  vim.cmd("command! " .. name .. " " .. rhs)
+---Create a neovim command
+---@param name string
+---@param rhs string
+---@param modifiers string[]
+function M.command(name, rhs, modifiers)
+  modifiers = modifiers or {}
+  local nargs = modifiers and modifiers.nargs or 0
+  vim.cmd(fmt("command! -nargs=%s %s %s", nargs, name, rhs))
 end
 
 --- if every item in a table is an empty value return true

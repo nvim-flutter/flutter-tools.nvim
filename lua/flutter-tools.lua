@@ -3,7 +3,11 @@ local M = {}
 local function setup_commands()
   local utils = require("flutter-tools.utils")
   -- Commands
-  utils.command("FlutterRun", [[lua require('flutter-tools.commands').run()]])
+  utils.command(
+    "FlutterRun",
+    [[lua require('flutter-tools.commands').run_command(<q-args>)]],
+    { nargs = "*" }
+  )
   utils.command("FlutterReload", [[lua require('flutter-tools.commands').reload()]])
   utils.command("FlutterRestart", [[lua require('flutter-tools.commands').restart()]])
   utils.command("FlutterQuit", [[lua require('flutter-tools.commands').quit()]])

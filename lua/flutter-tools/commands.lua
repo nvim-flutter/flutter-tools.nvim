@@ -87,20 +87,37 @@ local function shutdown()
   dev_tools.on_flutter_shutdown()
 end
 
-function M.run(device)
+--- Take arguments from the commandline and pass
+--- them to the run command
+---@param args string
+function M.run_command(args)
+  args = args and args ~= "" and vim.split(args, " ") or nil
+  M.run({ args = args })
+end
+
+---Run the flutter application
+---@param opts table
+function M.run(opts)
+  local device = opts.device
+  local cmd_args = opts.args
   if run_job then
     return utils.echomsg("Flutter is already running!")
   end
   executable.flutter(function(cmd)
     local args = { "run" }
-    if device and device.id then
+    if not cmd_args and device and device.id then
       vim.list_extend(args, { "-d", device.id })
+    end
+
+    if cmd_args then
+      vim.list_extend(args, cmd_args)
     end
 
     local dev_url = dev_tools.get_url()
     if dev_url then
       vim.list_extend(args, { "--devtools-server-address", dev_url })
     end
+
     ui.notify({ "Starting flutter project..." })
     local conf = config.get("dev_log")
     run_job = Job:new({

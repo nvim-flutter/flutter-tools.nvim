@@ -116,7 +116,7 @@ function _G.__flutter_tools_select_device()
     if device.type == EMULATOR then
       M.launch_emulator(device)
     else
-      require("flutter-tools.commands").run(device)
+      require("flutter-tools.commands").run({ device = device })
     end
     api.nvim_win_close(0, true)
   end
