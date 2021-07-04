@@ -91,7 +91,7 @@ end
 --- them to the run command
 ---@param args string
 function M.run_command(args)
-  args = vim.split(args, " ")
+  args = args and args ~= "" and vim.split(args, " ") or nil
   M.run({ args = args })
 end
 
