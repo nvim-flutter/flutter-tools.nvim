@@ -92,14 +92,14 @@ end
 ---@param args string
 function M.run_command(args)
   args = vim.split(args, " ")
-  M.run({ extra = args })
+  M.run({ args = args })
 end
 
 ---Run the flutter application
 ---@param opts table
 function M.run(opts)
   local device = opts.device
-  local cmd_args = opts.extra
+  local cmd_args = opts.args
   if run_job then
     return utils.echomsg("Flutter is already running!")
   end
@@ -117,6 +117,7 @@ function M.run(opts)
     if dev_url then
       vim.list_extend(args, { "--devtools-server-address", dev_url })
     end
+
     ui.notify({ "Starting flutter project..." })
     local conf = config.get("dev_log")
     run_job = Job:new({
