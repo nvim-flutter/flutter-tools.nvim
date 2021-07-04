@@ -239,12 +239,20 @@ function M.popup_create(opts)
 
   M.add_highlights(buf, buf_highlights)
 
+  vim.bo.filetype = "flutter_tools_popup"
   vim.wo[win].winblend = WIN_BLEND
   vim.bo[buf].modifiable = false
   vim.wo[win].cursorline = true
   --- Positions cursor on the third line i.e. after the title and it's underline
   api.nvim_win_set_cursor(win, { 3, 0 })
-  api.nvim_win_set_option(win, "winhighlight", "CursorLine:Visual,NormalFloat:Normal")
+  vim.wo[win].winhighlight = table.concat({
+    "CursorLine:FlutterPopupSelected",
+    "NormalFloat:FlutterPopupNormal",
+    "Normal:FlutterPopupNormal",
+    "EndOfBuffer:FlutterPopupNormal",
+    "FloatBorder:FlutterPopupBorder",
+  }, ",")
+
   api.nvim_buf_set_keymap(buf, "n", "q", ":lua __flutter_tools_close(" .. buf .. ")<CR>", {
     silent = true,
     noremap = true,

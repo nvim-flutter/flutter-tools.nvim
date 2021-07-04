@@ -28,7 +28,7 @@ To set up the lsp client there are a few things to do/read:
 
 ## Prerequisites
 
-- `neovim 0.5+` (nightly) - Until nvim-0.5 is officially released please ensure you keep your nightly version up to date.
+- neovim 0.5+
 
 ## Notices
 
@@ -204,10 +204,13 @@ To configure the highlight colour you can override the `FlutterWidgetGuides` hig
 
 #### Notifications
 
-The highlights for flutter-tools notifications can be changed by overriding the default highlight groups
+The highlights for flutter-tools notifications and popups can be changed by overriding the default highlight groups
 
-- `FlutterNotificationNormal` - this changes the highlight of the content.
-- `FlutterNotificationBorder` - this changes the highlight of the border.
+- `FlutterNotificationNormal` - this changes the highlight of the notification content.
+- `FlutterNotificationBorder` - this changes the highlight of the notification border.
+- `FlutterPopupNormal` - this changes the highlight of the popup content.
+- `FlutterPopupBorder` - this changes the highlight of the popup border.
+- `FlutterPopupSelected` - this changes the highlight of the popup's selected line.
 
 ### Telescope Integration
 
