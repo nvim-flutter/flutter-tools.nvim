@@ -99,7 +99,7 @@ end
 ---@param opts table
 function M.run(opts)
   local device = opts.device
-  local cmd_args = opts.args
+  local cmd_args = opts.extra
   if run_job then
     return utils.echomsg("Flutter is already running!")
   end
