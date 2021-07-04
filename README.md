@@ -151,7 +151,7 @@ require("flutter-tools").setup {
   },
   dev_tools = {
     autostart = false, -- autostart devtools server if not detected
-    autoopen_browser = true, -- Automatically opens devtools in the browser
+    auto_open_browser = false, -- Automatically opens devtools in the browser
   },
   outline = {
     open_cmd = "30vnew", -- command to use to open the outline buffer

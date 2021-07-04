@@ -73,7 +73,7 @@ local defaults = {
   }),
   dev_tools = {
     autostart = false,
-    auto_open_browser = true,
+    auto_open_browser = false,
   },
 }
 
