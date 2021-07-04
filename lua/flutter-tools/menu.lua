@@ -9,7 +9,7 @@ local themes = require("telescope.themes")
 local M = {}
 
 local function execute_command(bufnr)
-  local selection = action_state.get_selected_entry(bufnr)
+  local selection = action_state.get_selected_entry()
   actions.close(bufnr)
   local cmd = selection.command
   if cmd then
@@ -154,7 +154,9 @@ function M.commands(opts)
   opts = opts and not vim.tbl_isempty(opts) and opts
     or themes.get_dropdown({
       previewer = false,
-      results_height = #commands,
+      layout_config = {
+        height = #commands,
+      },
     })
 
   pickers.new(opts, {
