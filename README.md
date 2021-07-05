@@ -129,6 +129,14 @@ require("flutter-tools").setup{} -- use defaults
 - `FlutterCopyProfilerUrl` - Copies the profiler url to your system clipboard (+ register). Note that commands `FlutterRun` and
   `FlutterDevTools` must be executed first.
 
+<hr/>
+
+### `FlutterRun`
+The flutter run command can also optionally take arguments that you might otherwise pass on the commandline
+such as `:FlutterRun --flavor <tasty>`, `:FlutterRun --no-sound-null-safety`.
+
+<hr/>
+
 ### Full Configuration
 
 Please note you do _not_ need to copy and paste this whole block, this is just to show what options are available
