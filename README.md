@@ -6,15 +6,15 @@ widget guides, an outline view of your widgets, and hot reloading.
 
 This plugin draws inspiration from [`emacs-lsp/lsp-dart`](https://github.com/emacs-lsp/lsp-dart), [`coc-flutter`](https://github.com/iamcco/coc-flutter) and [`nvim-metals`](https://github.com/scalameta/nvim-metals).
 
-## New to Neovim's LSP Client?
+## New to Neovim's LSP Client? (Please don't skip this if you are new! 🙏)
 
 _Skip this section if you have already configured nvim lsp._
 
 If you haven't set up nvim's lsp client before there are a few things you should know/steps to follow
 before setting up this plugin.
 
-This plugin only enhances and adds to the functionality provided by nvim. It does not by itself provide autocompletion
-or configure how errors from the language server are displayed etc. This is all handled by configuring the lsp client.
+This plugin only enhances and adds to the functionality provided by nvim. **It does not by itself provide autocompletion, code actions
+or configure how errors from the language server are displayed**. This is all handled by configuring the lsp client.
 
 This plugin handles things like starting and managing flutter application processes allowing for hot reloading, hot restarting,
 selecting devices/emulators to run as well as niceties like an outline window, widget guides etc. Other core lsp functionality has to be
@@ -23,8 +23,24 @@ configured via nvim lsp.
 To set up the lsp client there are a few things to do/read:
 
 1. Read the lsp documentation this can be found in `:h lsp` or a short summary can be found [here](https://github.com/neovim/nvim-lspconfig#lsp-overview).
-1. Install an autocompletion plugin such as [`nvim-compe`](https://github.com/hrsh7th/nvim-compe).
-1. (Optional) Install an LSP UI plugin such as [`lspsaga`](https://github.com/glepnir/lspsaga.nvim)
+1. **Autocompletion:** Install an autocompletion plugin such as [`nvim-compe`](https://github.com/hrsh7th/nvim-compe).
+1. **Code actions/Rename UI:**
+   - For code actions, rename and other UI improvements, install an LSP UI plugin such as [`lspsaga`](https://github.com/glepnir/lspsaga.nvim)
+   - For code actions _only_: [lsp-fastaction.nvim](https://github.com/windwp/lsp-fastaction.nvim)
+
+A minimal native LSP configuration might look like:
+
+```vim
+ " Jump to definition
+nnoremap gd <Cmd>lua vim.lsp.buf.definition()<CR>
+ " Open code actions using the default lsp UI, if you want to change this please see the plugins above
+nnoremap <leader>ca <Cmd>lua vim.lsp.buf.code_action()<CR>
+ " Open code actions for the selected visual range
+xnoremap <leader>ca <Cmd>lua vim.lsp.buf.range_code_action()<CR>
+```
+
+Please note this is not a replacement for reading the documentation, this is only to show new users what
+some basic setup might look like.
 
 ## Prerequisites
 
