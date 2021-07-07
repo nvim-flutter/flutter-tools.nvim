@@ -98,6 +98,7 @@ end
 ---Run the flutter application
 ---@param opts table
 function M.run(opts)
+  opts = opts or {}
   local device = opts.device
   local cmd_args = opts.args
   if run_job then
