@@ -99,9 +99,15 @@ function M.commands(opts)
   vim.list_extend(commands, {
     {
       id = "flutter-tools-pub-get",
-      label = "Flutter tools: pub get",
+      label = "Flutter tools: Pub get",
       hint = "Run pub get in the project directory",
       command = require("flutter-tools.commands").pub_get,
+    },
+    {
+      id = "flutter-tools-pub-upgrade",
+      label = "Flutter tools: Pub upgrade",
+      hint = "Run pub upgrade in the project directory",
+      command = require("flutter-tools.commands").pub_upgrade,
     },
     {
       id = "flutter-tools-list-devices",

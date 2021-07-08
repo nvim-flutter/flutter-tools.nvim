@@ -227,4 +227,39 @@ function M.pub_get()
   end
 end
 
+---@type Job
+local pub_upgrade_job = nil
+
+--- Take arguments from the commandline and pass
+--- them to the pub upgrade command
+---@param args string
+function M.pub_upgrade_command(args)
+  args = args and args ~= "" and vim.split(args, " ") or nil
+  M.pub_upgrade(args)
+end
+
+
+function M.pub_upgrade(cmd_args)
+  if not pub_upgrade_job then
+    executable.flutter(function(cmd)
+      local notify_timeout = 10000
+      local args = {"pub", "upgrade"};
+      if cmd_args then
+        vim.list_extend(args, cmd_args)
+      end
+      pub_upgrade_job = Job:new({ command = cmd, args = args })
+      pub_upgrade_job:after_success(vim.schedule_wrap(function(j)
+        ui.notify(j:result(), notify_timeout)
+        pub_upgrade_job = nil
+      end))
+      pub_upgrade_job:after_failure(vim.schedule_wrap(function(j)
+        ui.notify(j:stderr_result(), notify_timeout)
+        pub_upgrade_job = nil
+      end))
+      pub_upgrade_job:start()
+    end)
+  end
+end
+
+
 return M
