@@ -24,6 +24,11 @@ local function setup_commands()
     [[lua require('flutter-tools.commands').copy_profiler_url()]]
   )
   utils.command("FlutterPubGet", [[lua require('flutter-tools.commands').pub_get()]])
+  utils.command(
+    "FlutterPubUpgrade",
+    [[lua require('flutter-tools.commands').pub_upgrade_command(<q-args>)]],
+    { nargs = "*" }
+  )
   --- Log
   utils.command("FlutterLogClear", [[lua require('flutter-tools.log').clear()]])
 end
