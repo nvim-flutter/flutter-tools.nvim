@@ -238,12 +238,11 @@ function M.pub_upgrade_command(args)
   M.pub_upgrade(args)
 end
 
-
 function M.pub_upgrade(cmd_args)
   if not pub_upgrade_job then
     executable.flutter(function(cmd)
       local notify_timeout = 10000
-      local args = {"pub", "upgrade"};
+      local args = { "pub", "upgrade" }
       if cmd_args then
         vim.list_extend(args, cmd_args)
       end
@@ -260,6 +259,5 @@ function M.pub_upgrade(cmd_args)
     end)
   end
 end
-
 
 return M
