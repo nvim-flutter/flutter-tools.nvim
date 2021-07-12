@@ -1,10 +1,9 @@
 ---
 name: Bug report
 about: File a bug report
-title: "[Bug] title"
-labels: ''
-assignees: ''
-
+title: "[Bug]: "
+labels: ""
+assignees: ""
 ---
 
 **Describe the bug**
@@ -15,6 +14,7 @@ A clear and concise description of what the bug is.
 
 **To Reproduce**
 Steps to reproduce the behavior:
+
 1. Go to '...'
 2. do '....'
 3. See error
@@ -26,10 +26,11 @@ A clear and concise description of what you expected to happen.
 If applicable, add screenshots to help explain your problem.
 
 **System information**
-* OS:
-* Flutter version:
-* Is flutter in $PATH:
-* neovim version:
+
+- OS:
+- Flutter version:
+- Is flutter in $PATH:
+- neovim version:
 
 **Additional context**
 Add any other context about the problem here.
