@@ -121,16 +121,18 @@ function M.get_hl(name, attribute)
   return fn.synIDattr(fn.hlID("Normal"), "fg")
 end
 
---- TODO: this presumes that there are no other unames and windows is safe to fallback to but it isn't
-M.os, M.open_command = (function()
-  local sysname = vim.loop.os_uname().sysname
-  if sysname == "Darwin" then
-    return "mac", "open"
+function M.open_command()
+  local path = require("flutter-tools.utils.path")
+  if path.is_mac then
+    return "open"
   end
-  if sysname == "Linux" then
-    return "linux", "xdg-open"
+  if path.is_linux then
+    return "xdg-open"
   end
-  return "windows", "explorer"
-end)()
+  if path.is_windows then
+    return "explorer"
+  end
+  return nil, nil
+end
 
 return M

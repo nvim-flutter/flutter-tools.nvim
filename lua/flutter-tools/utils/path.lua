@@ -16,8 +16,10 @@ function M.is_file(filename)
   return M.exists(filename) == "file"
 end
 
-M.is_linux = luv.os_uname().sysname == "Linux"
-M.is_windows = luv.os_uname().version:match("Windows")
+local uname = luv.os_uname()
+M.is_mac = uname.sysname == "Darwin"
+M.is_linux = uname.sysname == "Linux"
+M.is_windows = uname.version:match("Windows")
 M.path_sep = M.is_windows and "\\" or "/"
 
 local is_fs_root

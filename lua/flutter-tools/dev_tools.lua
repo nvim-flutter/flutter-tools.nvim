@@ -26,8 +26,11 @@ local devtools_profiler_url = nil
 local activate_cmd = { "pub", "global", "activate", "devtools" }
 
 -- Android when flutter run starts a new devtools process
--- OLD: Flutter DevTools, a Flutter debugger and profiler, on sdk gphone x86 arm is available at: http://127.0.0.1:9102?uri=http%3A%2F%2F127.0.0.1%3A46051%2FNvCev-HjyX4%3D%2F
--- NEW: The Flutter DevTools debugger and profiler on sdk gphone x86 arm is available at: http://127.0.0.1:9100?uri=http%3A%2F%2F127.0.0.1%3A35479%2FgQ0BNyM2xB8%3D%2F
+-- OLD: Flutter DevTools, a Flutter debugger and profiler,
+-- on sdk gphone x86 arm is available at:
+-- http://127.0.0.1:9102?uri=http%3A%2F%2F127.0.0.1%3A46051%2FNvCev-HjyX4%3D%2F
+-- NEW: The Flutter DevTools debugger and profiler on sdk gphone x86 arm is available at:
+-- http://127.0.0.1:9100?uri=http%3A%2F%2F127.0.0.1%3A35479%2FgQ0BNyM2xB8%3D%2F
 local function try_get_tools_flutter(data)
   return data:match("(https?://127%.0%.0%.1:%d+%?uri=.+)$")
 end
@@ -45,8 +48,15 @@ local function start_browser()
     return
   end
   local url = M.get_profiler_url()
-  if url then
-    vim.fn.jobstart({ utils.open_command, url }, { detach = true })
+  local open_command = utils.open_command()
+  if not open_command then
+    return vim.notify(
+      "Sorry your Operating System is not supported, please raise an issue",
+      vim.log.levels.ERROR
+    )
+  end
+  if url and open_command then
+    vim.fn.jobstart({ open_command, url }, { detach = true })
   end
 end
 
