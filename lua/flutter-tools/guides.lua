@@ -172,7 +172,7 @@ end
 function M.setup()
   local color = utils.get_hl("Normal", "fg")
   if color and color ~= "" then
-    vim.cmd(fmt("highlight! %s guifg=%s", hl_group, color))
+    utils.highlight(hl_group, { guifg = color })
   end
 end
 

@@ -79,6 +79,26 @@ function M.augroup(name, commands)
   vim.cmd("augroup END")
 end
 
+---Add a highlight group and an accompanying autocommand to refresh it
+---if the colorscheme changes
+---@param name string
+---@param opts table
+function M.highlight(name, opts)
+  local hls = {}
+  for k, v in pairs(opts) do
+    table.insert(hls, fmt("%s=%s", k, v))
+  end
+  local hl_cmd = fmt("highlight! %s %s", name, table.concat(hls, " "))
+  vim.cmd(hl_cmd)
+  M.augroup(name .. "Refresh", {
+    {
+      events = { "ColorScheme" },
+      targets = { "*" },
+      command = hl_cmd,
+    },
+  })
+end
+
 function M.fold(accumulator, callback, list)
   for _, v in ipairs(list) do
     accumulator = callback(accumulator, v)
