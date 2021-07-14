@@ -65,8 +65,9 @@ local function get_guide_character(lnum, end_line, parent_start, indent_size, ch
       return markers.middle .. markers.horizontal:rep(child_indent)
     end
   end
-  return lnum ~= end_line and markers.vertical
-    or markers.bottom .. markers.horizontal:rep(indent_size)
+  return lnum ~= end_line and markers.vertical or markers.bottom .. markers.horizontal:rep(
+    indent_size
+  )
 end
 
 -- Marshal the lsp flutter outline into a table of lines and characters
@@ -109,7 +110,8 @@ local function collect_guides(lines, data, guides)
 
         guides[lnum] = guides[lnum] or {}
         -- Don't do the work to get characters we already have
-        if not guides[lnum][start_index] then
+        -- also if the start index is out of range e.g. -1 don't add it
+        if not guides[lnum][start_index] and start_index >= 0 then
           guides[lnum][start_index] = get_guide_character(
             lnum,
             end_lnum,
