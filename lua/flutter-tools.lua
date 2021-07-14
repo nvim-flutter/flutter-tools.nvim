@@ -36,6 +36,8 @@ end
 ---Create autocommands for the plugin
 local function setup_autocommands()
   local utils = require("flutter-tools.utils")
+
+  -- delay plugin setup till we enter a dart file
   utils.augroup("FlutterToolsStart", {
     {
       events = { "BufEnter" },
@@ -44,6 +46,16 @@ local function setup_autocommands()
       command = "lua require('flutter-tools').__start()",
     },
   })
+
+  -- Setup LSP autocommand to attach to dart files
+  utils.augroup("FlutterToolsLsp", {
+    {
+      events = { "FileType" },
+      targets = { "dart" },
+      command = "lua require('flutter-tools.lsp').attach()",
+    },
+  })
+
   utils.augroup("FlutterToolsHotReload", {
     {
       events = { "BufWritePost" },
@@ -71,18 +83,22 @@ local function setup_autocommands()
   })
 end
 
-local started = false
-
+---@private
+---Initialise various plugin modules
+---NOTE: this is not intended for public use
 function M.__start()
-  if started then
-    return
-  else
-    started = true
+  -- this loads plenary to check if it exists, so defer it till the plugin is starting up
+  if not pcall(require, "plenary") then
+    return vim.notify(
+      "plenary.nvim is a required dependency of this plugin, please ensure it is installed."
+        .. " Otherwise this plugin will not work correctly",
+      vim.log.levels.ERROR
+    )
   end
 
   setup_commands()
-  local conf = require("flutter-tools.config").get()
 
+  local conf = require("flutter-tools.config").get()
   if conf.debugger.enabled then
     require("flutter-tools.dap").setup(conf)
   end
@@ -95,15 +111,7 @@ end
 ---Entry point for this plugin
 ---@param user_config table
 function M.setup(user_config)
-  if not pcall(require, "plenary") then
-    return require("flutter-tools.utils").echomsg(
-      "plenary.nvim is a required dependency of this plugin, please ensure it is installed"
-    )
-  end
-
   require("flutter-tools.config").set(user_config)
-  -- Setup LSP autocommands to attach to dart files
-  require("flutter-tools.lsp").setup()
   setup_autocommands()
 end
 

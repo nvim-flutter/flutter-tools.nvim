@@ -16,16 +16,6 @@ local function analysis_server_snapshot_path(sdk_path)
   return path.join(sdk_path, "bin", "snapshots", "analysis_server.dart.snapshot")
 end
 
-function M.setup()
-  require("flutter-tools.utils").augroup("FlutterToolsLsp", {
-    {
-      events = { "FileType" },
-      targets = { "dart" },
-      command = "lua require('flutter-tools.lsp').attach()",
-    },
-  })
-end
-
 ---Merge a set of default configurations with a user's own settings
 ---NOTE: a user can specify a function in which case this will be used
 ---to determine how to merge the defaults with a user's config
