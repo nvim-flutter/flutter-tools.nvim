@@ -53,6 +53,7 @@ local defaults = {
   decorations = {
     statusline = {
       app_version = false,
+      device = false,
     },
   },
   debugger = {
