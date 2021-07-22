@@ -62,6 +62,9 @@ function M.buf_valid(bufnr, name)
   return vim.fn.bufexists(target) > 0 and vim.fn.buflisted(target) > 0
 end
 
+---create an autocommand
+---@param name string
+---@param commands table<string,string[]>[]
 function M.augroup(name, commands)
   vim.cmd("augroup " .. name)
   vim.cmd("autocmd!")
