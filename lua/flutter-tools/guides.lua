@@ -197,14 +197,7 @@ function M.widget_guides(_, _, data, _)
     -- in realtime might prove difficult e.g. what autocommand do we use
     -- also will this actually be faster
     local lines = vim.api.nvim_buf_get_lines(bufnum, 0, -1, false)
-
-    local async
-
-    async = vim.loop.new_async(vim.schedule_wrap(function()
-      render_guides(bufnum, collect_guides(lines, data.outline), conf)
-      async:close()
-    end))
-    async:send()
+    render_guides(bufnum, collect_guides(lines, data.outline), conf)
   end
 end
 
