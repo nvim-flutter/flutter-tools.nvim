@@ -27,7 +27,7 @@ function set_decoration_item(key, value)
   vim.g.flutter_tools_decorations = decorations
 end
 
-function M.statusline.device_show()
+local function device_show()
   local device = require("flutter-tools.commands").current_device()
   if device then
     set_decoration_item("device", device)
@@ -38,12 +38,12 @@ function M.statusline.device()
   require("flutter-tools.utils").augroup("FlutterToolsDeviceStatus", {
     {
       events = { "User FlutterToolsAppStarted" },
-      command = "lua require('flutter-tools.decorations').statusline.device_show()",
+      command = device_show,
     },
   })
 end
 
-function M.statusline.app_version_show()
+local function app_version_show()
   read_pubspec(function(data)
     local lines = vim.split(data, "\n")
     for _, line in ipairs(lines) do
@@ -56,13 +56,13 @@ end
 
 function M.statusline.app_version()
   -- show the version decoration immediately
-  M.statusline.app_version_show()
+  app_version_show()
   -- Refresh the statusline item when a user leaves the pubspec file
   require("flutter-tools.utils").augroup("FlutterToolsAppVersion", {
     {
       events = { "BufLeave", "BufWritePost" },
       targets = { "pubspec.yaml" },
-      command = "lua require('flutter-tools.decorations').statusline.app_version_show()",
+      command = app_version_show,
     },
   })
 end
