@@ -93,7 +93,6 @@ function M.augroup(name, commands)
   for _, c in ipairs(commands) do
     local command = c.command
     if type(command) == "function" then
-      print("Adding function autocommand")
       local fn_id = _create(command)
       command = fmt("lua require('flutter-tools.utils')._execute(%s)", fn_id)
     end
