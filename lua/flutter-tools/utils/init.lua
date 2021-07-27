@@ -3,6 +3,10 @@ local fn = vim.fn
 local api = vim.api
 local fmt = string.format
 
+-- Global store of callback for autocommand (and eventually mappings)
+-- FIXME: remove this when lua autocommands are officially supported
+_G.__flutter_tools_callbacks = __flutter_tools_callbacks or {}
+
 function M.echomsg(msg, hl)
   hl = hl or "Title"
   local prefix = "[Flutter-tools]: "
@@ -62,17 +66,43 @@ function M.buf_valid(bufnr, name)
   return vim.fn.bufexists(target) > 0 and vim.fn.buflisted(target) > 0
 end
 
+---Add a function to the global callback map
+---@param f function
+---@return number
+local function _create(f)
+  table.insert(__flutter_tools_callbacks, f)
+  return #__flutter_tools_callbacks
+end
+
+function M._execute(id, args)
+  __flutter_tools_callbacks[id](args)
+end
+
+---@class FlutterAutocmd
+---@field events string[] list of autocommand events
+---@field targets string[] list of autocommand patterns
+---@field modifiers string[] e.g. nested, once
+---@field command string | function
+
+---Create an autocommand
+---@param name string
+---@param commands FlutterAutocmd[]
 function M.augroup(name, commands)
   vim.cmd("augroup " .. name)
   vim.cmd("autocmd!")
   for _, c in ipairs(commands) do
+    local command = c.command
+    if type(command) == "function" then
+      local fn_id = _create(command)
+      command = fmt("lua require('flutter-tools.utils')._execute(%s)", fn_id)
+    end
     vim.cmd(
       string.format(
         "autocmd %s %s %s %s",
         table.concat(c.events, ","),
         table.concat(c.targets or {}, ","),
         table.concat(c.modifiers or {}, " "),
-        c.command
+        command
       )
     )
   end

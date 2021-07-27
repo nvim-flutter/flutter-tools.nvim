@@ -50,6 +50,12 @@ local defaults = {
   ui = {
     border = "single",
   },
+  decorations = {
+    statusline = {
+      app_version = false,
+      device = false,
+    },
+  },
   debugger = {
     enabled = false,
   },

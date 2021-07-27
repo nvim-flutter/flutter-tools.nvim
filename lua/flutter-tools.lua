@@ -106,6 +106,10 @@ function M.__start()
   if conf.widget_guides.enabled then
     require("flutter-tools.guides").setup()
   end
+
+  if conf.decorations then
+    require("flutter-tools.decorations").apply(conf.decorations)
+  end
 end
 
 ---Entry point for this plugin

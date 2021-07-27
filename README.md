@@ -116,6 +116,12 @@ require("flutter-tools").setup{} -- use defaults
 
 ![closing tags](./.github/closing_tags.png)
 
+### Statusline decorations
+
+#### App version
+
+![app_version](https://user-images.githubusercontent.com/22454918/126676393-ad42019d-c56e-4cc7-b139-8e050e4861e8.png)
+
 # Usage
 
 - `FlutterRun` - Run the current project. This needs to be run from within a flutter project.
@@ -132,6 +138,7 @@ require("flutter-tools").setup{} -- use defaults
 <hr/>
 
 ### `FlutterRun`
+
 The flutter run command can also optionally take arguments that you might otherwise pass on the commandline
 such as `:FlutterRun --flavor <tasty>`, `:FlutterRun --no-sound-null-safety`.
 
@@ -154,6 +161,17 @@ require("flutter-tools").setup {
     -- used for ":h nvim_open_win" e.g. "single" | "shadow" | {<table-of-eight-chars>}
     border = "rounded",
   },
+  decorations = {
+    statusline = {
+      -- set to true to be able use the 'flutter_tools_decorations.app_version' in your statusline
+      -- this will show the current version of the flutter app from the pubspec.yaml file
+      app_version = false,
+      -- set to true to be able use the 'flutter_tools_decorations.device' in your statusline
+      -- this will show the currently running device if an application was started with a specific
+      -- device
+      device = false,
+    }
+  }
   debugger = { -- integrate with nvim dap + install dart code debugger
     enabled = false,
   },
@@ -232,6 +250,25 @@ The highlights for flutter-tools notifications and popups can be changed by over
 - `FlutterPopupNormal` - this changes the highlight of the popup content.
 - `FlutterPopupBorder` - this changes the highlight of the popup border.
 - `FlutterPopupSelected` - this changes the highlight of the popup's selected line.
+
+### Statusline decorations (Unstable)
+
+You can add metadata about the flutter application to your statusline using the `g:flutter_tools_decorations`
+dictionary that is created if you have set any of the decorations to `true` in your configuration.
+
+The currently supported decorations are:
+* App version - The current version of the app from the `pubspec.yaml`.
+* Device - the device passed to the flutter run command
+
+To add them to your config you can do something like
+
+```lua
+function _G.statusLine()
+  return vim.g.flutter_tools_decorations.app_version
+end
+vim.opt.statusline ='%!v:statusLine()'
+```
+see `:h statusline` for more information on how to create a statusline.
 
 ### Telescope Integration
 

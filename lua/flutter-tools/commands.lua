@@ -13,6 +13,12 @@ local M = {}
 
 ---@type Job
 local run_job = nil
+---@type table
+local current_device = nil
+
+function M.current_device()
+  return current_device
+end
 
 function M.is_running()
   return run_job ~= nil
@@ -81,9 +87,8 @@ local function on_run_exit(result)
 end
 
 local function shutdown()
-  if run_job then
-    run_job = nil
-  end
+  run_job = nil
+  current_device = nil
   dev_tools.on_flutter_shutdown()
 end
 
@@ -107,6 +112,7 @@ function M.run(opts)
   executable.flutter(function(cmd)
     local args = { "run" }
     if not cmd_args and device and device.id then
+      current_device = device
       vim.list_extend(args, { "-d", device.id })
     end
 
@@ -124,6 +130,9 @@ function M.run(opts)
     run_job = Job:new({
       command = cmd,
       args = args,
+      on_start = function()
+        vim.cmd("doautocmd User FlutterToolsAppStarted")
+      end,
       on_stdout = on_run_data(false, conf),
       on_stderr = on_run_data(true, conf),
       on_exit = vim.schedule_wrap(function(j, _)
