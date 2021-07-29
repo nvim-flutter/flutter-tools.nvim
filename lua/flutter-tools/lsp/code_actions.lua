@@ -1,5 +1,7 @@
 local M = {}
 
+local api = vim.api
+
 function M.get_action_params(item, uri)
   local bufnr = vim.uri_to_bufnr(uri)
 
@@ -23,13 +25,13 @@ function M.execute(action)
   -- Edits should be executed first
   if action.edit or type(action.command) == "table" then
     if action.edit then
-      util.apply_workspace_edit(action.edit)
+      vim.lsp.util.apply_workspace_edit(action.edit)
     end
     if type(action.command) == "table" then
-      buf.execute_command(action.command)
+      vim.lsp.buf.execute_command(action.command)
     end
   else
-    buf.execute_command(action)
+    vim.lsp.buf.execute_command(action)
   end
 end
 
