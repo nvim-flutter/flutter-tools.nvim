@@ -194,18 +194,22 @@ end
 ---@class PopupOpts
 ---@field title string
 ---@field lines string[]
+---@field display table
+---@field position table
 ---@field on_create fun(buf: number, win:number):nil
 ---@field highlights table[]
 
+--- TODO: Ideally popup_create should include a mechanism for mapping data to a line
 ---@param opts PopupOpts
 function M.popup_create(opts)
   assert(opts ~= nil, "An options table must be passed to popup create!")
-  local title, lines, on_create, highlights, position =
-    opts.title,
-    opts.lines,
-    opts.on_create,
-    opts.highlights or {},
-    opts.position or {
+  local title = opts.title
+  local lines = opts.lines
+  local on_create = opts.on_create
+  local highlights = opts.highlights or {}
+  local display = opts.display or { winblend = WIN_BLEND }
+  local position = opts.position
+    or {
       relative = "editor",
       row = (vim.o.lines - height) / 2,
       col = (vim.o.columns - width) / 2,
@@ -250,7 +254,7 @@ function M.popup_create(opts)
   M.add_highlights(buf, buf_highlights)
 
   vim.bo.filetype = "flutter_tools_popup"
-  vim.wo[win].winblend = WIN_BLEND
+  vim.wo[win].winblend = display.winblend
   vim.bo[buf].modifiable = false
   vim.wo[win].cursorline = true
   --- Positions cursor on the third line i.e. after the title and it's underline

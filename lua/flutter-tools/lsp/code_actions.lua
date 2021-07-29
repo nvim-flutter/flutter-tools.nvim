@@ -46,6 +46,7 @@ function M.create_popup(actions)
 
   require("flutter-tools.ui").popup_create({
     title = "Code actions",
+    display = { winblend = 0 },
     position = { relative = "cursor", row = 1, col = 0 },
     lines = lines,
     on_create = function(buf, win)
