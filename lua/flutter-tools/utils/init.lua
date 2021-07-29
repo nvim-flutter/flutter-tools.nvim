@@ -158,6 +158,19 @@ function M.fold(accumulator, callback, list)
   return accumulator
 end
 
+---Find an item in a list based on a compare function
+---@generic T
+---@param compare fun(item: T): boolean
+---@param list `T`
+---@return `T`
+function M.find(list, compare)
+  for _, item in ipairs(list) do
+    if compare(item) then
+      return item
+    end
+  end
+end
+
 ---Merge two table but maintain metatables
 ---Priority is given to the second table
 ---@param t1 table
