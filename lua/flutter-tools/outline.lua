@@ -235,6 +235,60 @@ local function setup_autocommands()
   })
 end
 
+local function outline_code_actions()
+  local line = fn.line(".")
+  local uri = vim.b.outline_uri
+  if not uri then
+    return utils.echomsg([[Sorry! code actions not available]])
+  end
+  local outline = M.outlines[uri]
+  local item = outline[line]
+  local params = code_actions.get_action_params(item, uri)
+
+  local code_buf = vim.uri_to_bufnr(uri)
+  local code_wins = vim.fn.win_findbuf(code_buf)
+  if not code_wins or #code_wins == 0 then
+    return
+  end
+  local code_win = code_wins[1]
+
+  vim.lsp.buf_request(params.bufnr, "textDocument/codeAction", params, function(_, method, actions)
+    code_actions.create_popup(actions, function(buf, win)
+      local utils = require("flutter-tools.utils")
+      utils.map("n", "<CR>", function()
+        local line = api.nvim_get_current_line()
+        --- TODO: improve this once popup create returns a mapping of data to lines
+        local action = utils.find(actions, function(item)
+          return line:match(item.title)
+        end)
+        if action then
+          code_actions.execute(action)
+        end
+        vim.api.nvim_win_close(0, true)
+      end, {
+        buffer = buf,
+      })
+    end)
+
+    vim.api.nvim_win_set_cursor(code_win, { item.start_line + 1, item.start_col + 1 })
+  end)
+end
+
+local function select_outline_item()
+  local line = fn.line(".")
+  local uri = vim.b.outline_uri
+  if not uri then
+    return utils.echomsg([[Sorry! this item can't be opened]])
+  end
+  local outline = M.outlines[uri]
+  local item = outline[line]
+  if not item then
+    return utils.echomsg([[Sorry! this item can't be opened]])
+  end
+  vim.cmd("drop " .. vim.uri_to_fname(uri))
+  fn.cursor(item.start_line, item.start_col)
+end
+
 ---@param lines table
 ---@param highlights table
 local function setup_outline_window(lines, highlights)
@@ -265,27 +319,8 @@ local function setup_outline_window(lines, highlights)
       { noremap = true, nowait = true, silent = true }
     )
 
-    api.nvim_buf_set_keymap(buf, "n", "<CR>", [[<Cmd>lua __flutter_tools_select_outline_item()<CR>]], {
-      noremap = true,
-      nowait = true,
-      silent = true,
-    })
-
-    api.nvim_buf_set_keymap(
-      buf,
-      "n",
-      "<CR>",
-      [[<Cmd>lua __flutter_tools_select_outline_item()<CR>]],
-      { noremap = true, nowait = true, silent = true }
-    )
-
-    api.nvim_buf_set_keymap(
-      buf,
-      "n",
-      "a",
-      [[<Cmd>lua __flutter_tools_outline_code_actions()<CR>]],
-      { noremap = true, nowait = true, silent = true }
-    )
+    utils.map("n", "<CR>", select_outline_item, { buffer = buf, nowait = true })
+    utils.map("n", "a", outline_code_actions, { buffer = buf, nowait = true })
 
     setup_autocommands()
   end
@@ -324,42 +359,6 @@ function _G.__flutter_tools_refresh_outline()
   if ok then
     replace(M.buf, lines, highlights)
   end
-end
-
-function _G.__flutter_tools_outline_code_actions()
-  local line = fn.line(".")
-  local uri = vim.b.outline_uri
-  if not uri then
-    return utils.echomsg([[Sorry! code actions not available]])
-  end
-  local outline = M.outlines[uri]
-  local item = outline[line]
-  local params = code_actions.get_action_params(item, uri)
-
-  vim.lsp.buf_request(params.bufnr, "textDocument/codeAction", params, function(_, method, actions)
-    code_actions.create_popup(actions)
-    local code_buf = vim.uri_to_bufnr(uri)
-    local code_wins = vim.fn.win_findbuf(code_buf)
-    if not code_wins or #code_wins == 0 then
-      return
-    end
-    vim.api.nvim_win_set_cursor(code_wins[1], { item.start_line + 1, item.start_col + 1 })
-  end)
-end
-
-function _G.__flutter_tools_select_outline_item()
-  local line = fn.line(".")
-  local uri = vim.b.outline_uri
-  if not uri then
-    return utils.echomsg([[Sorry! this item can't be opened]])
-  end
-  local outline = M.outlines[uri]
-  local item = outline[line]
-  if not item then
-    return utils.echomsg([[Sorry! this item can't be opened]])
-  end
-  vim.cmd("drop " .. vim.uri_to_fname(uri))
-  fn.cursor(item.start_line, item.start_col)
 end
 
 local function highlight_current_item(item)

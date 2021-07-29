@@ -37,7 +37,8 @@ end
 
 ---Open a code action window to select options from
 ---@param actions table[]
-function M.create_popup(actions)
+---@param on_create fun(buf: number, win: number)
+function M.create_popup(actions, on_create)
   if not actions or vim.tbl_isempty(actions) then
     return
   end
@@ -51,9 +52,7 @@ function M.create_popup(actions)
     display = { winblend = 0 },
     position = { relative = "cursor", row = 1, col = 0 },
     lines = lines,
-    on_create = function(buf, win)
-      -- TODO: add a text edit corresponding to each line
-    end,
+    on_create = on_create,
   })
 end
 
