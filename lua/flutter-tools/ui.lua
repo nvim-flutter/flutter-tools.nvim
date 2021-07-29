@@ -200,11 +200,21 @@ end
 ---@param opts PopupOpts
 function M.popup_create(opts)
   assert(opts ~= nil, "An options table must be passed to popup create!")
-  local title, lines, on_create, highlights =
-    opts.title, opts.lines, opts.on_create, opts.highlights
+  local title, lines, on_create, highlights, position =
+    opts.title,
+    opts.lines,
+    opts.on_create,
+    opts.highlights or {},
+    opts.position or {
+      relative = "editor",
+      row = (vim.o.lines - height) / 2,
+      col = (vim.o.columns - width) / 2,
+    }
+
   if not lines or #lines < 1 or invalid_lines(lines) then
     return
   end
+
   lines = pad_lines(lines)
   local width = calculate_width(lines)
   local height = 10
@@ -213,9 +223,9 @@ function M.popup_create(opts)
 
   api.nvim_buf_set_lines(buf, 0, -1, true, lines)
   local win = api.nvim_open_win(buf, true, {
-    row = (vim.o.lines - height) / 2,
-    col = (vim.o.columns - width) / 2,
-    relative = "editor",
+    row = position.row,
+    col = position.col,
+    relative = position.relative,
     style = "minimal",
     width = width,
     height = height,
