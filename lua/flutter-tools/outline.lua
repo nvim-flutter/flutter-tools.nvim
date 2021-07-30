@@ -236,10 +236,10 @@ local function setup_autocommands()
 end
 
 local function outline_code_actions()
-  local line = fn.line(".")
+  local line = fn.line('.')
   local uri = vim.b.outline_uri
   if not uri then
-    return utils.echomsg([[Sorry! code actions not available]])
+    return utils.echomsg("Sorry! code actions not available")
   end
   local outline = M.outlines[uri]
   local item = outline[line]
@@ -256,7 +256,7 @@ local function outline_code_actions()
     code_actions.create_popup(actions, function(buf, win)
       local utils = require("flutter-tools.utils")
       utils.map("n", "<CR>", function()
-        local line = api.nvim_get_current_line()
+        local ln = api.nvim_get_current_line()
         --- TODO: improve this once popup create returns a mapping of data to lines
         local action = utils.find(actions, function(item)
           return line:match(item.title)
@@ -275,7 +275,7 @@ local function outline_code_actions()
 end
 
 local function select_outline_item()
-  local line = fn.line(".")
+  local line = fn.line('.')
   local uri = vim.b.outline_uri
   if not uri then
     return utils.echomsg([[Sorry! this item can't be opened]])
@@ -357,7 +357,7 @@ function _G.__flutter_tools_refresh_outline()
   end
   local ok, lines, highlights = get_outline_content()
   if ok then
-    replace(M.buf, lines, highlights)
+    refresh_outline(M.buf, lines, highlights)
   end
 end
 
@@ -446,7 +446,7 @@ function M.open()
       highlights
     ))
   else
-    replace(M.buf, lines, highlights)
+    refresh_outline(M.buf, lines, highlights)
   end
   vim.b.outline_uri = outline.uri
 end
@@ -462,7 +462,7 @@ function M.document_outline(_, _, data, _)
   end
   result.uri = data.uri
   M.outlines[data.uri] = result
-  vim.cmd([[doautocmd User FlutterOutlineChanged]])
+  vim.cmd("doautocmd User FlutterOutlineChanged")
 end
 
 return M
