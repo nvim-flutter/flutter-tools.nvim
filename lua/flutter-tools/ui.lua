@@ -208,12 +208,7 @@ function M.popup_create(opts)
   local on_create = opts.on_create
   local highlights = opts.highlights or {}
   local display = opts.display or { winblend = WIN_BLEND }
-  local position = opts.position
-    or {
-      relative = "editor",
-      row = (vim.o.lines - height) / 2,
-      col = (vim.o.columns - width) / 2,
-    }
+  local position = opts.position or {}
 
   if not lines or #lines < 1 or invalid_lines(lines) then
     return
@@ -224,6 +219,10 @@ function M.popup_create(opts)
   local height = 10
   local buf = api.nvim_create_buf(false, true)
   lines = { title, string.rep("─", width), unpack(lines) }
+
+  position.relative = position.relative or "editor"
+  position.row = position.row or (vim.o.lines - height) / 2
+  position.col = position.col or (vim.o.columns - width) / 2
 
   api.nvim_buf_set_lines(buf, 0, -1, true, lines)
   local win = api.nvim_open_win(buf, true, {
