@@ -5,6 +5,7 @@ local code_actions = require("flutter-tools.lsp.code_actions")
 
 local api = vim.api
 local fn = vim.fn
+local fmt = string.format
 local outline_filename = "Flutter Outline"
 local outline_filetype = "flutterToolsOutline"
 
@@ -264,7 +265,11 @@ local function outline_code_actions()
           return ln:match(ca.title)
         end)
         if action then
-          code_actions.execute(action)
+          code_actions.execute(action, buf, function()
+            api.nvim_win_call(code_win, function()
+              vim.cmd('edit')
+            end)
+          end)
         end
         vim.api.nvim_win_close(0, true)
       end, {

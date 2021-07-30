@@ -20,7 +20,10 @@ end
 ---Execute a code action
 ---this is copied verbatim from nvim's lsp handlers
 ---@param action table
-function M.execute(action)
+---@param bufnr number
+---@param on_complete function
+function M.execute(action, bufnr, on_complete)
+  bufnr = bufnr or 0
   -- textDocument/codeAction can return either Command[] or CodeAction[].
   -- If it is a CodeAction, it can have either an edit, a command or both.
   -- Edits should be executed first
@@ -31,8 +34,9 @@ function M.execute(action)
     if type(action.command) == "table" then
       vim.lsp.buf.execute_command(action.command)
     end
+    on_complete()
   else
-    vim.lsp.buf.execute_command(action)
+    vim.lsp.buf_request(bufnr, "workspace/executeCommand", action, on_complete)
   end
 end
 
