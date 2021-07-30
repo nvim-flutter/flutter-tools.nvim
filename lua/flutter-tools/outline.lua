@@ -236,7 +236,7 @@ local function setup_autocommands()
 end
 
 local function outline_code_actions()
-  local line = fn.line('.')
+  local line = fn.line(".")
   local uri = vim.b.outline_uri
   if not uri then
     return utils.echomsg("Sorry! code actions not available")
@@ -244,6 +244,9 @@ local function outline_code_actions()
   local outline = M.outlines[uri]
   local item = outline[line]
   local params = code_actions.get_action_params(item, uri)
+  if not params then
+    return
+  end
 
   local code_buf = vim.uri_to_bufnr(uri)
   local code_wins = vim.fn.win_findbuf(code_buf)
@@ -252,14 +255,13 @@ local function outline_code_actions()
   end
   local code_win = code_wins[1]
 
-  vim.lsp.buf_request(params.bufnr, "textDocument/codeAction", params, function(_, method, actions)
-    code_actions.create_popup(actions, function(buf, win)
-      local utils = require("flutter-tools.utils")
+  vim.lsp.buf_request(params.bufnr, "textDocument/codeAction", params, function(_, _, actions)
+    code_actions.create_popup(actions, function(buf, _)
       utils.map("n", "<CR>", function()
         local ln = api.nvim_get_current_line()
         --- TODO: improve this once popup create returns a mapping of data to lines
-        local action = utils.find(actions, function(item)
-          return line:match(item.title)
+        local action = utils.find(actions, function(ca)
+          return ln:match(ca.title)
         end)
         if action then
           code_actions.execute(action)
@@ -275,7 +277,7 @@ local function outline_code_actions()
 end
 
 local function select_outline_item()
-  local line = fn.line('.')
+  local line = fn.line(".")
   local uri = vim.b.outline_uri
   if not uri then
     return utils.echomsg([[Sorry! this item can't be opened]])
@@ -329,14 +331,15 @@ end
 ---@param buf integer the buf number
 ---@param lines table the lines to append
 ---@param highlights table the highlights to apply
-local function replace(buf, lines, highlights)
+local function refresh_outline(buf, lines, highlights)
   vim.bo[buf].modifiable = true
   local ok = pcall(api.nvim_buf_set_lines, buf, 0, -1, false, lines)
-  if ok then
-    vim.bo[buf].modifiable = false
-    if highlights then
-      ui.add_highlights(M.buf, highlights)
-    end
+  if not ok then
+    return
+  end
+  vim.bo[buf].modifiable = false
+  if highlights then
+    ui.add_highlights(M.buf, highlights)
   end
 end
 
@@ -356,9 +359,10 @@ function _G.__flutter_tools_refresh_outline()
     return
   end
   local ok, lines, highlights = get_outline_content()
-  if ok then
-    refresh_outline(M.buf, lines, highlights)
+  if not ok then
+    return
   end
+  refresh_outline(M.buf, lines, highlights)
 end
 
 local function highlight_current_item(item)

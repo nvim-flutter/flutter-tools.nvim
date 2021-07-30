@@ -1,7 +1,8 @@
 local M = {}
 
-local api = vim.api
-
+---@param item table
+---@param uri string
+---@return table
 function M.get_action_params(item, uri)
   local bufnr = vim.uri_to_bufnr(uri)
 
