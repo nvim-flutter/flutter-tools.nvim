@@ -236,7 +236,31 @@ local function setup_autocommands()
   })
 end
 
-local function outline_code_actions()
+---Execute the currently selected code action in the code action popup
+---@param actions table[]
+---@param code_buf number
+---@param code_win number
+---@return function
+local function select_code_action(actions, code_buf, code_win)
+  return function()
+    local ln = api.nvim_get_current_line()
+    --- TODO: improve this once popup create returns a mapping of data to lines
+    local action = utils.find(actions, function(ca)
+      return ln:match(ca.title)
+    end)
+    if action then
+      code_actions.execute(action, code_buf, function()
+        api.nvim_win_call(code_win, function()
+          vim.cmd(fmt("doautocmd BufEnter <buffer=%d>", code_buf))
+          vim.cmd("update")
+        end)
+      end)
+    end
+    vim.api.nvim_win_close(0, true)
+  end
+end
+
+local function request_code_actions()
   local line = fn.line(".")
   local uri = vim.b.outline_uri
   if not uri then
@@ -258,25 +282,8 @@ local function outline_code_actions()
 
   vim.lsp.buf_request(params.bufnr, "textDocument/codeAction", params, function(_, _, actions)
     code_actions.create_popup(actions, function(buf, _)
-      utils.map("n", "<CR>", function()
-        local ln = api.nvim_get_current_line()
-        --- TODO: improve this once popup create returns a mapping of data to lines
-        local action = utils.find(actions, function(ca)
-          return ln:match(ca.title)
-        end)
-        if action then
-          code_actions.execute(action, buf, function()
-            api.nvim_win_call(code_win, function()
-              vim.cmd('edit')
-            end)
-          end)
-        end
-        vim.api.nvim_win_close(0, true)
-      end, {
-        buffer = buf,
-      })
+      utils.map("n", "<CR>", select_code_action(actions, code_buf, code_win), { buffer = buf })
     end)
-
     vim.api.nvim_win_set_cursor(code_win, { item.start_line + 1, item.start_col + 1 })
   end)
 end
@@ -327,7 +334,7 @@ local function setup_outline_window(lines, highlights)
     )
 
     utils.map("n", "<CR>", select_outline_item, { buffer = buf, nowait = true })
-    utils.map("n", "a", outline_code_actions, { buffer = buf, nowait = true })
+    utils.map("n", "a", request_code_actions, { buffer = buf, nowait = true })
 
     setup_autocommands()
   end

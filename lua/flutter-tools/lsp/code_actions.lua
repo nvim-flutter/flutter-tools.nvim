@@ -32,9 +32,10 @@ function M.execute(action, bufnr, on_complete)
       vim.lsp.util.apply_workspace_edit(action.edit)
     end
     if type(action.command) == "table" then
-      vim.lsp.buf.execute_command(action.command)
+      vim.lsp.buf_request(bufnr, "workspace/executeCommand", action.command, on_complete)
+    else
+      on_complete()
     end
-    on_complete()
   else
     vim.lsp.buf_request(bufnr, "workspace/executeCommand", action, on_complete)
   end
