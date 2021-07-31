@@ -1,9 +1,11 @@
 local ui = require("flutter-tools.ui")
 local utils = require("flutter-tools.utils")
 local config = require("flutter-tools.config")
+local code_actions = require("flutter-tools.lsp.code_actions")
 
 local api = vim.api
 local fn = vim.fn
+local lsp = vim.lsp
 local outline_filename = "Flutter Outline"
 local outline_filetype = "flutterToolsOutline"
 
@@ -234,6 +236,85 @@ local function setup_autocommands()
   })
 end
 
+---Execute the currently selected code action in the code action popup
+---@param actions table[]
+---@param action_win number
+---@param code_buf number
+---@param code_win number
+---@param outline_win number
+---@return function
+local function select_code_action(actions, action_win, code_buf, code_win, outline_win)
+  return function()
+    local ln = api.nvim_get_current_line()
+    --- TODO: improve this once popup create returns a mapping of data to lines
+    local action = utils.find(actions, function(ca)
+      return ln:match(ca.title)
+    end)
+    if action then
+      code_actions.execute(action, code_buf, function()
+        -- HACK: figure out how to automatically refresh the code window so the new widget appears
+        -- in the outline window
+        api.nvim_set_current_win(code_win)
+        vim.defer_fn(function()
+          api.nvim_set_current_win(outline_win)
+        end, 500)
+      end)
+    end
+    if api.nvim_win_is_valid(action_win) then
+      vim.api.nvim_win_close(action_win, true)
+    end
+  end
+end
+
+local function request_code_actions()
+  local line = fn.line(".")
+  local uri = vim.b.outline_uri
+  if not uri then
+    return utils.echomsg("Sorry! code actions not available")
+  end
+  local outline = M.outlines[uri]
+  local item = outline[line]
+  local params = code_actions.get_action_params(item, uri)
+  if not params then
+    return
+  end
+
+  local code_buf = vim.uri_to_bufnr(uri)
+  local code_wins = fn.win_findbuf(code_buf)
+  if not code_wins or #code_wins == 0 then
+    return
+  end
+  local code_win = code_wins[1]
+  local outline_win = api.nvim_get_current_win()
+
+  lsp.buf_request(params.bufnr, "textDocument/codeAction", params, function(_, _, actions)
+    code_actions.create_popup(actions, function(buf, win)
+      utils.map(
+        "n",
+        "<CR>",
+        select_code_action(actions, win, code_buf, code_win, outline_win),
+        { buffer = buf }
+      )
+    end)
+    vim.api.nvim_win_set_cursor(code_win, { item.start_line + 1, item.start_col + 1 })
+  end)
+end
+
+local function select_outline_item()
+  local line = fn.line(".")
+  local uri = vim.b.outline_uri
+  if not uri then
+    return utils.echomsg([[Sorry! this item can't be opened]])
+  end
+  local outline = M.outlines[uri]
+  local item = outline[line]
+  if not item then
+    return utils.echomsg([[Sorry! this item can't be opened]])
+  end
+  vim.cmd("drop " .. vim.uri_to_fname(uri))
+  fn.cursor(item.start_line, item.start_col)
+end
+
 ---@param lines table
 ---@param highlights table
 local function setup_outline_window(lines, highlights)
@@ -264,11 +345,9 @@ local function setup_outline_window(lines, highlights)
       { noremap = true, nowait = true, silent = true }
     )
 
-    api.nvim_buf_set_keymap(buf, "n", "<CR>", [[<Cmd>lua __flutter_tools_select_outline_item()<CR>]], {
-      noremap = true,
-      nowait = true,
-      silent = true,
-    })
+    utils.map("n", "<CR>", select_outline_item, { buffer = buf, nowait = true })
+    utils.map("n", "a", request_code_actions, { buffer = buf, nowait = true })
+
     setup_autocommands()
   end
 end
@@ -276,14 +355,15 @@ end
 ---@param buf integer the buf number
 ---@param lines table the lines to append
 ---@param highlights table the highlights to apply
-local function replace(buf, lines, highlights)
+local function refresh_outline(buf, lines, highlights)
   vim.bo[buf].modifiable = true
   local ok = pcall(api.nvim_buf_set_lines, buf, 0, -1, false, lines)
-  if ok then
-    vim.bo[buf].modifiable = false
-    if highlights then
-      ui.add_highlights(M.buf, highlights)
-    end
+  if not ok then
+    return
+  end
+  vim.bo[buf].modifiable = false
+  if highlights then
+    ui.add_highlights(M.buf, highlights)
   end
 end
 
@@ -303,24 +383,10 @@ function _G.__flutter_tools_refresh_outline()
     return
   end
   local ok, lines, highlights = get_outline_content()
-  if ok then
-    replace(M.buf, lines, highlights)
+  if not ok then
+    return
   end
-end
-
-function _G.__flutter_tools_select_outline_item()
-  local line = fn.line(".")
-  local uri = vim.b.outline_uri
-  if not uri then
-    return utils.echomsg([[Sorry! this item can't be opened]])
-  end
-  local outline = M.outlines[uri]
-  local item = outline[line]
-  if not item then
-    return utils.echomsg([[Sorry! this item can't be opened]])
-  end
-  vim.cmd("drop " .. vim.uri_to_fname(uri))
-  fn.cursor(item.start_line, item.start_col)
+  refresh_outline(M.buf, lines, highlights)
 end
 
 local function highlight_current_item(item)
@@ -408,7 +474,7 @@ function M.open()
       highlights
     ))
   else
-    replace(M.buf, lines, highlights)
+    refresh_outline(M.buf, lines, highlights)
   end
   vim.b.outline_uri = outline.uri
 end
@@ -424,7 +490,7 @@ function M.document_outline(_, _, data, _)
   end
   result.uri = data.uri
   M.outlines[data.uri] = result
-  vim.cmd([[doautocmd User FlutterOutlineChanged]])
+  vim.cmd("doautocmd User FlutterOutlineChanged")
 end
 
 return M

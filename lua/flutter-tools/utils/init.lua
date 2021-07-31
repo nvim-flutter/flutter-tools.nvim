@@ -78,6 +78,28 @@ function M._execute(id, args)
   __flutter_tools_callbacks[id](args)
 end
 
+---Create a mapping
+---@param mode string
+---@param lhs string
+---@param rhs string | function
+---@param opts table
+function M.map(mode, lhs, rhs, opts)
+  -- add functions to a global table keyed by their index
+  if type(rhs) == "function" then
+    local fn_id = _create(rhs)
+    rhs = string.format("<cmd>lua require('flutter-tools.utils')._execute(%s)<CR>", fn_id)
+  end
+  local buffer = opts.buffer
+  opts.silent = opts.silent ~= nil and opts.silent or true
+  opts.noremap = opts.noremap ~= nil and opts.noremap or true
+  opts.buffer = nil
+  if buffer and type(buffer) == "number" then
+    api.nvim_buf_set_keymap(buffer, mode, lhs, rhs, opts)
+  else
+    api.nvim_set_keymap(mode, lhs, rhs, opts)
+  end
+end
+
 ---@class FlutterAutocmd
 ---@field events string[] list of autocommand events
 ---@field targets string[] list of autocommand patterns
@@ -134,6 +156,19 @@ function M.fold(accumulator, callback, list)
     accumulator = callback(accumulator, v)
   end
   return accumulator
+end
+
+---Find an item in a list based on a compare function
+---@generic T
+---@param compare fun(item: T): boolean
+---@param list `T`
+---@return `T`
+function M.find(list, compare)
+  for _, item in ipairs(list) do
+    if compare(item) then
+      return item
+    end
+  end
 end
 
 ---Merge two table but maintain metatables

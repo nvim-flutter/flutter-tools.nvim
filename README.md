@@ -144,6 +144,15 @@ such as `:FlutterRun --flavor <tasty>`, `:FlutterRun --no-sound-null-safety`.
 
 <hr/>
 
+## `FlutterOutline`
+
+The outline window allows you to see the high level layout of the current buffer.
+You can also apply code actions by pressing <kbd>a</kbd> on a widget. Then selecting
+a code action and pressing <kbd>Enter</kbd>. Please note you have to wait very briefly for
+the code action to be applied and the window to be updated
+
+![code_action_flutter](https://user-images.githubusercontent.com/22454918/127739980-04517ad2-679f-4f6c-bca4-4dd85372287b.gif)
+
 ### Full Configuration
 
 Please note you do _not_ need to copy and paste this whole block, this is just to show what options are available
@@ -257,8 +266,9 @@ You can add metadata about the flutter application to your statusline using the 
 dictionary that is created if you have set any of the decorations to `true` in your configuration.
 
 The currently supported decorations are:
-* App version - The current version of the app from the `pubspec.yaml`.
-* Device - the device passed to the flutter run command
+
+- App version - The current version of the app from the `pubspec.yaml`.
+- Device - the device passed to the flutter run command
 
 To add them to your config you can do something like
 
@@ -268,6 +278,7 @@ function _G.statusLine()
 end
 vim.opt.statusline ='%!v:statusLine()'
 ```
+
 see `:h statusline` for more information on how to create a statusline.
 
 ### Telescope Integration

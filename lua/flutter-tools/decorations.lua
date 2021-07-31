@@ -3,11 +3,10 @@ local M = {
 }
 
 local fn = vim.fn
-local fmt = string.format
 
 ---Asynchronously read the data in the pubspec yaml and pass the results to a callback
 ---@param callback fun(data: string):nil
-function read_pubspec(callback)
+local function read_pubspec(callback)
   local path = require("flutter-tools.utils.path")
   local Path = require("plenary.path")
   local root_patterns = { ".git", "pubspec.yaml" }
@@ -21,7 +20,7 @@ end
 ---Add/update item to/in the decorations table
 ---@param key string
 ---@param value string|number
-function set_decoration_item(key, value)
+local function set_decoration_item(key, value)
   local decorations = vim.g.flutter_tools_decorations or {}
   decorations[key] = value
   vim.g.flutter_tools_decorations = decorations
@@ -67,7 +66,7 @@ function M.statusline.app_version()
   })
 end
 
----@param decorations table<string, table<string, bool>>
+---@param config table<string, table<string, boolean>>
 function M.apply(config)
   if not config or vim.tbl_isempty(config) then
     return
