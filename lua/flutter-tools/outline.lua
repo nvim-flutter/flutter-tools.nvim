@@ -5,7 +5,7 @@ local code_actions = require("flutter-tools.lsp.code_actions")
 
 local api = vim.api
 local fn = vim.fn
-local fmt = string.format
+local lsp = vim.lsp
 local outline_filename = "Flutter Outline"
 local outline_filetype = "flutterToolsOutline"
 
@@ -238,10 +238,12 @@ end
 
 ---Execute the currently selected code action in the code action popup
 ---@param actions table[]
+---@param action_win number
 ---@param code_buf number
 ---@param code_win number
+---@param outline_win number
 ---@return function
-local function select_code_action(actions, code_buf, code_win)
+local function select_code_action(actions, action_win, code_buf, code_win, outline_win)
   return function()
     local ln = api.nvim_get_current_line()
     --- TODO: improve this once popup create returns a mapping of data to lines
@@ -250,13 +252,17 @@ local function select_code_action(actions, code_buf, code_win)
     end)
     if action then
       code_actions.execute(action, code_buf, function()
-        api.nvim_win_call(code_win, function()
-          vim.cmd(fmt("doautocmd BufEnter <buffer=%d>", code_buf))
-          vim.cmd("update")
-        end)
+        -- HACK: figure out how to automatically refresh the code window so the new widget appears
+        -- in the outline window
+        api.nvim_set_current_win(code_win)
+        vim.defer_fn(function()
+          api.nvim_set_current_win(outline_win)
+        end, 500)
       end)
     end
-    vim.api.nvim_win_close(0, true)
+    if api.nvim_win_is_valid(action_win) then
+      vim.api.nvim_win_close(action_win, true)
+    end
   end
 end
 
@@ -274,15 +280,21 @@ local function request_code_actions()
   end
 
   local code_buf = vim.uri_to_bufnr(uri)
-  local code_wins = vim.fn.win_findbuf(code_buf)
+  local code_wins = fn.win_findbuf(code_buf)
   if not code_wins or #code_wins == 0 then
     return
   end
   local code_win = code_wins[1]
+  local outline_win = api.nvim_get_current_win()
 
-  vim.lsp.buf_request(params.bufnr, "textDocument/codeAction", params, function(_, _, actions)
-    code_actions.create_popup(actions, function(buf, _)
-      utils.map("n", "<CR>", select_code_action(actions, code_buf, code_win), { buffer = buf })
+  lsp.buf_request(params.bufnr, "textDocument/codeAction", params, function(_, _, actions)
+    code_actions.create_popup(actions, function(buf, win)
+      utils.map(
+        "n",
+        "<CR>",
+        select_code_action(actions, win, code_buf, code_win, outline_win),
+        { buffer = buf }
+      )
     end)
     vim.api.nvim_win_set_cursor(code_win, { item.start_line + 1, item.start_col + 1 })
   end)
