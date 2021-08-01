@@ -416,7 +416,7 @@ local function select_outline_item()
     return utils.echomsg([[Sorry! this item can't be opened]])
   end
   vim.cmd("drop " .. vim.uri_to_fname(uri))
-  fn.cursor(item.start_line, item.start_col)
+  api.nvim_win_set_cursor(0, { item.start_line + 1, item.start_col + 1 })
 end
 
 ---@param buf number
