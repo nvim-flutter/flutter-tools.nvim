@@ -150,7 +150,7 @@ such as `:FlutterRun --flavor <tasty>`, `:FlutterRun --no-sound-null-safety`.
 The outline window allows you to see the high level layout of the current buffer.
 You can also apply code actions by pressing <kbd>a</kbd> on a widget. Then selecting
 a code action and pressing <kbd>Enter</kbd>. Please note you have to wait very briefly for
-the code action to be applied and the window to be updated
+the code action to be applied and the window to be updated.
 
 ![code_action_flutter](https://user-images.githubusercontent.com/22454918/127739980-04517ad2-679f-4f6c-bca4-4dd85372287b.gif)
 
