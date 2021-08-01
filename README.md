@@ -6,7 +6,7 @@ widget guides, an outline view of your widgets, and hot reloading.
 
 This plugin draws inspiration from [`emacs-lsp/lsp-dart`](https://github.com/emacs-lsp/lsp-dart), [`coc-flutter`](https://github.com/iamcco/coc-flutter) and [`nvim-metals`](https://github.com/scalameta/nvim-metals).
 
-## New to Neovim's LSP Client? (Please don't skip this if you are new! 🙏)
+## New to Neovim's LSP Client?
 
 _Skip this section if you have already configured nvim lsp._
 
@@ -47,6 +47,10 @@ some basic setup might look like.
 ## Prerequisites
 
 - neovim 0.5+
+
+## Notices
+
+- The `:FlutterOutline` command has been renamed to `:FlutterOutlineOpen`, and a `:FlutterOutlineToggle` has been added.
 
 ## Installation
 
