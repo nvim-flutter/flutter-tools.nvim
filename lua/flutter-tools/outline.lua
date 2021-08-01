@@ -90,13 +90,15 @@ local icon_highlights = {
 -----------------------------------------------------------------------------//
 -- State
 -----------------------------------------------------------------------------//
-M.buf = nil
+M.outline_buf = nil
+M.outline_win = nil
 M.outlines = setmetatable({}, {
   __index = function()
     return {}
   end,
 })
 M.options = {}
+-----------------------------------------------------------------------------//
 
 ---@param name string
 ---@param value string
@@ -121,7 +123,8 @@ end
 ---@param item string
 ---@param hl string
 ---@param length number
-local function add_segment(list, highlights, item, hl, length, pos)
+---@param position number
+local function add_segment(list, highlights, item, hl, length, position)
   if item and item ~= "" then
     local item_length = #item
     local new_length = item_length + length
@@ -131,11 +134,7 @@ local function add_segment(list, highlights, item, hl, length, pos)
       column_start = length + 1,
       column_end = new_length + 1,
     })
-    if pos then
-      table.insert(list, pos, item)
-    else
-      table.insert(list, item)
-    end
+    list[position or #list + 1] = item
     length = new_length
   end
   return length
@@ -202,10 +201,16 @@ local function parse_outline(result, node, indent, marker)
   end
 end
 
-local function get_display_props(items)
+---@return boolean, table?, table?, table?
+local function get_outline_content()
+  local buf = api.nvim_get_current_buf()
+  local outline = M.outlines[vim.uri_from_bufnr(buf)]
+  if not outline or vim.tbl_isempty(outline) then
+    return false
+  end
   local lines = {}
   local highlights = {}
-  for _, item in ipairs(items) do
+  for _, item in ipairs(outline) do
     if item.hl then
       for _, hl in ipairs(item.hl) do
         hl.line_number = item.lnum
@@ -214,24 +219,108 @@ local function get_display_props(items)
     end
     table.insert(lines, item.text)
   end
-  return lines, highlights
+  return true, lines, highlights, outline
+end
+
+---@param buf integer the buf number
+---@param lines table the lines to append
+---@param highlights table the highlights to apply
+local function refresh_outline(buf, lines, highlights)
+  vim.bo[buf].modifiable = true
+  local ok = pcall(api.nvim_buf_set_lines, buf, 0, -1, false, lines)
+  if not ok then
+    return
+  end
+  vim.bo[buf].modifiable = false
+  if highlights then
+    ui.add_highlights(M.outline_buf, highlights)
+  end
+end
+
+local function is_outline_open()
+  local wins = fn.win_findbuf(M.outline_buf)
+  return wins and #wins > 0
+end
+
+local function highlight_current_item(item)
+  if not utils.buf_valid(M.outline_buf) then
+    return
+  end
+  ui.clear_highlights(M.outline_buf, outline_ns_id)
+  ui.add_highlights(M.outline_buf, {
+    {
+      highlight = hl_prefix .. "SelectedOutlineItem",
+      line_number = item.lnum,
+      column_start = item.buf_start,
+      column_end = item.buf_end + 1, -- add one for padding
+    },
+  }, outline_ns_id)
+end
+
+local function set_current_item()
+  local curbuf = api.nvim_get_current_buf()
+  if not utils.buf_valid(M.outline_buf) or not is_outline_open() or curbuf == M.outline_buf then
+    return
+  end
+  local uri = vim.uri_from_bufnr(curbuf)
+  local outline = M.outlines[uri]
+  if vim.tbl_isempty(outline) then
+    return
+  end
+  local cursor = api.nvim_win_get_cursor(0)
+  local lnum = cursor[1] - 1
+  local column = cursor[2] - 1
+  local current_item
+  if not lnum or not column then
+    return
+  end
+  for _, item in ipairs(outline) do
+    if
+      item
+      and not vim.tbl_isempty(item)
+      and (lnum > item.start_line or (lnum == item.start_line and column >= item.start_col))
+      and (lnum < item.end_line or (lnum == item.end_line and column < item.end_col))
+    then
+      current_item = item
+    end
+  end
+  if current_item then
+    local item_buf = vim.uri_to_bufnr(outline.uri)
+    if item_buf ~= curbuf then
+      return
+    end
+    highlight_current_item(current_item)
+    local win = fn.bufwinid(M.outline_buf)
+    -- nvim_win_set_cursor is a 1,0 based method i.e.
+    -- the row should be one based and the column 0 based
+    api.nvim_win_set_cursor(win, { current_item.lnum + 1, current_item.buf_start })
+  end
 end
 
 local function setup_autocommands()
   utils.augroup("FlutterToolsOutline", {
     {
       events = { "User FlutterOutlineChanged" },
-      command = [[lua __flutter_tools_refresh_outline()]],
+      command = function()
+        if not utils.buf_valid(M.outline_buf) then
+          return
+        end
+        local ok, lines, highlights = get_outline_content()
+        if not ok then
+          return
+        end
+        refresh_outline(M.outline_buf, lines, highlights)
+      end,
     },
     {
       events = { "CursorHold" },
       targets = { "*.dart" },
-      command = [[lua __flutter_tools_set_current_item()]],
+      command = set_current_item,
     },
     {
       events = { "BufEnter" },
       targets = { "*.dart" },
-      command = [[doautocmd User FlutterOutlineChanged]],
+      command = "doautocmd User FlutterOutlineChanged",
     },
   })
 end
@@ -266,6 +355,18 @@ local function select_code_action(actions, action_win, code_buf, code_win, outli
   end
 end
 
+---Find the window the outline relates to
+---@param uri string
+---@return number, number[]
+local function find_code_window(uri)
+  local code_buf = vim.uri_to_bufnr(uri)
+  local code_wins = fn.win_findbuf(code_buf)
+  if not code_wins or #code_wins == 0 then
+    return
+  end
+  return code_wins[1], code_wins
+end
+
 local function request_code_actions()
   local line = fn.line(".")
   local uri = vim.b.outline_uri
@@ -280,11 +381,7 @@ local function request_code_actions()
   end
 
   local code_buf = vim.uri_to_bufnr(uri)
-  local code_wins = fn.win_findbuf(code_buf)
-  if not code_wins or #code_wins == 0 then
-    return
-  end
-  local code_win = code_wins[1]
+  local code_win = find_code_window(uri)
   local outline_win = api.nvim_get_current_win()
 
   lsp.buf_request(params.bufnr, "textDocument/codeAction", params, function(_, _, actions)
@@ -315,168 +412,78 @@ local function select_outline_item()
   fn.cursor(item.start_line, item.start_col)
 end
 
+---@param buf number
+---@param win number
 ---@param lines table
 ---@param highlights table
-local function setup_outline_window(lines, highlights)
-  return function(buf, win)
-    M.buf = buf
-    vim.wo[win].number = false
-    vim.wo[win].relativenumber = false
-    vim.wo[win].wrap = false
-    vim.bo[buf].buflisted = false
-    vim.bo[buf].bufhidden = "wipe"
-    vim.bo[buf].buftype = "nofile"
-    vim.wo[win].winfixwidth = true
+---@param go_back boolean
+local function setup_outline_window(buf, win, lines, highlights, go_back)
+  M.outline_buf = buf
+  M.outline_win = win
+  vim.wo[win].number = false
+  vim.wo[win].relativenumber = false
+  vim.wo[win].wrap = false
+  vim.bo[buf].buflisted = false
+  vim.bo[buf].bufhidden = "wipe"
+  vim.bo[buf].buftype = "nofile"
+  vim.wo[win].winfixwidth = true
 
-    api.nvim_buf_set_lines(buf, 0, -1, false, lines)
-    vim.bo[buf].modifiable = false
-
-    set_outline_highlights()
-
-    if highlights and not vim.tbl_isempty(highlights) then
-      ui.add_highlights(M.buf, highlights)
-    end
-
-    api.nvim_buf_set_keymap(
-      buf,
-      "n",
-      "q",
-      "<Cmd>bw!<CR>",
-      { noremap = true, nowait = true, silent = true }
-    )
-
-    utils.map("n", "<CR>", select_outline_item, { buffer = buf, nowait = true })
-    utils.map("n", "a", request_code_actions, { buffer = buf, nowait = true })
-
-    setup_autocommands()
-  end
-end
-
----@param buf integer the buf number
----@param lines table the lines to append
----@param highlights table the highlights to apply
-local function refresh_outline(buf, lines, highlights)
-  vim.bo[buf].modifiable = true
-  local ok = pcall(api.nvim_buf_set_lines, buf, 0, -1, false, lines)
-  if not ok then
-    return
-  end
+  api.nvim_buf_set_lines(buf, 0, -1, false, lines)
   vim.bo[buf].modifiable = false
-  if highlights then
-    ui.add_highlights(M.buf, highlights)
+
+  set_outline_highlights()
+
+  if highlights and not vim.tbl_isempty(highlights) then
+    ui.add_highlights(M.outline_buf, highlights)
+  end
+
+  utils.map("n", "q", "<Cmd>bw!<CR>", { nowait = true, buffer = buf })
+  utils.map("n", "<CR>", select_outline_item, { buffer = buf, nowait = true })
+  utils.map("n", "a", request_code_actions, { buffer = buf, nowait = true })
+
+  setup_autocommands()
+end
+
+function M.close()
+  if api.nvim_win_is_valid(M.outline_win) then
+    api.nvim_win_close(M.outline_win, true)
   end
 end
 
----@return boolean, table|nil, table|nil, table|nil
-local function get_outline_content()
-  local buf = api.nvim_get_current_buf()
-  local outline = M.outlines[vim.uri_from_bufnr(buf)]
-  if not outline or vim.tbl_isempty(outline) then
-    return false
-  end
-  local lines, highlights = get_display_props(outline)
-  return true, lines, highlights, outline
-end
-
-function _G.__flutter_tools_refresh_outline()
-  if not utils.buf_valid(M.buf) then
-    return
-  end
-  local ok, lines, highlights = get_outline_content()
-  if not ok then
-    return
-  end
-  refresh_outline(M.buf, lines, highlights)
-end
-
-local function highlight_current_item(item)
-  if not utils.buf_valid(M.buf) then
-    return
-  end
-  ui.clear_highlights(M.buf, outline_ns_id)
-  ui.add_highlights(M.buf, {
-    {
-      highlight = hl_prefix .. "SelectedOutlineItem",
-      line_number = item.lnum,
-      column_start = item.buf_start,
-      column_end = item.buf_end + 1, -- add one for padding
-    },
-  }, outline_ns_id)
-end
-
-local function is_outline_open()
-  local is_open = false
-  local wins = api.nvim_tabpage_list_wins(0)
-  for _, win in ipairs(wins) do
-    if M.buf == api.nvim_win_get_buf(win) then
-      is_open = true
-      break
-    end
-  end
-  return is_open
-end
-
-function _G.__flutter_tools_set_current_item()
-  local curbuf = api.nvim_get_current_buf()
-  if not utils.buf_valid(M.buf) or not is_outline_open() or curbuf == M.buf then
-    return
-  end
-  local uri = vim.uri_from_bufnr(curbuf)
-  local outline = M.outlines[uri]
-  if vim.tbl_isempty(outline) then
-    return
-  end
-  local cursor = api.nvim_win_get_cursor(0)
-  local lnum = cursor[1] - 1
-  local column = cursor[2] - 1
-  local current_item
-  if not lnum or not column then
-    return
-  end
-  for _, item in ipairs(outline) do
-    if
-      item
-      and not vim.tbl_isempty(item)
-      and (lnum > item.start_line or (lnum == item.start_line and column >= item.start_col))
-      and (lnum < item.end_line or (lnum == item.end_line and column < item.end_col))
-    then
-      current_item = item
-    end
-  end
-  if current_item then
-    local item_buf = vim.uri_to_bufnr(outline.uri)
-    if item_buf ~= curbuf then
-      return
-    end
-    highlight_current_item(current_item)
-    local win = fn.bufwinid(M.buf)
-    -- nvim_win_set_cursor is a 1,0 based method i.e.
-    -- the row should be one based and the column 0 based
-    api.nvim_win_set_cursor(win, { current_item.lnum + 1, current_item.buf_start })
+function M.toggle()
+  if is_outline_open() then
+    M.close()
+  else
+    M.open()
   end
 end
 
-function M.open()
-  local cfg = config.get()
-  local options = cfg.outline
+---Open the outline window
+---@param opts table
+function M.open(opts)
+  opts = opts or {}
   local ok, lines, highlights, outline = get_outline_content()
   if not ok then
-    return utils.echomsg([[Sorry! There is no outline for this file]])
+    utils.echomsg([[Sorry! There is no outline for this file]])
+    return
   end
-  local buf_loaded = utils.buf_valid(M.buf)
-  if not buf_loaded and not vim.tbl_isempty(lines) then
+  local options = config.get("outline")
+  if not utils.buf_valid(M.outline_buf) and not vim.tbl_isempty(lines) then
     ui.open_split({
       open_cmd = options.open_cmd,
       filetype = outline_filetype,
       filename = outline_filename,
-    }, setup_outline_window(
-      lines,
-      highlights
-    ))
+    }, function(buf, win)
+      setup_outline_window(buf, win, lines, highlights, opts.go_back)
+    end)
   else
-    refresh_outline(M.buf, lines, highlights)
+    refresh_outline(M.outline_buf, lines, highlights)
   end
   vim.b.outline_uri = outline.uri
+  if opts.go_back and api.nvim_win_is_valid(M.outline_win) then
+    local win = find_code_window(outline.uri)
+    api.nvim_set_current_win(win)
+  end
 end
 
 function M.document_outline(_, _, data, _)
@@ -491,6 +498,10 @@ function M.document_outline(_, _, data, _)
   result.uri = data.uri
   M.outlines[data.uri] = result
   vim.cmd("doautocmd User FlutterOutlineChanged")
+  local conf = config.get("outline")
+  if conf.auto_open and not M.outline_buf then
+    M.open({ go_back = true })
+  end
 end
 
 return M

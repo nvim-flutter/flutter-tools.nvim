@@ -282,6 +282,10 @@ function M.popup_create(opts)
   end
 end
 
+---Create a split window
+---@param opts table
+---@param on_open fun(buf: number, win: number)
+---@return nil
 function M.open_split(opts, on_open)
   local open_cmd = opts.open_cmd or "botright 30vnew"
   local name = opts.filename or "__Flutter_Tools_Unknown__"

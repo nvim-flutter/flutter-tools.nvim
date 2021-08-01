@@ -67,7 +67,9 @@ local defaults = {
   lsp = {
     debug = M.debug_levels.WARN,
   },
-  outline = setmetatable({}, {
+  outline = setmetatable({
+    auto_open = false,
+  }, {
     __index = function(_, k)
       return k == "open_cmd" and get_split_cmd(0.3, 40) or nil
     end,

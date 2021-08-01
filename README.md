@@ -130,7 +130,8 @@ require("flutter-tools").setup{} -- use defaults
 - `FlutterReload` - Reload the running project.
 - `FlutterRestart` - Restart the current project.
 - `FlutterQuit` - Ends a running session.
-- `FlutterOutline` - Opens an outline window showing the widget tree for the given file.
+- `FlutterOutlineToggle` - Toggle the outline window showing the widget tree for the given file.
+- `FlutterOutlineOpen` - Opens an outline window showing the widget tree for the given file.
 - `FlutterDevTools` - Starts a Dart Dev Tools server.
 - `FlutterCopyProfilerUrl` - Copies the profiler url to your system clipboard (+ register). Note that commands `FlutterRun` and
   `FlutterDevTools` must be executed first.
@@ -203,6 +204,7 @@ require("flutter-tools").setup {
   },
   outline = {
     open_cmd = "30vnew", -- command to use to open the outline buffer
+    auto_open = false -- if true this will open the outline automatically when it is first populated
   },
   lsp = {
     on_attach = my_custom_on_attach,
