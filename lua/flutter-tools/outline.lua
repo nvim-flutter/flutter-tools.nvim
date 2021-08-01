@@ -102,17 +102,24 @@ M.outlines = setmetatable({}, {
   end,
 })
 -----------------------------------------------------------------------------//
+---@param name string
+---@param group string
+local function hl_link(name, group)
+  vim.cmd(fmt("highlight default link %s%s %s", hl_prefix, name, group))
+end
 
 ---@param name string
 ---@param value string
 ---@param group string
 local function highlight_item(name, value, group)
-  vim.cmd(fmt("syntax match %s /%s/", name, value))
-  vim.cmd(fmt("highlight default link %s %s", name, group))
+  vim.cmd(fmt("syntax match %s%s /%s/", hl_prefix, name, value))
+  hl_link(name, group)
 end
 
 local function set_outline_highlights()
-  vim.cmd(fmt("highlight default link %sSelectedOutlineItem Search", hl_prefix))
+  hl_link("SelectedOutlineItem", "Search")
+  highlight_item("String", [[\v(''|""|(['"]).{-}[^\\]\2)]], "String")
+
   for key, value in pairs(markers) do
     highlight_item(hl_prefix .. key, value, "Whitespace")
   end
