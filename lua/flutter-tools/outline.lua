@@ -121,6 +121,8 @@ end
 ---@param position number
 local function add_segment(list, highlights, item, hl, length, position)
   if item and item ~= "" then
+    --- NOTE highlights are byte indexed
+    --- so use "#" operator to get the byte count
     local item_length = #item
     local new_length = item_length + length
     table.insert(highlights, {
@@ -154,8 +156,6 @@ local function parse_outline(result, node, indent, marker)
   local hl = {}
   local length = #table.concat(display_str, " ")
 
-  --- NOTE highlights are byte indexed
-  --- so use "#" operator to get the byte count
   local return_type = element.returnType and element.returnType .. " "
   length = add_segment(text, hl, return_type, "Comment", length)
   length = add_segment(text, hl, element.name, "None", length)
