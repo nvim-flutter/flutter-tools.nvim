@@ -34,6 +34,33 @@ local function setup_commands()
   utils.command("FlutterLogClear", [[lua require('flutter-tools.log').clear()]])
 end
 
+---Initialise various plugin modules
+local function start()
+  -- this loads plenary to check if it exists, so defer it till the plugin is starting up
+  if not pcall(require, "plenary") then
+    return vim.notify(
+      "plenary.nvim is a required dependency of this plugin, please ensure it is installed."
+        .. " Otherwise this plugin will not work correctly",
+      vim.log.levels.ERROR
+    )
+  end
+
+  setup_commands()
+
+  local conf = require("flutter-tools.config").get()
+  if conf.debugger.enabled then
+    require("flutter-tools.dap").setup(conf)
+  end
+
+  if conf.widget_guides.enabled then
+    require("flutter-tools.guides").setup()
+  end
+
+  if conf.decorations then
+    require("flutter-tools.decorations").apply(conf.decorations)
+  end
+end
+
 ---Create autocommands for the plugin
 local function setup_autocommands()
   local utils = require("flutter-tools.utils")
@@ -44,7 +71,7 @@ local function setup_autocommands()
       events = { "BufEnter" },
       targets = { "*.dart" },
       modifiers = { "++once" },
-      command = "lua require('flutter-tools').__start()",
+      command = start,
     },
   })
 
@@ -82,35 +109,6 @@ local function setup_autocommands()
       command = "lua require('flutter-tools.dev_tools').stop()",
     },
   })
-end
-
----@private
----Initialise various plugin modules
----NOTE: this is not intended for public use
-function M.__start()
-  -- this loads plenary to check if it exists, so defer it till the plugin is starting up
-  if not pcall(require, "plenary") then
-    return vim.notify(
-      "plenary.nvim is a required dependency of this plugin, please ensure it is installed."
-        .. " Otherwise this plugin will not work correctly",
-      vim.log.levels.ERROR
-    )
-  end
-
-  setup_commands()
-
-  local conf = require("flutter-tools.config").get()
-  if conf.debugger.enabled then
-    require("flutter-tools.dap").setup(conf)
-  end
-
-  if conf.widget_guides.enabled then
-    require("flutter-tools.guides").setup()
-  end
-
-  if conf.decorations then
-    require("flutter-tools.decorations").apply(conf.decorations)
-  end
 end
 
 ---Entry point for this plugin
