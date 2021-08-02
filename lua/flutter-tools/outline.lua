@@ -49,32 +49,17 @@ local icons = setmetatable({
 local hl_prefix = "FlutterToolsOutline"
 
 local icon_highlights = {
-  [icons.TOP_LEVEL_VARIABLE] = {
-    name = hl_prefix .. "TopLevelVar",
-    link = "Identifier",
-  },
-  [icons.CLASS] = { name = hl_prefix .. "Class", link = "Type" },
-  [icons.FIELD] = { name = hl_prefix .. "Field", link = "Identifier" },
-  [icons.CONSTRUCTOR] = {
-    name = hl_prefix .. "Constructor",
-    link = "Identifier",
-  },
-  [icons.CONSTRUCTOR_INVOCATION] = {
-    name = hl_prefix .. "ConstructorInvocation",
-    link = "Special",
-  },
-  [icons.FUNCTION] = { name = hl_prefix .. "Function", link = "Function" },
-  [icons.METHOD] = { name = hl_prefix .. "Method", link = "Function" },
-  [icons.GETTER] = { name = hl_prefix .. "Getter", link = "Function" },
-  [icons.ENUM] = { name = hl_prefix .. "Enum", link = "Type" },
-  [icons.ENUM_CONSTANT] = {
-    name = hl_prefix .. "EnumConstant",
-    link = "Type",
-  },
-  [icons.DEFAULT] = {
-    name = hl_prefix .. "Default",
-    link = "Comment",
-  },
+  [icons.TOP_LEVEL_VARIABLE] = { name = "TopLevelVar", link = "Identifier" },
+  [icons.CLASS] = { name = "Class", link = "Type" },
+  [icons.FIELD] = { name = "Field", link = "Identifier" },
+  [icons.CONSTRUCTOR] = { name = "Constructor", link = "Identifier" },
+  [icons.CONSTRUCTOR_INVOCATION] = { name = "ConstructorInvocation", link = "Special" },
+  [icons.FUNCTION] = { name = "Function", link = "Function" },
+  [icons.METHOD] = { name = "Method", link = "Function" },
+  [icons.GETTER] = { name = "Getter", link = "Function" },
+  [icons.ENUM] = { name = "Enum", link = "Type" },
+  [icons.ENUM_CONSTANT] = { name = "EnumConstant", link = "Type" },
+  [icons.DEFAULT] = { name = "Default", link = "Comment" },
 }
 
 -----------------------------------------------------------------------------//
@@ -121,7 +106,7 @@ local function set_outline_highlights()
   highlight_item("String", [[\v(''|""|(['"]).{-}[^\\]\2)]], "String")
 
   for key, value in pairs(markers) do
-    highlight_item(hl_prefix .. key, value, "Whitespace")
+    highlight_item(key, value, "Whitespace")
   end
   for icon, hl in pairs(icon_highlights) do
     highlight_item(hl.name, icon, hl.link)
@@ -259,7 +244,7 @@ local function highlight_current_item(item)
   ui.clear_highlights(state.outline_buf, outline_ns_id)
   ui.add_highlights(state.outline_buf, {
     {
-      highlight = hl_prefix .. "SelectedOutlineItem",
+      highlight = "SelectedOutlineItem",
       line_number = item.lnum,
       column_start = item.buf_start,
       column_end = item.buf_end + 1, -- add one for padding
