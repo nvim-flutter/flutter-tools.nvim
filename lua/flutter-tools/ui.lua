@@ -15,7 +15,7 @@ local state = {
   last_opened = nil,
 }
 
-function _G.__flutter_tools_close(buf)
+local function close(buf)
   vim.api.nvim_buf_delete(buf, { force = true })
 end
 
@@ -266,12 +266,16 @@ function M.popup_create(opts)
     "FloatBorder:FlutterPopupBorder",
   }, ",")
 
-  api.nvim_buf_set_keymap(buf, "n", "q", ":lua __flutter_tools_close(" .. buf .. ")<CR>", {
+  api.nvim_buf_set_keymap(buf, "n", "q", function()
+    close(buf)
+  end, {
     silent = true,
     noremap = true,
     nowait = true,
   })
-  api.nvim_buf_set_keymap(buf, "n", "<ESC>", ":lua __flutter_tools_close(" .. buf .. ")<CR>", {
+  api.nvim_buf_set_keymap(buf, "n", "<ESC>", function()
+    close(buf)
+  end, {
     silent = true,
     noremap = true,
     nowait = true,

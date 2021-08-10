@@ -22,6 +22,11 @@ local function exists()
   return is_valid
 end
 
+local function close_dev_log()
+  M.buf = nil
+  M.win = nil
+end
+
 local function create(config)
   local opts = {
     filename = M.filename,
@@ -39,7 +44,7 @@ local function create(config)
       {
         events = { "BufWipeout" },
         targets = { "<buffer>" },
-        command = "lua __flutter_tools_close_dev_log()",
+        command = close_dev_log,
       },
     })
   end)
@@ -101,11 +106,6 @@ function M.clear()
     api.nvim_buf_set_lines(M.buf, 0, -1, false, {})
     vim.bo[M.buf].modifiable = false
   end
-end
-
-function _G.__flutter_tools_close_dev_log()
-  M.buf = nil
-  M.win = nil
 end
 
 return M

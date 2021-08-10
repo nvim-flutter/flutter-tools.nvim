@@ -89,23 +89,7 @@ function M.extract_device_props(result, device_type)
   return lines, devices_by_line, highlights
 end
 
----Run commands and setup options after a popup is opened
----@param devices table[]
----@param buf number
-local function setup_window(devices, buf)
-  if not vim.tbl_isempty(devices) then
-    api.nvim_buf_set_var(buf, "devices", devices)
-  end
-  api.nvim_buf_set_keymap(
-    buf,
-    "n",
-    "<CR>",
-    ":lua __flutter_tools_select_device()<CR>",
-    { silent = true, noremap = true }
-  )
-end
-
-function _G.__flutter_tools_select_device()
+local function select_device()
   if not vim.b.devices then
     return utils.echomsg("Sorry there is no device on this line")
   end
@@ -121,6 +105,17 @@ function _G.__flutter_tools_select_device()
     api.nvim_win_close(0, true)
   end
 end
+
+---Run commands and setup options after a popup is opened
+---@param devices table[]
+---@param buf number
+local function setup_window(devices, buf)
+  if not vim.tbl_isempty(devices) then
+    api.nvim_buf_set_var(buf, "devices", devices)
+  end
+  api.nvim_buf_set_keymap(buf, "n", "<CR>", select_device, { silent = true, noremap = true })
+end
+
 -----------------------------------------------------------------------------//
 -- Emulators
 -----------------------------------------------------------------------------//
