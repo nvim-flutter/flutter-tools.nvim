@@ -58,7 +58,10 @@ local function get_defaults(opts)
       dart = {
         completeFunctionCalls = true,
         showTodos = true,
-        analysisExcludedFolders = { path.join(flutter_sdk_path, "packages") },
+        analysisExcludedFolders = {
+          path.join(flutter_sdk_path, "packages"),
+          path.join(flutter_sdk_path, ".pub-cache"),
+        },
       },
     },
     handlers = {
