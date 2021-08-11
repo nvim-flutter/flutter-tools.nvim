@@ -266,18 +266,16 @@ function M.popup_create(opts)
     "FloatBorder:FlutterPopupBorder",
   }, ",")
 
-  api.nvim_buf_set_keymap(buf, "n", "q", function()
+  utils.map("n", "q", function()
     close(buf)
   end, {
-    silent = true,
-    noremap = true,
+    buffer = buf,
     nowait = true,
   })
-  api.nvim_buf_set_keymap(buf, "n", "<ESC>", function()
+  utils.map("n", "<ESC>", function()
     close(buf)
   end, {
-    silent = true,
-    noremap = true,
+    buffer = buf,
     nowait = true,
   })
   vim.cmd(string.format([[autocmd! WinLeave <buffer> silent! execute 'bw %d']], buf))
