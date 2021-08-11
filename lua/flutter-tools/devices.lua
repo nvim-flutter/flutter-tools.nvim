@@ -113,7 +113,7 @@ local function setup_window(devices, buf)
   if not vim.tbl_isempty(devices) then
     api.nvim_buf_set_var(buf, "devices", devices)
   end
-  api.nvim_buf_set_keymap(buf, "n", "<CR>", select_device, { silent = true, noremap = true })
+  utils.map("n", "<CR>", select_device, { buffer = buf })
 end
 
 -----------------------------------------------------------------------------//
