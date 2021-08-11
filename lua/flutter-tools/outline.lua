@@ -292,7 +292,9 @@ local function set_current_item()
     local win = fn.bufwinid(state.outline_buf)
     -- nvim_win_set_cursor is a 1,0 based method i.e.
     -- the row should be one based and the column 0 based
-    api.nvim_win_set_cursor(win, { current_item.lnum + 1, current_item.buf_start })
+    if api.nvim_win_is_valid(win) then
+      api.nvim_win_set_cursor(win, { current_item.lnum + 1, current_item.buf_start })
+    end
   end
 end
 
