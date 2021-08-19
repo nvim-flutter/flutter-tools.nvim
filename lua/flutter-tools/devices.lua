@@ -89,7 +89,7 @@ function M.extract_device_props(result, device_type)
   return lines, devices_by_line, highlights
 end
 
-local function select_device()
+function M.select_device()
   if not vim.b.devices then
     return utils.echomsg("Sorry there is no device on this line")
   end
@@ -113,7 +113,7 @@ local function setup_window(devices, buf)
   if not vim.tbl_isempty(devices) then
     api.nvim_buf_set_var(buf, "devices", devices)
   end
-  utils.map("n", "<CR>", select_device, { buffer = buf })
+  utils.map("n", "<CR>", M.select_device, { buffer = buf })
 end
 
 -----------------------------------------------------------------------------//
