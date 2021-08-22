@@ -164,7 +164,7 @@ function M.start()
       job:start()
     end)
   else
-    utils.echomsg("DevTools are already running!")
+    utils.notify("DevTools are already running!")
   end
 end
 

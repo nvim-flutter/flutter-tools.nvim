@@ -93,13 +93,13 @@ local deprecations = {
 }
 
 local function handle_deprecation(key, value, config)
-  local echomsg = require("flutter-tools.utils").echomsg
+  local utils = require("flutter-tools.utils")
   local deprecation = deprecations[key]
   if not deprecation then
     return
   end
   vim.defer_fn(function()
-    echomsg(fmt("%s is deprecated: %s", key, deprecation.message), "WarningMsg")
+    utils.notify(fmt("%s is deprecated: %s", key, deprecation.message), utils.L.WARN)
   end, 1000)
   if deprecation.fallback then
     config[deprecation.fallback] = value

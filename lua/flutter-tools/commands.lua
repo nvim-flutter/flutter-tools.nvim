@@ -104,7 +104,7 @@ function M.run(opts)
   local device = opts.device
   local cmd_args = opts.args
   if run_job then
-    return utils.echomsg("Flutter is already running!")
+    return utils.notify("Flutter is already running!")
   end
   executable.flutter(function(cmd)
     local args = { "run" }
@@ -152,7 +152,7 @@ local function send(cmd, quiet, on_send)
       on_send()
     end
   elseif not quiet then
-    utils.echomsg([[Sorry! Flutter is not running]])
+    utils.notify("Sorry! Flutter is not running")
   end
 end
 

@@ -15,7 +15,7 @@ local function execute_command(bufnr)
   if cmd then
     local success, msg = pcall(cmd)
     if not success then
-      vim.api.nvim_notify(msg, 2, {})
+      vim.notify(msg, vim.log.levels.ERROR)
     end
   end
 end

@@ -3,25 +3,19 @@ local fn = vim.fn
 local api = vim.api
 local fmt = string.format
 
--- Global store of callback for autocommand (and eventually mappings)
 -- FIXME: remove this when lua autocommands are officially supported
+-- Global store of callback for autocommand (and eventually mappings)
 _G.__flutter_tools_callbacks = __flutter_tools_callbacks or {}
 
-function M.echomsg(msg, hl)
-  hl = hl or "Title"
-  local prefix = "[Flutter-tools]: "
-  if type(msg) == "string" then
-    msg = { { prefix .. msg, hl } }
-  elseif vim.tbl_islist(msg) then
-    for i, value in ipairs(msg) do
-      if #msg[i] == 2 then
-        msg[i][1] = prefix .. value[1]
-      end
-    end
-  else
-    return
-  end
-  api.nvim_echo(msg, true, {})
+M.L = vim.log.levels
+
+---proxy for vim.notify
+---@param msg string
+---@param level integer
+---@return nil
+function M.notify(msg, level)
+  level = level or M.L.INFO
+  vim.notify(msg, level, { title = "Flutter Tools" })
 end
 
 ---@param name string

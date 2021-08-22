@@ -299,7 +299,7 @@ function M.open_split(opts, on_open)
   local buf = api.nvim_get_current_buf()
   local success = pcall(api.nvim_buf_set_name, buf, name)
   if not success then
-    return utils.echomsg([[Sorry! a split couldn't be opened]])
+    return utils.notify("Sorry! a split couldn't be opened")
   end
   vim.bo[buf].swapfile = false
   vim.bo[buf].buftype = "nofile"

@@ -91,7 +91,7 @@ end
 
 function M.select_device()
   if not vim.b.devices then
-    return utils.echomsg("Sorry there is no device on this line")
+    return utils.notify("Sorry there is no device on this line")
   end
   local lnum = fn.line(".")
   local line = api.nvim_buf_get_lines(0, lnum - 1, lnum, false)

@@ -35,7 +35,7 @@ local function create(config)
   }
   ui.open_split(opts, function(buf, win)
     if not buf then
-      utils.echomsg("Failed to open the dev log as the buffer could not be found")
+      utils.notify("Failed to open the dev log as the buffer could not be found", utils.L.ERROR)
       return
     end
     M.buf = buf
@@ -71,7 +71,10 @@ local function autoscroll(bufnr, winnr)
       end
       local success = pcall(api.nvim_win_set_cursor, win, { buf_length, 0 })
       if not success then
-        utils.echomsg(("Failed to set cursor for log: win_id: %s, buf_id: %s"):format(win, buf))
+        utils.notify(
+          ("Failed to set cursor for log: win_id: %s, buf_id: %s"):format(win, buf),
+          utils.L.ERROR
+        )
       end
       break
     end
