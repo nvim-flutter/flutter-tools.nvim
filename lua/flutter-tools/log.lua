@@ -2,6 +2,7 @@ local ui = require("flutter-tools.ui")
 local utils = require("flutter-tools.utils")
 
 local api = vim.api
+local fmt = string.format
 
 local M = {
   --@type number
@@ -56,29 +57,34 @@ function M.get_content()
   end
 end
 
----Autoscroll the log buffer to the end of the output
----@param bufnr integer
----@param winnr integer
-local function autoscroll(bufnr, winnr)
-  for _, win in ipairs(api.nvim_list_wins()) do
-    local buf = api.nvim_win_get_buf(win)
-    -- TODO: fix invalid window id for auto scroll
-    if buf == bufnr and api.nvim_win_is_valid(win) then
-      local buf_length = api.nvim_buf_line_count(bufnr)
-      -- if the dev log is focused don't scroll it as it will block the user from perusing
-      if api.nvim_get_current_win() == win then
-        return
-      end
-      local success = pcall(api.nvim_win_set_cursor, win, { buf_length, 0 })
-      if not success then
-        utils.notify(
-          ("Failed to set cursor for log: win_id: %s, buf_id: %s"):format(win, buf),
-          utils.L.ERROR
-        )
-      end
-      break
-    end
+---Auto-scroll the log buffer to the end of the output
+---@param buf integer
+---@param target_win integer
+local function autoscroll(buf, target_win)
+  local win = utils.find(api.nvim_list_wins(), function(item)
+    return item == target_win
+  end)
+  if not win then
+    return
   end
+  -- if the dev log is focused don't scroll it as it will block the user from perusing
+  if api.nvim_get_current_win() == win then
+    return
+  end
+  local buf_length = api.nvim_buf_line_count(buf)
+  local success, err = pcall(api.nvim_win_set_cursor, win, { buf_length, 0 })
+  if not success then
+    utils.notify(fmt("Failed to set cursor for log window %s: %s", win, err), utils.L.ERROR)
+  end
+end
+
+---Add lines to a buffer
+---@param buf number
+---@param lines string[]
+local function append(buf, lines)
+  vim.bo[buf].modifiable = true
+  api.nvim_buf_set_lines(M.buf, -1, -1, true, lines)
+  vim.bo[buf].modifiable = false
 end
 
 --- Open a log showing the output from a command
@@ -89,10 +95,8 @@ function M.log(data, opts)
   if not exists() then
     create(opts)
   end
-  vim.bo[M.buf].modifiable = true
-  api.nvim_buf_set_lines(M.buf, -1, -1, true, { data })
+  append(M.buf, { data })
   autoscroll(M.buf, M.win)
-  vim.bo[M.buf].modifiable = false
 end
 
 function M.__resurrect()
