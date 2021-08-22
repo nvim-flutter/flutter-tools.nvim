@@ -34,7 +34,7 @@ local function create(config)
     filetype = "log",
     open_cmd = config.open_cmd,
   }
-  ui.open_split(opts, function(buf, win)
+  ui.open_win(opts, function(buf, win)
     if not buf then
       utils.notify("Failed to open the dev log as the buffer could not be found", utils.L.ERROR)
       return

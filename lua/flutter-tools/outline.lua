@@ -471,7 +471,7 @@ function M.open(opts)
   local parent_win = api.nvim_get_current_win()
   local options = config.get("outline")
   if not utils.buf_valid(state.outline_buf) and not vim.tbl_isempty(lines) then
-    ui.open_split({
+    ui.open_win({
       open_cmd = options.open_cmd,
       filetype = outline_filetype,
       filename = outline_filename,
