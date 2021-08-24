@@ -323,3 +323,16 @@ or see `:h dap`.
 Also see:
 
 - [nvim-dap-ui](https://github.com/rcarriga/nvim-dap-ui) - a plugin which provides a nice UI for `nvim-dap`.
+
+## FAQ
+
+### The LSP isn't starting what do I do?
+
+One of the commonest reasons this happens is that for some reason your local flutter binary either can't be found or is throwing an error.
+You can see the output of this by checking the lsp logs. You can do this by running
+
+```vim
+:lua vim.cmd('edit '..vim.lsp.get_log_path())<CR>
+```
+
+This will open your lsp logs. You can then check for any error messages.
