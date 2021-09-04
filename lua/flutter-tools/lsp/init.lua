@@ -65,9 +65,15 @@ local function get_defaults(opts)
       },
     },
     handlers = {
-      ["dart/textDocument/publishClosingLabels"] = require("flutter-tools.labels").closing_tags,
-      ["dart/textDocument/publishOutline"] = require("flutter-tools.outline").document_outline,
-      ["dart/textDocument/publishFlutterOutline"] = require("flutter-tools.guides").widget_guides,
+      ["dart/textDocument/publishClosingLabels"] = utils.lsp_handler(
+        require("flutter-tools.labels").closing_tags
+      ),
+      ["dart/textDocument/publishOutline"] = utils.lsp_handler(
+        require("flutter-tools.outline").document_outline
+      ),
+      ["dart/textDocument/publishFlutterOutline"] = utils.lsp_handler(
+        require("flutter-tools.guides").widget_guides
+      ),
     },
     capabilities = (function()
       local capabilities = lsp.protocol.make_client_capabilities()

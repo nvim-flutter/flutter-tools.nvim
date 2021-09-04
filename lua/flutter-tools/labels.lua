@@ -19,7 +19,7 @@ local function render_labels(labels, opts)
 end
 
 --- returns a function which handles rendering floating labels
-function M.closing_tags(err, _, response)
+function M.closing_tags(err, response, _)
   local conf = require("flutter-tools.config").get()
   local opts = conf.closing_tags
   if err or not opts.enabled then
