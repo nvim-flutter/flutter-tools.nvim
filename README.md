@@ -139,6 +139,7 @@ require("flutter-tools").setup{} -- use defaults
 - `FlutterDevTools` - Starts a Dart Dev Tools server.
 - `FlutterCopyProfilerUrl` - Copies the profiler url to your system clipboard (+ register). Note that commands `FlutterRun` and
   `FlutterDevTools` must be executed first.
+- `FlutterLspRestart` - This command restarts the dart language server, and is intended for situations where it begins to work incorrectly.
 
 <hr/>
 

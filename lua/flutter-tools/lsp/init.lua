@@ -7,6 +7,7 @@ local fn = vim.fn
 local fmt = string.format
 
 local FILETYPE = "dart"
+local SERVER_NAME = "dartls"
 
 local M = {
   lsps = {},
@@ -93,6 +94,20 @@ local function get_defaults(opts)
   return config
 end
 
+function M.restart()
+  local client = utils.find(vim.lsp.get_active_clients(), function(client)
+    return client.name == SERVER_NAME
+  end)
+  if client then
+    local bufs = lsp.get_buffers_by_client_id(client.id)
+    client.stop()
+    local client_id = lsp.start_client(client.config)
+    for _, buf in pairs(bufs) do
+      lsp.buf_attach_client(buf, client_id)
+    end
+  end
+end
+
 ---This was heavily inspired by nvim-metals implementation of the attach functionality
 ---@return boolean
 function M.attach()
@@ -102,7 +117,7 @@ function M.attach()
 
   debug_log("attaching LSP")
 
-  local config = utils.merge({ name = "dartls" }, user_config)
+  local config = utils.merge({ name = SERVER_NAME }, user_config)
 
   local bufnr = api.nvim_get_current_buf()
 
@@ -122,7 +137,7 @@ function M.attach()
   config.filetypes = { FILETYPE }
 
   local executable = require("flutter-tools.executable")
-  --- TODO if a user specifies a command we do not need to call
+  --- TODO: if a user specifies a command we do not need to call
   --- executable.dart_sdk_root_path
   executable.get(function(paths)
     local defaults = get_defaults({ flutter_sdk = paths.flutter_sdk })

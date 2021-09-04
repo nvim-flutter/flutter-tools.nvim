@@ -8,6 +8,7 @@ local function setup_commands()
     [[lua require('flutter-tools.commands').run_command(<q-args>)]],
     { nargs = "*" }
   )
+  utils.command("FlutterLspRestart", 'lua require("flutter-tools.lsp").restart()')
   utils.command("FlutterReload", [[lua require('flutter-tools.commands').reload()]])
   utils.command("FlutterRestart", [[lua require('flutter-tools.commands').restart()]])
   utils.command("FlutterQuit", [[lua require('flutter-tools.commands').quit()]])
