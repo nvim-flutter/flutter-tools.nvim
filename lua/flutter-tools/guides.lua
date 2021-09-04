@@ -183,7 +183,7 @@ local function is_buf_valid(bufnum)
     and vim.bo.buftype == ""
 end
 
-function M.widget_guides(_, _, data, _)
+function M.widget_guides(_, data, _, _)
   local conf = config.get().widget_guides
   if conf.enabled then
     local bufnum = vim.uri_to_bufnr(data.uri)

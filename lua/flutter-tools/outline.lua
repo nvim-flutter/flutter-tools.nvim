@@ -385,17 +385,22 @@ local function request_code_actions()
   local code_win = find_code_window(uri)
   local outline_win = api.nvim_get_current_win()
 
-  lsp.buf_request(params.bufnr, "textDocument/codeAction", params, function(_, _, actions)
-    code_actions.create_popup(actions, function(buf, win)
-      utils.map(
-        "n",
-        "<CR>",
-        select_code_action(actions, win, code_buf, code_win, outline_win),
-        { buffer = buf }
-      )
+  lsp.buf_request(
+    params.bufnr,
+    "textDocument/codeAction",
+    params,
+    utils.lsp_handler(function(_, actions, _)
+      code_actions.create_popup(actions, function(buf, win)
+        utils.map(
+          "n",
+          "<CR>",
+          select_code_action(actions, win, code_buf, code_win, outline_win),
+          { buffer = buf }
+        )
+      end)
+      vim.api.nvim_win_set_cursor(code_win, { item.start_line + 1, item.start_col + 1 })
     end)
-    vim.api.nvim_win_set_cursor(code_win, { item.start_line + 1, item.start_col + 1 })
-  end)
+  )
 end
 
 local function select_outline_item()
@@ -487,7 +492,7 @@ function M.open(opts)
   end
 end
 
-function M.document_outline(_, _, data, _)
+function M.document_outline(_, data, _, _)
   local outline = data.outline or {}
   local result = {}
   if not outline.children or #outline.children == 0 then
