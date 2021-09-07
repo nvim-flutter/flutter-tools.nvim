@@ -186,7 +186,7 @@ require("flutter-tools").setup {
       -- device
       device = false,
     }
-  }
+  },
   debugger = { -- integrate with nvim dap + install dart code debugger
     enabled = false,
   },
