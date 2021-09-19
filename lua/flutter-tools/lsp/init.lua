@@ -174,4 +174,17 @@ function M.attach()
   end)
 end
 
+function M.get_lsp_root_dir()
+  for _, buf in pairs(vim.fn.getbufinfo({ bufloaded = true })) do
+    if api.nvim_buf_get_option(buf.bufnr, "filetype") == FILETYPE then
+      local clients = lsp.buf_get_clients(buf.bufnr)
+      for _, client in ipairs(clients) do
+        if client.config.name == SERVER_NAME then
+          return client.config.root_dir
+        end
+      end
+    end
+  end
+end
+
 return M
