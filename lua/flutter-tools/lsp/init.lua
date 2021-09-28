@@ -108,6 +108,25 @@ function M.restart()
   end
 end
 
+local function get_dartls_client(server_name)
+  server_name = server_name or SERVER_NAME
+  for _, buf in pairs(vim.fn.getbufinfo({ bufloaded = true })) do
+    if vim.bo[buf.bufnr].filetype == FILETYPE then
+      local clients = lsp.buf_get_clients(buf.bufnr)
+      for _, client in ipairs(clients) do
+        if client.config.name == server_name then
+          return client
+        end
+      end
+    end
+  end
+end
+
+function M.get_lsp_root_dir()
+  local client = get_dartls_client()
+  return client and client.config.root_dir or nil
+end
+
 ---This was heavily inspired by nvim-metals implementation of the attach functionality
 ---@return boolean
 function M.attach()
@@ -122,16 +141,10 @@ function M.attach()
   local bufnr = api.nvim_get_current_buf()
 
   -- Check to see if dartls is already attached, and if so attatch
-  for _, buf in pairs(vim.fn.getbufinfo({ bufloaded = true })) do
-    if api.nvim_buf_get_option(buf.bufnr, "filetype") == FILETYPE then
-      local clients = lsp.buf_get_clients(buf.bufnr)
-      for _, client in ipairs(clients) do
-        if client.config.name == config.name then
-          lsp.buf_attach_client(bufnr, client.id)
-          return true
-        end
-      end
-    end
+  local existing_client = get_dartls_client(config.name)
+  if existing_client then
+    lsp.buf_attach_client(bufnr, existing_client.id)
+    return true
   end
 
   config.filetypes = { FILETYPE }
@@ -172,19 +185,6 @@ function M.attach()
 
     lsp.buf_attach_client(bufnr, client_id)
   end)
-end
-
-function M.get_lsp_root_dir()
-  for _, buf in pairs(vim.fn.getbufinfo({ bufloaded = true })) do
-    if api.nvim_buf_get_option(buf.bufnr, "filetype") == FILETYPE then
-      local clients = lsp.buf_get_clients(buf.bufnr)
-      for _, client in ipairs(clients) do
-        if client.config.name == SERVER_NAME then
-          return client.config.root_dir
-        end
-      end
-    end
-  end
 end
 
 return M
