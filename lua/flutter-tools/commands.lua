@@ -6,6 +6,7 @@ local config = require("flutter-tools.config")
 local executable = require("flutter-tools.executable")
 local dev_log = require("flutter-tools.log")
 local dev_tools = require("flutter-tools.dev_tools")
+local lsp = require("flutter-tools.lsp")
 
 local api = vim.api
 
@@ -127,6 +128,7 @@ function M.run(opts)
     run_job = Job:new({
       command = cmd,
       args = args,
+      cwd = lsp.get_lsp_root_dir(),
       on_start = function()
         vim.cmd("doautocmd User FlutterToolsAppStarted")
       end,
@@ -219,7 +221,11 @@ local pub_get_job = nil
 function M.pub_get()
   if not pub_get_job then
     executable.flutter(function(cmd)
-      pub_get_job = Job:new({ command = cmd, args = { "pub", "get" } })
+      pub_get_job = Job:new({
+        command = cmd,
+        args = { "pub", "get" },
+        cwd = lsp.get_lsp_root_dir(),
+      })
       pub_get_job:after_success(vim.schedule_wrap(function(j)
         on_pub_get(j:result())
         pub_get_job = nil
@@ -252,7 +258,7 @@ function M.pub_upgrade(cmd_args)
       if cmd_args then
         vim.list_extend(args, cmd_args)
       end
-      pub_upgrade_job = Job:new({ command = cmd, args = args })
+      pub_upgrade_job = Job:new({ command = cmd, args = args, cwd = lsp.get_lsp_root_dir() })
       pub_upgrade_job:after_success(vim.schedule_wrap(function(j)
         ui.notify(j:result(), notify_timeout)
         pub_upgrade_job = nil
