@@ -43,6 +43,7 @@ M.debug_levels = {
 local defaults = {
   flutter_path = nil,
   flutter_lookup_cmd = get_default_lookup(),
+  fvm = true,
   widget_guides = {
     enabled = false,
     debug = false,
