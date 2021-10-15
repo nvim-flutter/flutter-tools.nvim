@@ -96,6 +96,7 @@ end
 ---@return nil
 function M.get(callback)
   local conf = require("flutter-tools.config").get()
+
   if _paths then
     return callback(_paths)
   end
@@ -103,12 +104,15 @@ function M.get(callback)
   if conf.fvm then
     local flutter_bin_symlink = path.join(luv.cwd(), ".fvm", "flutter_sdk", "bin", "flutter")
     local flutter_bin = luv.fs_realpath(flutter_bin_symlink)
-    _paths = {
-      flutter_bin = flutter_bin,
-      flutter_sdk = _flutter_sdk_root(flutter_bin),
-    }
-    _paths.dart_sdk = _dart_sdk_root(_paths)
-    return callback(_paths)
+    if path.exists(flutter_bin_symlink) and path.exists(flutter_bin) then
+      _paths = {
+        flutter_bin = flutter_bin,
+        flutter_sdk = _flutter_sdk_root(flutter_bin),
+        fvm = true,
+      }
+      _paths.dart_sdk = _dart_sdk_root(_paths)
+      return callback(_paths)
+    end
   end
 
   if conf.flutter_path then
