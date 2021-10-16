@@ -6,9 +6,7 @@ local Job = require("plenary.job")
 
 local fn = vim.fn
 
-local M = {
-  dart_bin_name = "dart",
-}
+local M = {}
 
 local dart_sdk = path.join("cache", "dart-sdk")
 
