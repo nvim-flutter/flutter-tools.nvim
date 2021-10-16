@@ -45,6 +45,11 @@ local function _dart_sdk_root(paths)
   return ""
 end
 
+local function _flutter_sdk_dart_bin(flutter_sdk)
+  -- retrieve the Dart binary from the Flutter SDK
+  return path.join(flutter_sdk, "dart", "bin")
+end
+
 ---Get paths for flutter and dart based on the binary locations
 ---@return table<string, string>
 local function get_default_binaries()
@@ -77,7 +82,7 @@ local function path_from_lookup_cmd(lookup_cmd, callback)
     local result = j:result()
     local flutter_sdk_path = result[1]
     if flutter_sdk_path then
-      paths.dart_bin = path.join(flutter_sdk_path, "bin", "dart")
+      paths.dart_bin = _flutter_sdk_dart_bin(flutter_sdk_path)
       paths.flutter_bin = path.join(flutter_sdk_path, "bin", "flutter")
       paths.flutter_sdk = flutter_sdk_path
       callback(paths)
@@ -105,6 +110,7 @@ function M.get(callback)
       flutter_sdk = _flutter_sdk_root(conf.flutter_path),
     }
     _paths.dart_sdk = _dart_sdk_root(_paths)
+    _paths.dart_bin = _flutter_sdk_dart_bin(_paths.flutter_sdk)
     return callback(_paths)
   end
 
@@ -119,6 +125,9 @@ function M.get(callback)
   if not _paths then
     _paths = get_default_binaries()
     _paths.dart_sdk = _dart_sdk_root(_paths)
+    if _paths.flutter_sdk then
+      _paths.dart_bin = _flutter_sdk_dart_bin(_paths.flutter_sdk)
+    end
   end
 
   return callback(_paths)

@@ -146,7 +146,7 @@ function M.attach()
 
     config.cmd = config.cmd
       or {
-        executable.dart_bin_name,
+        paths.dart_bin,
         analysis_server_snapshot_path(root_path),
         "--lsp",
       }
