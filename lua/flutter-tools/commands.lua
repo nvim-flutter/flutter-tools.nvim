@@ -7,8 +7,6 @@ local executable = require("flutter-tools.executable")
 local dev_log = require("flutter-tools.log")
 local dev_tools = require("flutter-tools.dev_tools")
 
-local api = vim.api
-
 local M = {}
 
 ---@type Job

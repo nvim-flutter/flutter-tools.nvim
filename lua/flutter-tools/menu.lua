@@ -1,5 +1,3 @@
-local Job = require("plenary.job")
-
 local pickers = require("telescope.pickers")
 local finders = require("telescope.finders")
 local sorters = require("telescope.sorters")
