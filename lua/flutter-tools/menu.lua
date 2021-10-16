@@ -10,6 +10,9 @@ local themes = require("telescope.themes")
 
 local M = {}
 
+-- Accounts for the vertical padding implicit in the dropdown.
+local MENU_PADDING = 4
+
 local function execute_command(bufnr)
   local selection = action_state.get_selected_entry()
   actions.close(bufnr)
@@ -163,7 +166,7 @@ function M.commands(opts)
     or themes.get_dropdown({
       previewer = false,
       layout_config = {
-        height = #commands,
+        height = #commands + MENU_PADDING,
       },
     })
 
@@ -205,7 +208,7 @@ function M.fvm(opts)
       or themes.get_dropdown({
         previewer = false,
         layout_config = {
-          height = #sdks,
+          height = #sdks + MENU_PADDING,
         },
       })
 
