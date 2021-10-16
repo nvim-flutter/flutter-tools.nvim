@@ -192,6 +192,7 @@ require("flutter-tools").setup {
   },
   flutter_path = "<full/path/if/needed>", -- <-- this takes priority over the lookup
   flutter_lookup_cmd = nil, -- example "dirname $(which flutter)" or "asdf where flutter"
+  fvm = false, -- takes priority over path, uses <workspace>/.fvm/flutter_sdk if enabled
   widget_guides = {
     enabled = false,
   },
@@ -304,6 +305,14 @@ Or alternatively telescope can lazy load extension but the `Telescope` command w
 
 This can be accessed using `Telescope flutter commands` or `require('telescope').extensions.flutter.commands()`
 
+#### FVM
+
+![telescope_fvm](./.github/fvm.png)
+
+If you have [fvm](https://fvm.app/) installed and enabled in your config, you can change your Flutter SDK via a Telescope picker.
+
+This can be accessed using `require('telescope').extensions.flutter.fvm()`
+
 ## Debugging
 
 _Requires nvim-dap_
@@ -315,7 +324,7 @@ use 'mfussenegger/nvim-dap'
 
 This plugin integrates with [nvim-dap](https://github.com/mfussenegger/nvim-dap) to provide debug capabilities.
 Currently if `debugger` is set to `true` in the user's config **it will expect `nvim-dap` to be installed**.
-If `dap` is installed the plugin will attempt to install the debugger (Dart-Code's debugger).
+Idv `dap` is installed the plugin will attempt to install the debugger (Dart-Code's debugger).
 
 To use the debugger you need to run `:lua require('dap').continue()<CR>`. This will start your app. You should then be able
 to use `dap` commands to begin to debug it. For more information on how to use `nvim-dap` please read the project's README
