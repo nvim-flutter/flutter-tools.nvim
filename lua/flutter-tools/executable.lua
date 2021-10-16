@@ -45,7 +45,7 @@ end
 
 local function _flutter_sdk_dart_bin(flutter_sdk)
   -- retrieve the Dart binary from the Flutter SDK
-  return path.join(flutter_sdk, "dart", "bin")
+  return path.join(flutter_sdk, "bin", "dart")
 end
 
 ---Get paths for flutter and dart based on the binary locations
