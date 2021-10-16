@@ -63,6 +63,10 @@ end
 ---@type table<string, string>
 local _paths = nil
 
+function M.reset_paths()
+  _paths = nil
+end
+
 ---Execute user's lookup command and pass it to the job callback
 ---@param lookup_cmd string
 ---@param callback fun(p: string, t: table<string, string>)

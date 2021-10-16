@@ -318,6 +318,10 @@ function M.fvm_use(sdk_name)
 
     fvm_use_job:after_success(vim.schedule_wrap(function(j)
       ui.notify(j:result())
+      shutdown()
+      executable.reset_paths()
+      require("flutter-tools.lsp").restart()
+
       fvm_use_job = nil
     end))
 
