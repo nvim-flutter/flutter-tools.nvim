@@ -28,7 +28,7 @@ end
 local function command_entry_maker(max_width)
   local make_display = function(en)
     local displayer = entry_display.create({
-      separator = " - ",
+      separator = en.hint ~= '' and " - " or '',
       items = {
         { width = max_width },
         { remaining = true },
