@@ -114,6 +114,7 @@ function M.get(callback)
         fvm = true,
       }
       _paths.dart_sdk = _dart_sdk_root(_paths)
+      _paths.dart_bin = _flutter_sdk_dart_bin(_paths.flutter_sdk)
       return callback(_paths)
     end
   end
