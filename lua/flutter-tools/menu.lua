@@ -179,6 +179,7 @@ function M.commands(opts)
     sorter = sorters.get_generic_fuzzy_sorter(),
     attach_mappings = function(_, map)
       map("i", "<CR>", execute_command)
+      map("n", "<CR>", execute_command)
 
       -- If the return value of `attach_mappings` is true, then the other
       -- default mappings are still applies.
@@ -231,6 +232,7 @@ function M.fvm(opts)
       sorter = sorters.get_generic_fuzzy_sorter(),
       attach_mappings = function(_, map)
         map("i", "<CR>", execute_fvm_use)
+        map("n", "<CR>", execute_fvm_use)
         return true
       end,
     }):find()
