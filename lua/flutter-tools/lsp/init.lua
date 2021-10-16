@@ -144,11 +144,9 @@ function M.attach()
     local root_path = paths.dart_sdk
     debug_log(fmt("dart_sdk_path: %s", root_path))
 
-    local dart_bin = paths.fvm and path.join(root_path, 'bin', 'dart') or executable.dart_bin_name
-
     config.cmd = config.cmd
       or {
-        dart_bin,
+        paths.dart_bin,
         analysis_server_snapshot_path(root_path),
         "--lsp",
       }
