@@ -289,6 +289,7 @@ function M.fvm_list(callback)
 
       local sdks = {}
       for _, sdk_out in pairs(sdks_out) do
+        -- matches: "<name> (<status>)"
         local name, status = sdk_out:match("(.*)%s%((%w+)%)")
         name = name or sdk_out
         table.insert(sdks, { name = name, status = status })
