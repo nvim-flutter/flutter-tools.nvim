@@ -8,6 +8,6 @@ end
 return telescope.register_extension({
   exports = {
     commands = menu.commands,
-    fvm = menu.fvm
+    fvm = menu.fvm,
   },
 })
