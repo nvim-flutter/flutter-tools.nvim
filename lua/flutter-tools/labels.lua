@@ -12,9 +12,14 @@ local function render_labels(labels, opts)
 
   for _, item in ipairs(labels) do
     local line = item.range["end"].line
-    api.nvim_buf_set_virtual_text(0, namespace, tonumber(line), {
-      { prefix .. item.label, highlight },
-    }, {})
+    api.nvim_buf_set_extmark(0, namespace, tonumber(line), -1, {
+      virt_text = { {
+        prefix .. item.label,
+        highlight,
+      } },
+      virt_text_pos = "eol",
+      hl_mode = "combine",
+    })
   end
 end
 
