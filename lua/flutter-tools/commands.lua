@@ -8,8 +8,6 @@ local dev_log = require("flutter-tools.log")
 local dev_tools = require("flutter-tools.dev_tools")
 local lsp = require("flutter-tools.lsp")
 
-local api = vim.api
-
 local M = {}
 
 ---@type Job
@@ -269,6 +267,75 @@ function M.pub_upgrade(cmd_args)
       end))
       pub_upgrade_job:start()
     end)
+  end
+end
+
+-----------------------------------------------------------------------------//
+-- FVM commands
+-----------------------------------------------------------------------------//
+
+---@type Job
+local fvm_list_job = nil
+
+--- Returns table<{name: string, status: active|global|nil}>
+function M.fvm_list(callback)
+  if not fvm_list_job then
+    -- Example output:
+    --
+    -- Cache Directory:  /Users/rjm/fvm/versions
+    --
+    -- master (active)
+    -- beta
+    -- stable (global)
+    fvm_list_job = Job:new({ command = "fvm", args = { "list" } })
+
+    fvm_list_job:after_success(vim.schedule_wrap(function(j)
+      local out = j:result()
+      local sdks_out = { unpack(out, 3, #out) }
+
+      local sdks = {}
+      for _, sdk_out in pairs(sdks_out) do
+        -- matches: "<name> (<status>)"
+        local name, status = sdk_out:match("(.*)%s%((%w+)%)")
+        name = name or sdk_out
+        table.insert(sdks, { name = name, status = status })
+      end
+
+      callback(sdks)
+      fvm_list_job = nil
+    end))
+
+    fvm_list_job:after_failure(vim.schedule_wrap(function(j)
+      ui.notify(j:stderr_result())
+      fvm_list_job = nil
+    end))
+
+    fvm_list_job:start()
+  end
+end
+
+---@type Job
+local fvm_use_job = nil
+
+function M.fvm_use(sdk_name)
+  if not fvm_use_job then
+    fvm_use_job = Job:new({ command = "fvm", args = { "use", sdk_name } })
+
+    fvm_use_job:after_success(vim.schedule_wrap(function(j)
+      ui.notify(j:result())
+      shutdown()
+      executable.reset_paths()
+      require("flutter-tools.lsp").restart()
+
+      fvm_use_job = nil
+    end))
+
+    fvm_use_job:after_failure(vim.schedule_wrap(function(j)
+      ui.notify(j:result(), 10000) -- FVM doesn't output to stderr, nice
+      fvm_use_job = nil
+    end))
+
+    fvm_use_job:start()
   end
 end
 

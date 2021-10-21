@@ -192,6 +192,7 @@ require("flutter-tools").setup {
   },
   flutter_path = "<full/path/if/needed>", -- <-- this takes priority over the lookup
   flutter_lookup_cmd = nil, -- example "dirname $(which flutter)" or "asdf where flutter"
+  fvm = false, -- takes priority over path, uses <workspace>/.fvm/flutter_sdk if enabled
   widget_guides = {
     enabled = false,
   },
@@ -303,6 +304,14 @@ require("telescope").load_extension("flutter")
 Or alternatively telescope can lazy load extension but the `Telescope` command will not autocomplete lazy loaded modules.
 
 This can be accessed using `Telescope flutter commands` or `require('telescope').extensions.flutter.commands()`
+
+#### FVM
+
+![telescope fvm](https://user-images.githubusercontent.com/35163478/137667084-98c00c4b-ff8c-4d1e-869e-d2d51cf86f7e.png)
+
+If you have [fvm](https://fvm.app/) installed and enabled in your config, you can change your Flutter SDK via a Telescope picker.
+
+This can be accessed using `Telescope flutter fvm` or `require('telescope').extensions.flutter.fvm()`
 
 ## Debugging
 

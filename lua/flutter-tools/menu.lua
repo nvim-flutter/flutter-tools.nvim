@@ -8,6 +8,9 @@ local themes = require("telescope.themes")
 
 local M = {}
 
+-- Accounts for the vertical padding implicit in the dropdown.
+local MENU_PADDING = 4
+
 local function execute_command(bufnr)
   local selection = action_state.get_selected_entry()
   actions.close(bufnr)
@@ -23,7 +26,7 @@ end
 local function command_entry_maker(max_width)
   local make_display = function(en)
     local displayer = entry_display.create({
-      separator = " - ",
+      separator = en.hint ~= "" and " - " or "",
       items = {
         { width = max_width },
         { remaining = true },
@@ -161,7 +164,7 @@ function M.commands(opts)
     or themes.get_dropdown({
       previewer = false,
       layout_config = {
-        height = #commands,
+        height = #commands + MENU_PADDING,
       },
     })
 
@@ -174,6 +177,7 @@ function M.commands(opts)
     sorter = sorters.get_generic_fuzzy_sorter(),
     attach_mappings = function(_, map)
       map("i", "<CR>", execute_command)
+      map("n", "<CR>", execute_command)
 
       -- If the return value of `attach_mappings` is true, then the other
       -- default mappings are still applies.
@@ -182,6 +186,55 @@ function M.commands(opts)
       return true
     end,
   }):find()
+end
+
+local function execute_fvm_use(bufnr)
+  local selection = action_state.get_selected_entry()
+  actions.close(bufnr)
+  local cmd = selection.command
+  if cmd then
+    local success, msg = pcall(cmd, selection.ordinal)
+    if not success then
+      vim.notify(msg, vim.log.levels.ERROR)
+    end
+  end
+end
+
+function M.fvm(opts)
+  local commands = require("flutter-tools.commands")
+  commands.fvm_list(function(sdks)
+    opts = opts and not vim.tbl_isempty(opts) and opts
+      or themes.get_dropdown({
+        previewer = false,
+        layout_config = {
+          height = #sdks + MENU_PADDING,
+        },
+      })
+
+    local sdk_entries = {}
+    for _, sdk in pairs(sdks) do
+      table.insert(sdk_entries, {
+        id = sdk.name,
+        label = sdk.name,
+        hint = sdk.status and "(" .. sdk.status .. ")" or "",
+        command = commands.fvm_use,
+      })
+    end
+
+    pickers.new(opts, {
+      prompt_title = "Change Flutter SDK",
+      finder = finders.new_table({
+        results = sdk_entries,
+        entry_maker = command_entry_maker(get_max_length(sdk_entries)),
+      }),
+      sorter = sorters.get_generic_fuzzy_sorter(),
+      attach_mappings = function(_, map)
+        map("i", "<CR>", execute_fvm_use)
+        map("n", "<CR>", execute_fvm_use)
+        return true
+      end,
+    }):find()
+  end)
 end
 
 return M

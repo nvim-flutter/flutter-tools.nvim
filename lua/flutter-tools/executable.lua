@@ -5,6 +5,7 @@ local ui = require("flutter-tools.ui")
 local Job = require("plenary.job")
 
 local fn = vim.fn
+local luv = vim.loop
 
 local M = {}
 
@@ -62,6 +63,10 @@ end
 ---@type table<string, string>
 local _paths = nil
 
+function M.reset_paths()
+  _paths = nil
+end
+
 ---Execute user's lookup command and pass it to the job callback
 ---@param lookup_cmd string
 ---@param callback fun(p: string, t: table<string, string>)
@@ -98,8 +103,24 @@ end
 ---@return nil
 function M.get(callback)
   local conf = require("flutter-tools.config").get()
+
   if _paths then
     return callback(_paths)
+  end
+
+  if conf.fvm then
+    local flutter_bin_symlink = path.join(luv.cwd(), ".fvm", "flutter_sdk", "bin", "flutter")
+    local flutter_bin = luv.fs_realpath(flutter_bin_symlink)
+    if path.exists(flutter_bin_symlink) and path.exists(flutter_bin) then
+      _paths = {
+        flutter_bin = flutter_bin,
+        flutter_sdk = _flutter_sdk_root(flutter_bin),
+        fvm = true,
+      }
+      _paths.dart_sdk = _dart_sdk_root(_paths)
+      _paths.dart_bin = _flutter_sdk_dart_bin(_paths.flutter_sdk)
+      return callback(_paths)
+    end
   end
 
   if conf.flutter_path then
