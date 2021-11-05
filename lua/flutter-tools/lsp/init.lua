@@ -76,6 +76,9 @@ local function get_defaults(opts)
         require("flutter-tools.guides").widget_guides
       ),
     },
+    commands = {
+      ["refactor.perform"] = require("flutter-tools.lsp.commands").refactor_perform,
+    },
     capabilities = (function()
       local capabilities = lsp.protocol.make_client_capabilities()
       capabilities.workspace.configuration = true
@@ -172,6 +175,7 @@ function M.attach()
     config.init_options = merge_config(defaults.init_options, config.init_options)
     config.handlers = merge_config(defaults.handlers, config.handlers)
     config.settings = merge_config(defaults.settings, { dart = config.settings })
+    config.commands = merge_config(defaults.commands, config.commands)
 
     config.on_init = function(client, _)
       return client.notify("workspace/didChangeConfiguration", { settings = config.settings })
