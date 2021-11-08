@@ -41,7 +41,7 @@ function M.refactor_perform(command, ctx)
     client.request("workspace/executeCommand", command)
   end
 
-  if vim.ui.input then
+  if vim.ui and vim.ui.input then
     vim.ui.input(opts, on_confirm)
   else
     local input = vim.fn.input(opts)
