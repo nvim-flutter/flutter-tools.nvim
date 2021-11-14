@@ -19,6 +19,7 @@ local function setup_commands()
   --- Outline
   utils.command("FlutterOutlineOpen", [[lua require('flutter-tools.outline').open()]])
   utils.command("FlutterOutlineToggle", [[lua require('flutter-tools.outline').toggle()]])
+  utils.command("FlutterCodeActions", [[lua require('flutter-tools.outline').actions()]])
   --- Dev tools
   utils.command("FlutterDevTools", [[lua require('flutter-tools.dev_tools').start()]])
   utils.command(

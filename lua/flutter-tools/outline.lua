@@ -368,14 +368,18 @@ local function find_code_window(uri)
   return code_wins[1], code_wins
 end
 
-local function request_code_actions()
-  local line = fn.line(".")
-  local uri = vim.b.outline_uri
+local function request_code_actions(uri, item)
+  local uri = uri or vim.b.outline_uri
   if not uri then
     return utils.notify("Sorry! code actions not available")
   end
-  local outline = M.outlines[uri]
-  local item = outline[line]
+
+  if not item then
+    local outline = M.outlines[uri]
+    local line = fn.line(".")
+    item = outline[line]
+  end
+
   local params = code_actions.get_action_params(item, uri)
   if not params then
     return
@@ -508,6 +512,14 @@ function M.document_outline(_, data, _, _)
   if conf.auto_open and not state.outline_buf then
     M.open({ go_back = true })
   end
+end
+
+function M.actions()
+  local uri = vim.uri_from_bufnr(api.nvim_get_current_buf())
+  local cursor_pos = api.nvim_win_get_cursor(0)
+  local item = { start_line = cursor_pos[1] - 1, start_col = cursor_pos[2] - 1 }
+
+  request_code_actions(uri, item)
 end
 
 return M
