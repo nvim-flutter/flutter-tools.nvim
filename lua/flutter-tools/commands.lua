@@ -4,23 +4,45 @@ local utils = require("flutter-tools.utils")
 local devices = require("flutter-tools.devices")
 local config = require("flutter-tools.config")
 local executable = require("flutter-tools.executable")
-local dev_log = require("flutter-tools.log")
 local dev_tools = require("flutter-tools.dev_tools")
 local lsp = require("flutter-tools.lsp")
+local job_runner = require("flutter-tools.runners.job_runner")
+local dap_runner = require("flutter-tools.runners.dap_runner")
+local dap_ok, dap = pcall(require, "dap")
 
 local M = {}
 
----@type Job
-local run_job = nil
 ---@type table
 local current_device = nil
+
+---@class FlutterRunner
+---@field is_running fun():boolean
+---@field run fun(paths:table, args:table, cwd:string, on_run_data:fun(is_err:boolean, data:string), on_run_exit:fun(data:string[]))
+---@field cleanup fun()
+---@field send fun(cmd:string)
+
+---@type FlutterRunner
+local runner = nil
+
+function M.use_dap_runner()
+  local dap_requested = config.get("debugger").run_via_dap
+  if dap_requested then
+    if not dap_ok then
+      utils.notify("dap runner was request but nvim-dap is not installed!\n" .. dap, utils.L.ERROR)
+      return false
+    end
+    return true
+  else
+    return false
+  end
+end
 
 function M.current_device()
   return current_device
 end
 
 function M.is_running()
-  return run_job ~= nil
+  return runner ~= nil and runner:is_running()
 end
 
 local function match_error_string(line)
@@ -50,18 +72,19 @@ end
 
 ---Handle output from flutter run command
 ---@param is_err boolean if this is stdout or stderr
----@param opts table config options for the dev log window
----@return fun(err: string, data: string, job: Job): nil
-local function on_run_data(is_err, opts)
-  return vim.schedule_wrap(function(_, data, _)
-    if is_err then
-      ui.notify({ data })
-    end
-    if not match_error_string(data) then
-      dev_tools.handle_log(data)
-      dev_log.log(data, opts)
-    end
-  end)
+local function on_run_data(is_err, data)
+  if is_err then
+    ui.notify({ data })
+  end
+end
+
+local function shutdown()
+  if runner ~= nil then
+    runner:cleanup()
+  end
+  runner = nil
+  current_device = nil
+  dev_tools.on_flutter_shutdown()
 end
 
 ---Handle a finished flutter run command
@@ -80,12 +103,7 @@ local function on_run_exit(result)
       end,
     })
   end
-end
-
-local function shutdown()
-  run_job = nil
-  current_device = nil
-  dev_tools.on_flutter_shutdown()
+  shutdown()
 end
 
 --- Take arguments from the commandline and pass
@@ -99,16 +117,18 @@ end
 ---Run the flutter application
 ---@param opts table
 function M.run(opts)
+  if M.is_running() then
+    return utils.notify("Flutter is already running!")
+  end
   opts = opts or {}
   local device = opts.device
   local cmd_args = opts.args
-  if run_job then
-    return utils.notify("Flutter is already running!")
-  end
-  executable.flutter(function(cmd)
-    local args = { "run" }
+  executable.get(function(paths)
+    local args = {}
+    if not M.use_dap_runner() then
+      vim.list_extend(args, { "run" })
+    end
     if not cmd_args and device and device.id then
-      current_device = device
       vim.list_extend(args, { "-d", device.id })
     end
 
@@ -120,25 +140,9 @@ function M.run(opts)
     if dev_url then
       vim.list_extend(args, { "--devtools-server-address", dev_url })
     end
-
     ui.notify({ "Starting flutter project..." })
-    local conf = config.get("dev_log")
-    run_job = Job:new({
-      command = cmd,
-      args = args,
-      cwd = lsp.get_lsp_root_dir(),
-      on_start = function()
-        vim.cmd("doautocmd User FlutterToolsAppStarted")
-      end,
-      on_stdout = on_run_data(false, conf),
-      on_stderr = on_run_data(true, conf),
-      on_exit = vim.schedule_wrap(function(j, _)
-        on_run_exit(j:result())
-        shutdown()
-      end),
-    })
-
-    run_job:start()
+    runner = M.use_dap_runner() and dap_runner or job_runner
+    runner:run(paths, args, lsp.get_lsp_root_dir(), on_run_data, on_run_exit)
   end)
 end
 
@@ -146,8 +150,8 @@ end
 ---@param quiet boolean
 ---@param on_send function|nil
 local function send(cmd, quiet, on_send)
-  if run_job then
-    run_job:send(cmd)
+  if M.is_running() then
+    runner:send(cmd, quiet)
     if on_send then
       on_send()
     end
@@ -158,12 +162,12 @@ end
 
 ---@param quiet boolean
 function M.reload(quiet)
-  send("r", quiet)
+  send("reload", quiet)
 end
 
 ---@param quiet boolean
 function M.restart(quiet)
-  send("R", quiet, function()
+  send("restart", quiet, function()
     if not quiet then
       ui.notify({ "Restarting..." }, 1500)
     end
@@ -172,7 +176,7 @@ end
 
 ---@param quiet boolean
 function M.quit(quiet)
-  send("q", quiet, function()
+  send("quit", quiet, function()
     if not quiet then
       ui.notify({ "Closing flutter application..." }, 1500)
       shutdown()
@@ -182,11 +186,11 @@ end
 
 ---@param quiet boolean
 function M.visual_debug(quiet)
-  send("p", quiet)
+  send("visual_debug", quiet)
 end
 
 function M.copy_profiler_url()
-  if not run_job then
+  if not M.is_running() then
     ui.notify({ "You must run the app first!" })
     return
   end

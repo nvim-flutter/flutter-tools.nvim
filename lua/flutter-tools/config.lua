@@ -59,6 +59,29 @@ local defaults = {
   },
   debugger = {
     enabled = false,
+    run_via_dap = false,
+    register_configurations = function(paths)
+      require("dap").configurations.dart = {
+        {
+          type = "dart",
+          request = "launch",
+          name = "Launch flutter",
+          dartSdkPath = paths.dart_sdk,
+          flutterSdkPath = paths.flutter_sdk,
+          program = "${workspaceFolder}/lib/main.dart",
+          cwd = "${workspaceFolder}",
+        },
+        {
+          type = "dart",
+          request = "attach",
+          name = "Connect flutter",
+          dartSdkPath = paths.dart_sdk,
+          flutterSdkPath = paths.flutter_sdk,
+          program = "${workspaceFolder}/lib/main.dart",
+          cwd = "${workspaceFolder}",
+        },
+      }
+    end,
   },
   closing_tags = {
     highlight = "Comment",

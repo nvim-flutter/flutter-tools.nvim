@@ -42,7 +42,7 @@ function M.install_debugger(silent)
   fn.termopen(fmt("%s && %s", clone, build))
 end
 
-function M.setup(_)
+function M.setup(config)
   M.install_debugger(true)
 
   require("flutter-tools.executable").get(function(paths)
@@ -51,26 +51,7 @@ function M.setup(_)
       command = "node",
       args = { debugger_path, "flutter" },
     }
-    dap.configurations.dart = {
-      {
-        type = "dart",
-        request = "launch",
-        name = "Launch flutter",
-        dartSdkPath = paths.dart_sdk,
-        flutterSdkPath = paths.flutter_sdk,
-        program = "${workspaceFolder}/lib/main.dart",
-        cwd = "${workspaceFolder}",
-      },
-      {
-        type = "dart",
-        request = "attach",
-        name = "Connect flutter",
-        dartSdkPath = paths.dart_sdk,
-        flutterSdkPath = paths.flutter_sdk,
-        program = "${workspaceFolder}/lib/main.dart",
-        cwd = "${workspaceFolder}",
-      },
-    }
+    config.debugger.register_configurations(paths)
   end)
 end
 

@@ -189,6 +189,12 @@ require("flutter-tools").setup {
   },
   debugger = { -- integrate with nvim dap + install dart code debugger
     enabled = false,
+    run_via_dap = false, -- use dap instead of a plenary job to run flutter apps 
+    register_configurations = function(paths)
+      require("dap").configurations.dart = {
+        <put here config that you would find in .vscode/launch.json>
+      }
+    end,
   },
   flutter_path = "<full/path/if/needed>", -- <-- this takes priority over the lookup
   flutter_lookup_cmd = nil, -- example "dirname $(which flutter)" or "asdf where flutter"
@@ -323,12 +329,28 @@ use 'mfussenegger/nvim-dap'
 ```
 
 This plugin integrates with [nvim-dap](https://github.com/mfussenegger/nvim-dap) to provide debug capabilities.
-Currently if `debugger` is set to `true` in the user's config **it will expect `nvim-dap` to be installed**.
+Currently if `debugger.enabled` is set to `true` in the user's config **it will expect `nvim-dap` to be installed**.
 If `dap` is installed the plugin will attempt to install the debugger (Dart-Code's debugger).
 
 To use the debugger you need to run `:lua require('dap').continue()<CR>`. This will start your app. You should then be able
 to use `dap` commands to begin to debug it. For more information on how to use `nvim-dap` please read the project's README
-or see `:h dap`.
+or see `:h dap`. Note that running the app this way will prevent commands such as `:FlutterRestart`, `:FlutterReload` from working.
+
+Alternatively, if you prefer always running your app via dap, you can set `debugger.run_via_dap = true` in your config.
+This way you benefit from the debugging abilities of DAP, AND you can still use `:FlutterRestart`, `:FlutterReload`, etc.
+
+You can use the `debugger.register_configurations` to register custom runner configuration (for example for different targets or flavor).
+If your flutter repo contains launch configurations in `.vscode/launch.json` you can use them via this config : 
+```lua
+  debugger = {
+    enabled = true,
+    register_configurations = function(_)
+      require("dap").configurations.dart = {}
+      require("dap.ext.vscode").load_launchjs()
+    end,
+  },
+```
+
 
 Also see:
 
