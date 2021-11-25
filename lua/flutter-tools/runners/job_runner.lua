@@ -1,8 +1,6 @@
 local Job = require("plenary.job")
 local utils = require("flutter-tools.utils")
-local dev_log = require("flutter-tools.log")
 local dev_tools = require("flutter-tools.dev_tools")
-local config = require("flutter-tools.config")
 
 ---@type FlutterRunner
 local JobRunner = {}
@@ -22,7 +20,6 @@ function JobRunner:is_running()
 end
 
 function JobRunner:run(paths, args, cwd, on_run_data, on_run_exit)
-  local dev_log_conf = config.get("dev_log")
   run_job = Job:new({
     command = paths.flutter_bin,
     args = args,
@@ -33,11 +30,9 @@ function JobRunner:run(paths, args, cwd, on_run_data, on_run_exit)
     on_stdout = vim.schedule_wrap(function(_, data, _)
       on_run_data(false, data)
       dev_tools.handle_log(data)
-      dev_log.log(data, dev_log_conf)
     end),
     on_sterr = vim.schedule_wrap(function(_, data, _)
       on_run_data(true, data)
-      dev_log.log(data, dev_log_conf)
     end),
     on_exit = vim.schedule_wrap(function(j, _)
       on_run_exit(j:result())

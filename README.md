@@ -208,6 +208,7 @@ require("flutter-tools").setup {
     enabled = true -- set to false to disable
   },
   dev_log = {
+    enabled = true,
     open_cmd = "tabedit", -- command to use to open the log buffer
   },
   dev_tools = {
@@ -350,6 +351,8 @@ If your flutter repo contains launch configurations in `.vscode/launch.json` you
     end,
   },
 ```
+
+Since there is an overlap between this plugin's log buffer and the repl buffer when running via dap, you may use the `dev_log.enabled` configuration option if you want.
 
 
 Also see:

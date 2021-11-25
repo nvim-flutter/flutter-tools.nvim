@@ -8,6 +8,7 @@ local dev_tools = require("flutter-tools.dev_tools")
 local lsp = require("flutter-tools.lsp")
 local job_runner = require("flutter-tools.runners.job_runner")
 local dap_runner = require("flutter-tools.runners.dap_runner")
+local dev_log = require("flutter-tools.log")
 local dap_ok, dap = pcall(require, "dap")
 
 local M = {}
@@ -73,9 +74,11 @@ end
 ---Handle output from flutter run command
 ---@param is_err boolean if this is stdout or stderr
 local function on_run_data(is_err, data)
+  local dev_log_conf = config.get("dev_log")
   if is_err then
     ui.notify({ data })
   end
+  dev_log.log(data, dev_log_conf)
 end
 
 local function shutdown()

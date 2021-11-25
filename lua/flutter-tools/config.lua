@@ -98,7 +98,9 @@ local defaults = {
       return k == "open_cmd" and get_split_cmd(0.3, 40) or nil
     end,
   }),
-  dev_log = setmetatable({}, {
+  dev_log = setmetatable({
+    enabled = true,
+  }, {
     __index = function(_, k)
       return k == "open_cmd" and get_split_cmd(0.4, 50) or nil
     end,
