@@ -68,8 +68,7 @@ function M.handle_log(data)
   devtools_profiler_url = try_get_tools_flutter(data)
 
   if devtools_profiler_url then
-    start_browser()
-    ui.notify({ "Detected devtools url", "Execute FlutterCopyProfilerUrl to copy it" })
+    M.handle_devtools_available()
     return
   end
 
@@ -80,11 +79,24 @@ function M.handle_log(data)
   profiler_url = try_get_profiler_url_chrome(data)
 
   if profiler_url then
+    M.register_profiler_url(profiler_url)
+  end
+end
+
+function M.register_profiler_url(url)
+  if url then
+    profiler_url = url
     local autostart = require("flutter-tools.config").get("dev_tools").autostart
     if autostart then
       M.start()
+      M.handle_devtools_available()
     end
   end
+end
+
+function M.handle_devtools_available()
+  start_browser()
+  ui.notify({ "Detected devtools url", "Execute FlutterCopyProfilerUrl to copy it" })
 end
 
 --[[ {

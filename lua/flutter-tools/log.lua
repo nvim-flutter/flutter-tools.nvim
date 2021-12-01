@@ -92,11 +92,13 @@ end
 ---@param data string
 ---@param opts table
 function M.log(data, opts)
-  if not exists() then
-    create(opts)
+  if opts.enabled then
+    if not exists() then
+      create(opts)
+    end
+    append(M.buf, { data })
+    autoscroll(M.buf, M.win)
   end
-  append(M.buf, { data })
-  autoscroll(M.buf, M.win)
 end
 
 function M.__resurrect()
