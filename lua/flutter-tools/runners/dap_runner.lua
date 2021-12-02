@@ -61,16 +61,22 @@ function DAPRunner:run(paths, args, cwd, on_run_data, on_run_exit)
   end
 
   dap.listeners.before["event_dart.debuggerUris"][plugin_identifier] = function(_, body)
-    dev_tools.register_profiler_url(body.observatoryUri)
+    if body and body.observatoryUri then
+      dev_tools.register_profiler_url(body.observatoryUri)
+    end
   end
 
   dap.listeners.before["event_dart.serviceExtensionAdded"][plugin_identifier] = function(_, body)
-    service_extensions_isolateid[body.extensionRPC] = body.isolateId
+    if body and body.extensionRPC and body.isolateId then
+      service_extensions_isolateid[body.extensionRPC] = body.isolateId
+    end
   end
 
   dap.listeners.before["event_flutter.serviceExtensionStateChanged"][plugin_identifier] =
     function(_, body)
-      service_extensions_state[body.extension] = body.value
+      if body and body.extension and body.value then
+        service_extensions_state[body.extension] = body.value
+      end
     end
 
   local launch_configurations = {}
@@ -98,6 +104,9 @@ function DAPRunner:run(paths, args, cwd, on_run_data, on_run_exit)
         return fmt("%s : %s", item.name, item.program, vim.inspect(item.args))
       end
     )
+  end
+  if not launch_config then
+    return
   end
   launch_config = vim.deepcopy(launch_config)
   launch_config.cwd = cwd
