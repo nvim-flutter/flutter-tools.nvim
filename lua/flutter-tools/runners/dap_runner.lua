@@ -105,6 +105,9 @@ function DAPRunner:run(paths, args, cwd, on_run_data, on_run_exit)
       end
     )
   end
+  if not launch_config then
+    return
+  end
   launch_config = vim.deepcopy(launch_config)
   launch_config.cwd = cwd
   launch_config.args = vim.list_extend(launch_config.args or {}, args or {})
