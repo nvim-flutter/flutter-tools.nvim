@@ -16,6 +16,7 @@ local command_requests = {
   restart = "hotRestart",
   reload = "hotReload",
   quit = "terminate",
+  detach = "detach",
 }
 
 local service_activation_requests = {
