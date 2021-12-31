@@ -31,7 +31,7 @@ function JobRunner:run(paths, args, cwd, on_run_data, on_run_exit)
       on_run_data(false, data)
       dev_tools.handle_log(data)
     end),
-    on_sterr = vim.schedule_wrap(function(_, data, _)
+    on_stderr = vim.schedule_wrap(function(_, data, _)
       on_run_data(true, data)
     end),
     on_exit = vim.schedule_wrap(function(j, _)
