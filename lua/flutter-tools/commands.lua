@@ -192,7 +192,6 @@ function M.visual_debug(quiet)
   send("visual_debug", quiet)
 end
 
-
 ---@param quiet boolean
 function M.detach(quiet)
   send("detach", quiet)
