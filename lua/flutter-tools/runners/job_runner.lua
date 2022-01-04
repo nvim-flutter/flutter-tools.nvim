@@ -13,6 +13,7 @@ local command_keys = {
   reload = "r",
   quit = "q",
   visual_debug = "p",
+  detach = "d",
 }
 
 function JobRunner:is_running()

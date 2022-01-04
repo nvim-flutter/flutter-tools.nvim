@@ -87,6 +87,12 @@ function M.commands(opts)
         hint = "Quit running flutter project",
         command = require("flutter-tools.commands").quit,
       },
+      {
+        id = "flutter-tools-detach",
+        label = "Flutter tools: Detach",
+        hint = "Quit running flutter project but leave the process running",
+        command = require("flutter-tools.commands").detach,
+      },
     }
   else
     commands = {

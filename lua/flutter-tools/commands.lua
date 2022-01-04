@@ -192,6 +192,12 @@ function M.visual_debug(quiet)
   send("visual_debug", quiet)
 end
 
+
+---@param quiet boolean
+function M.detach(quiet)
+  send("detach", quiet)
+end
+
 function M.copy_profiler_url()
   if not M.is_running() then
     ui.notify({ "You must run the app first!" })
