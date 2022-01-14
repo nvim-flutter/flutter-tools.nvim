@@ -92,7 +92,7 @@ end
 
 ---Handle a finished flutter run command
 ---@param result string[]
-local function on_run_exit(result, original_args)
+local function on_run_exit(result, cli_args)
   local matched_error, msg = has_recoverable_error(result)
   if matched_error then
     local lines, win_devices, highlights = devices.extract_device_props(result)
@@ -104,7 +104,7 @@ local function on_run_exit(result, original_args)
         vim.b.devices = win_devices
         utils.map("n", "<CR>",
         function()
-          devices.select_device(original_args)
+          devices.select_device(cli_args)
         end,
           { buffer = buf })
       end,
@@ -130,10 +130,10 @@ function M.run(opts)
   opts = opts or {}
   local device = opts.device
   local cmd_args = opts.args
-  local full_args = opts.full_args
+  local cli_args = opts.cli_args
   executable.get(function(paths)
-    local args = full_args or {}
-    if not full_args then
+    local args = cli_args or {}
+    if not cli_args then
       if not M.use_dap_runner() then
         vim.list_extend(args, { "run" })
       end
