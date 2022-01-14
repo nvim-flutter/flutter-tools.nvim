@@ -36,7 +36,7 @@ function JobRunner:run(paths, args, cwd, on_run_data, on_run_exit)
       on_run_data(true, data)
     end),
     on_exit = vim.schedule_wrap(function(j, _)
-      on_run_exit(j:result())
+      on_run_exit(j:result(), args)
     end),
   })
   run_job:start()

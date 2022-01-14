@@ -43,7 +43,7 @@ function DAPRunner:run(paths, args, cwd, on_run_data, on_run_exit)
 
   local handle_termination = function()
     if next(before_start_logs) ~= nil then
-      on_run_exit(before_start_logs)
+      on_run_exit(before_start_logs, args)
     end
   end
 
