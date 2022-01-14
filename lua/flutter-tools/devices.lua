@@ -102,7 +102,7 @@ function M.select_device(args)
     else
       if args then
         vim.list_extend(args, { "-d", device.id })
-        require("flutter-tools.commands").run({ full_args = args })
+        require("flutter-tools.commands").run({ cli_args = args })
       else
         require("flutter-tools.commands").run({ device = device })
       end
