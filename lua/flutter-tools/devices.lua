@@ -89,7 +89,7 @@ function M.extract_device_props(result, device_type)
   return lines, devices_by_line, highlights
 end
 
-function M.select_device()
+function M.select_device(args)
   if not vim.b.devices then
     return utils.notify("Sorry there is no device on this line")
   end
@@ -100,7 +100,12 @@ function M.select_device()
     if device.type == EMULATOR then
       M.launch_emulator(device)
     else
-      require("flutter-tools.commands").run({ device = device })
+      if args then
+        vim.list_extend(args, { "-d", device.id })
+        require("flutter-tools.commands").run({ full_args = args })
+      else
+        require("flutter-tools.commands").run({ device = device })
+      end
     end
     api.nvim_win_close(0, true)
   end
