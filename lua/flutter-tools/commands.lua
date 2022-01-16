@@ -92,7 +92,7 @@ end
 
 ---Handle a finished flutter run command
 ---@param result string[]
-local function on_run_exit(result)
+local function on_run_exit(result, cli_args)
   local matched_error, msg = has_recoverable_error(result)
   if matched_error then
     local lines, win_devices, highlights = devices.extract_device_props(result)
@@ -102,7 +102,9 @@ local function on_run_exit(result)
       highlights = highlights,
       on_create = function(buf, _)
         vim.b.devices = win_devices
-        utils.map("n", "<CR>", devices.select_device, { buffer = buf })
+        utils.map("n", "<CR>", function()
+          devices.select_device(cli_args)
+        end, { buffer = buf })
       end,
     })
   end
@@ -126,22 +128,25 @@ function M.run(opts)
   opts = opts or {}
   local device = opts.device
   local cmd_args = opts.args
+  local cli_args = opts.cli_args
   executable.get(function(paths)
-    local args = {}
-    if not M.use_dap_runner() then
-      vim.list_extend(args, { "run" })
-    end
-    if not cmd_args and device and device.id then
-      vim.list_extend(args, { "-d", device.id })
-    end
+    local args = cli_args or {}
+    if not cli_args then
+      if not M.use_dap_runner() then
+        vim.list_extend(args, { "run" })
+      end
+      if not cmd_args and device and device.id then
+        vim.list_extend(args, { "-d", device.id })
+      end
 
-    if cmd_args then
-      vim.list_extend(args, cmd_args)
-    end
+      if cmd_args then
+        vim.list_extend(args, cmd_args)
+      end
 
-    local dev_url = dev_tools.get_url()
-    if dev_url then
-      vim.list_extend(args, { "--devtools-server-address", dev_url })
+      local dev_url = dev_tools.get_url()
+      if dev_url then
+        vim.list_extend(args, { "--devtools-server-address", dev_url })
+      end
     end
     ui.notify({ "Starting flutter project..." })
     runner = M.use_dap_runner() and dap_runner or job_runner
