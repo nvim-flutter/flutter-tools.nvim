@@ -102,11 +102,9 @@ local function on_run_exit(result, cli_args)
       highlights = highlights,
       on_create = function(buf, _)
         vim.b.devices = win_devices
-        utils.map("n", "<CR>",
-        function()
+        utils.map("n", "<CR>", function()
           devices.select_device(cli_args)
-        end,
-          { buffer = buf })
+        end, { buffer = buf })
       end,
     })
   end
