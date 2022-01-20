@@ -1,3 +1,4 @@
+local config = require("flutter-tools.config")
 local ui = require("flutter-tools.ui")
 local utils = require("flutter-tools.utils")
 
@@ -28,11 +29,11 @@ local function close_dev_log()
   M.win = nil
 end
 
-local function create(config)
+local function create(conf)
   local opts = {
     filename = M.filename,
     filetype = "log",
-    open_cmd = config.open_cmd,
+    open_cmd = conf.open_cmd,
   }
   ui.open_win(opts, function(buf, win)
     if not buf then
@@ -114,6 +115,17 @@ function M.clear()
     vim.bo[M.buf].modifiable = true
     api.nvim_buf_set_lines(M.buf, 0, -1, false, {})
     vim.bo[M.buf].modifiable = false
+  end
+end
+
+function M.toggle()
+  if M.win then
+    api.nvim_win_close(M.win, true)
+    M.win = nil
+  elseif exists() then
+    pcall(function()
+      create(config.get("dev_log"))
+    end)
   end
 end
 

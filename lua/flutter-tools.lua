@@ -34,6 +34,7 @@ local function setup_commands()
   )
   --- Log
   utils.command("FlutterLogClear", [[lua require('flutter-tools.log').clear()]])
+  utils.command("FlutterLogToggle", [[lua require('flutter-tools.log').toggle()]])
 end
 
 ---Initialise various plugin modules
