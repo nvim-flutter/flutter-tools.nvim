@@ -1,5 +1,6 @@
 local utils = require("flutter-tools.utils")
 local path = require("flutter-tools.utils.path")
+local color = require("flutter-tools.lsp.color")
 
 local api = vim.api
 local lsp = vim.lsp
@@ -11,6 +12,8 @@ local SERVER_NAME = "dartls"
 
 local M = {
   lsps = {},
+  document_color = color.document_color,
+  on_document_color = color.on_document_color,
 }
 
 local function analysis_server_snapshot_path(sdk_path)
@@ -75,6 +78,7 @@ local function get_defaults(opts)
       ["dart/textDocument/publishFlutterOutline"] = utils.lsp_handler(
         require("flutter-tools.guides").widget_guides
       ),
+      ["textDocument/documentColor"] = require("flutter-tools.lsp.color").on_document_color,
     },
     commands = {
       ["refactor.perform"] = require("flutter-tools.lsp.commands").refactor_perform,
@@ -83,6 +87,9 @@ local function get_defaults(opts)
       local capabilities = lsp.protocol.make_client_capabilities()
       capabilities.workspace.configuration = true
       capabilities.textDocument.completion.completionItem.snippetSupport = true
+      capabilities.textDocument.documentColor = {
+        dynamicRegistration = true,
+      }
       -- @see: https://github.com/hrsh7th/nvim-compe#how-to-use-lsp-snippet
       capabilities.textDocument.completion.completionItem.resolveSupport = {
         properties = {

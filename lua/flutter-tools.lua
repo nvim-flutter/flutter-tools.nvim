@@ -86,6 +86,16 @@ local function setup_autocommands()
     },
   })
 
+  utils.augroup("FlutterToolsLspColors", {
+    {
+      events = { "TextChanged", "InsertLeave" },
+      targets = { "*.dart" },
+      command = function()
+        require("flutter-tools.lsp").document_color()
+      end,
+    },
+  })
+
   utils.augroup("FlutterToolsHotReload", {
     {
       events = { "BufWritePost" },
