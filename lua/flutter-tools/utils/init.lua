@@ -197,7 +197,7 @@ end
 ---@param attribute string
 ---@return string
 function M.get_hl(name, attribute)
-  return fn.synIDattr(fn.hlID("Normal"), "fg")
+  return fn.synIDattr(fn.hlID(name), attribute)
 end
 
 function M.open_command()
