@@ -218,7 +218,9 @@ function M.buf_clear_color(client_id, bufnr)
     client_id = { client_id, "n", true },
     bufnr = { bufnr, "n", true },
   })
-  api.nvim_buf_clear_namespace(bufnr, CLIENT_NS, 0, -1)
+  if api.nvim_buf_is_valid(bufnr) then
+    api.nvim_buf_clear_namespace(bufnr, CLIENT_NS, 0, -1)
+  end
 end
 
 return M
