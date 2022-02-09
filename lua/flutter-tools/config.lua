@@ -2,6 +2,7 @@ local path = require("flutter-tools.utils.path")
 local M = {}
 
 local fn = vim.fn
+local api = vim.api
 local fmt = string.format
 
 --- @param prefs table user preferences
@@ -90,6 +91,20 @@ local defaults = {
   },
   lsp = {
     debug = M.debug_levels.WARN,
+    color = setmetatable({
+      background = true,
+      foreground = false,
+      virtual_text = false,
+      virtual_text_str = "■",
+    }, {
+      __index = function(_, k)
+        if k == "background_color" then
+          return require("flutter-tools.lsp.color.utils").decode_24bit_rgb(
+            api.nvim_get_hl_by_name("Normal", true)["background"]
+          )
+        end
+      end,
+    }),
   },
   outline = setmetatable({
     auto_open = false,

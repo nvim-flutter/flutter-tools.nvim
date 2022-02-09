@@ -111,7 +111,7 @@ local function color_background(_, bufnr, range, rgb)
   local fghex = M.perceived_lightness(rgb) < 50 and "ffffff" or "000000"
 
   local hlname = string.format("LspDocumentColorBackground%s", hex)
-  api.nvim_command(string.format("highlight %s guibg=#%s guifg=#%s", hlname, hex, fghex))
+  vim.cmd(string.format("highlight %s guibg=#%s guifg=#%s", hlname, hex, fghex))
 
   local start_pos = { range["start"]["line"], range["start"]["character"] }
   local end_pos = { range["end"]["line"], range["end"]["character"] }
@@ -129,7 +129,7 @@ local function color_foreground(_, bufnr, range, rgb)
   local hex = M.rgb_to_hex(rgb)
 
   local hlname = string.format("LspDocumentColorForeground%s", hex)
-  api.nvim_command(string.format("highlight %s guifg=#%s", hlname, hex))
+  vim.cmd(string.format("highlight %s guifg=#%s", hlname, hex))
 
   local start_pos = { range["start"]["line"], range["start"]["character"] }
   local end_pos = { range["end"]["line"], range["end"]["character"] }
@@ -149,7 +149,7 @@ local function color_virtual_text(_, bufnr, range, rgb, virtual_text_str)
   local hex = M.rgb_to_hex(rgb)
 
   local hlname = string.format("LspDocumentColorVirtualText%s", hex)
-  api.nvim_command(string.format("highlight %s guifg=#%s", hlname, hex))
+  vim.cmd(string.format("highlight %s guifg=#%s", hlname, hex))
 
   local line = range["end"]["line"]
   api.nvim_buf_set_virtual_text(bufnr, CLIENT_NS, line, { { virtual_text_str, hlname } }, {})
@@ -161,7 +161,7 @@ function M.on_document_color(err, result, ctx, config)
   local client_id = ctx.client_id
   local bufnr = ctx.bufnr
   if err then
-    return require('flutter-tools.utils').notify(err)
+    return require("flutter-tools.utils").notify(err)
   end
   if not bufnr or not client_id then
     return
@@ -183,21 +183,12 @@ function M.buf_color(client_id, bufnr, color_infos, _)
   validate({
     bufnr = { bufnr, "n", false },
     color_infos = { color_infos, "t", false },
-    -- config = { config, "t", true },
   })
   if not color_infos or not bufnr then
     return
   end
 
-  local config = {
-    background = true,
-    foreground = false,
-    virtual_text = false,
-    virtual_text_str = "■",
-    background_color = M.decode_24bit_rgb(
-      vim.api.nvim_get_hl_by_name("Normal", true)["background"]
-    ),
-  }
+  local config = require("flutter-tools.config").get("lsp").color
 
   for _, color_info in ipairs(color_infos) do
     local rgba, range = color_info.color, color_info.range
