@@ -88,7 +88,7 @@ local function setup_autocommands()
 
   utils.augroup("FlutterToolsLspColors", {
     {
-      events = { "TextChanged", "InsertLeave" },
+      events = { "BufEnter", "TextChanged", "InsertLeave" },
       targets = { "*.dart" },
       command = function()
         require("flutter-tools.lsp").document_color()

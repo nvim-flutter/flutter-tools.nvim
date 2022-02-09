@@ -12,8 +12,6 @@ local SERVER_NAME = "dartls"
 
 local M = {
   lsps = {},
-  document_color = color.document_color,
-  on_document_color = color.on_document_color,
 }
 
 local function analysis_server_snapshot_path(sdk_path)
@@ -137,6 +135,25 @@ function M.get_lsp_root_dir()
   return client and client.config.root_dir or nil
 end
 
+-- FIXME: I'm not sure how to correctly wait till a server is ready before
+-- sending this request so we hack this by adding a retry delay if it's too early.
+-- Ideally we would wait till the server is ready.
+M.document_color = function(cancel_retry)
+  local active_clients = vim.tbl_map(function(c)
+    return c.id
+  end, vim.lsp.get_active_clients())
+  local dartls = get_dartls_client()
+  if dartls and vim.tbl_contains(active_clients, dartls.id) then
+    color.document_color()
+  elseif not cancel_retry then
+    -- HACK: The language server might not have started yet so we wait 5secs and retry this command
+    vim.defer_fn(function()
+      M.document_color(true)
+    end, 5000)
+  end
+end
+M.on_document_color = color.on_document_color
+
 ---This was heavily inspired by nvim-metals implementation of the attach functionality
 ---@return boolean
 function M.attach()
@@ -146,7 +163,7 @@ function M.attach()
 
   debug_log("attaching LSP")
 
-  local config = utils.merge({ name = SERVER_NAME }, user_config, {"color"})
+  local config = utils.merge({ name = SERVER_NAME }, user_config, { "color" })
 
   local bufnr = api.nvim_get_current_buf()
 
