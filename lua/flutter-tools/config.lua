@@ -41,7 +41,7 @@ M.debug_levels = {
   WARN = 2,
 }
 
-local defaults = {
+local config = {
   flutter_path = nil,
   flutter_lookup_cmd = get_default_lookup(),
   fvm = false,
@@ -91,20 +91,15 @@ local defaults = {
   },
   lsp = {
     debug = M.debug_levels.WARN,
-    color = setmetatable({
-      background = true,
+    color = {
+      background = false,
       foreground = false,
-      virtual_text = false,
+      virtual_text = true,
       virtual_text_str = "■",
-    }, {
-      __index = function(_, k)
-        if k == "background_color" then
-          return require("flutter-tools.lsp.color.utils").decode_24bit_rgb(
-            api.nvim_get_hl_by_name("Normal", true)["background"]
-          )
-        end
-      end,
-    }),
+      background_color = require("flutter-tools.lsp.color.utils").decode_24bit_rgb(
+        api.nvim_get_hl_by_name("Normal", true)["background"]
+      ),
+    },
   },
   outline = setmetatable({
     auto_open = false,
@@ -133,7 +128,7 @@ local deprecations = {
   },
 }
 
-local function handle_deprecation(key, value, config)
+local function handle_deprecation(key, value, conf)
   local utils = require("flutter-tools.utils")
   local deprecation = deprecations[key]
   if not deprecation then
@@ -143,11 +138,9 @@ local function handle_deprecation(key, value, config)
     utils.notify(fmt("%s is deprecated: %s", key, deprecation.message), utils.L.WARN)
   end, 1000)
   if deprecation.fallback then
-    config[deprecation.fallback] = value
+    conf[deprecation.fallback] = value
   end
 end
-
-local config = setmetatable({}, { __index = defaults })
 
 ---Get the configuration or just a key of the config
 ---@param key string
@@ -166,11 +159,8 @@ function M.set(user_config)
   validate_prefs(user_config)
   for key, value in pairs(user_config) do
     handle_deprecation(key, value, user_config)
-    if user_config[key] and type(user_config[key]) == "table" then
-      setmetatable(user_config[key], { __index = defaults[key] })
-    end
   end
-  config = setmetatable(user_config, { __index = defaults })
+  config = vim.tbl_deep_extend("keep", user_config, config)
   return config
 end
 
