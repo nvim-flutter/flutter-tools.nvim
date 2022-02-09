@@ -146,7 +146,7 @@ function M.attach()
 
   debug_log("attaching LSP")
 
-  local config = utils.merge({ name = SERVER_NAME }, user_config)
+  local config = utils.merge({ name = SERVER_NAME }, user_config, {"color"})
 
   local bufnr = api.nvim_get_current_buf()
 
