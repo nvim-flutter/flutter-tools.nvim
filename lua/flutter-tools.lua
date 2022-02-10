@@ -95,7 +95,9 @@ local function setup_autocommands()
       end,
     },
     {
-      events = { "User FlutterToolsLspInitialized" },
+      -- NOTE: we piggyback of this event to check for when the server is first initialized
+      events = { "User FlutterToolsLspAnalysisComplete" },
+      modifiers = { "++once" },
       command = function()
         require("flutter-tools.lsp").document_color()
       end,

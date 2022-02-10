@@ -50,8 +50,10 @@ end
 local function handle_progress(err, result, ctx)
   -- Call the existing handler for progress so plugins can also handle the event
   vim.lsp.handlers["$/progress"](err, result, ctx)
+  -- NOTE: this event gets called whenever the analysis server has completed some work
+  -- rather than just when the server has started.
   if result and result.value and result.value.kind == "end" then
-    vim.cmd("doautocmd User FlutterToolsLspInitialized")
+    vim.cmd("doautocmd User FlutterToolsLspAnalysisComplete")
   end
 end
 
