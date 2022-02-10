@@ -96,9 +96,7 @@ local config = {
       foreground = false,
       virtual_text = true,
       virtual_text_str = "■",
-      background_color = require("flutter-tools.lsp.color.utils").decode_24bit_rgb(
-        api.nvim_get_hl_by_name("Normal", true)["background"]
-      ),
+      background_color = nil,
     },
   },
   outline = setmetatable({

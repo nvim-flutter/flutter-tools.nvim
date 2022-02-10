@@ -5,7 +5,8 @@ local M = {}
 
 --- Returns a table containing the RGB values produced by applying the alpha in
 --- @rgba with the background in @bg_rgb.
----
+--- FIXME: this currently does not support transparent backgrounds.
+--- need a replacement for bg_rgb
 --@param rgba (table) with keys 'r', 'g', 'b' in [0,255] and key 'a' in [0,1]
 --@param bg_rgb (table) with keys 'r', 'g', 'b' in in [0,255] to use as the
 --       background color when applying the alpha
@@ -20,7 +21,6 @@ function M.rgba_to_rgb(rgba, bg_rgb)
     a = { rgba.a, "n", true },
   })
 
-  bg_rgb = bg_rgb or M.decode_24bit_rgb(api.nvim_get_hl_by_name("Normal", true)["background"])
   validate({
     bg_r = { bg_rgb.r, "n", true },
     bg_g = { bg_rgb.g, "n", true },
@@ -173,6 +173,14 @@ function M.on_document_color(err, result, ctx, config)
   M.buf_color(client_id, bufnr, result, config)
 end
 
+local function get_background_color()
+  local normal_hl = api.nvim_get_hl_by_name("Normal", true)
+  if not normal_hl or not normal_hl.background then
+    return nil
+  end
+  return M.decode_24bit_rgb(normal_hl.background)
+end
+
 --- Shows a list of document colors for a certain buffer.
 ---
 --@param client_id number client id
@@ -190,10 +198,17 @@ function M.buf_color(client_id, bufnr, color_infos, _)
 
   local config = require("flutter-tools.config").get("lsp").color
 
+  local background_color = config.background_color or get_background_color()
+  -- FIXME: currently background_color is required to derive the rgb values for the colors
+  -- till there is a good solution for this transparent backgrounds won't work with lsp colors
+  if not background_color then
+    return
+  end
+
   for _, color_info in ipairs(color_infos) do
     local rgba, range = color_info.color, color_info.range
     local r, g, b, a = rgba.red * 255, rgba.green * 255, rgba.blue * 255, rgba.alpha
-    local rgb = M.rgba_to_rgb({ r = r, g = g, b = b, a = a }, config.background_color)
+    local rgb = M.rgba_to_rgb({ r = r, g = g, b = b, a = a }, background_color)
 
     if config.background then
       color_background(client_id, bufnr, range, rgb)
