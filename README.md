@@ -104,6 +104,10 @@ require("flutter-tools").setup{} -- use defaults
 
 ![flutter-devices](https://user-images.githubusercontent.com/22454918/112320203-b5f31a80-8ca6-11eb-90b8-9ac934a842da.png)
 
+#### Visualise colours from LSP
+
+![lsp-colours](https://user-images.githubusercontent.com/22454918/153088850-a14f9e67-4d28-47ad-a768-c6c318524951.png)
+
 #### Visualise logs
 
 ![dev log](./.github/dev_log.png)
@@ -221,6 +225,12 @@ require("flutter-tools").setup {
     auto_open = false -- if true this will open the outline automatically when it is first populated
   },
   lsp = {
+    color = { -- show the derived colours for dart variables
+      background = false, -- highlight the background
+      foreground = false, -- highlight the foreground
+      virtual_text = true, -- show the highlight using virtual text
+      virtual_text_str = "■", -- the virtual text character to highlight
+    },
     on_attach = my_custom_on_attach,
     capabilities = my_custom_capabilities -- e.g. lsp_status capabilities
     --- OR you can specify a function to deactivate or change or control how the config is created
