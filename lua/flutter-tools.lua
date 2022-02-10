@@ -94,6 +94,12 @@ local function setup_autocommands()
         require("flutter-tools.lsp").document_color()
       end,
     },
+    {
+      events = { "User FlutterToolsLspInitialized" },
+      command = function()
+        require("flutter-tools.lsp").document_color()
+      end,
+    },
   })
 
   utils.augroup("FlutterToolsHotReload", {

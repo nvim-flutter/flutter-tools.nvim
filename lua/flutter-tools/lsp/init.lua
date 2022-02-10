@@ -43,6 +43,18 @@ local function create_debug_log(level)
   end
 end
 
+---Handle progress notifications from the server
+---@param err table
+---@param result table
+---@param ctx table
+local function handle_progress(err, result, ctx)
+  -- Call the existing handler for progress so plugins can also handle the event
+  vim.lsp.handlers["$/progress"](err, result, ctx)
+  if result and result.value and result.value.kind == "end" then
+    vim.cmd("doautocmd User FlutterToolsLspInitialized")
+  end
+end
+
 ---Create default config for dartls
 ---@param opts table
 ---@return table
@@ -67,6 +79,8 @@ local function get_defaults(opts)
       },
     },
     handlers = {
+      -- TODO: can this be replaced with the initialized capability
+      ["$/progress"] = handle_progress,
       ["dart/textDocument/publishClosingLabels"] = utils.lsp_handler(
         require("flutter-tools.labels").closing_tags
       ),
