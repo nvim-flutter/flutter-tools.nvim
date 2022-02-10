@@ -86,6 +86,24 @@ local function setup_autocommands()
     },
   })
 
+  utils.augroup("FlutterToolsLspColors", {
+    {
+      events = { "BufEnter", "TextChanged", "InsertLeave" },
+      targets = { "*.dart" },
+      command = function()
+        require("flutter-tools.lsp").document_color()
+      end,
+    },
+    {
+      -- NOTE: we piggyback of this event to check for when the server is first initialized
+      events = { "User FlutterToolsLspAnalysisComplete" },
+      modifiers = { "++once" },
+      command = function()
+        require("flutter-tools.lsp").document_color()
+      end,
+    },
+  })
+
   utils.augroup("FlutterToolsHotReload", {
     {
       events = { "BufWritePost" },

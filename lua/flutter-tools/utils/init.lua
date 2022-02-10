@@ -167,15 +167,19 @@ end
 
 ---Merge two table but maintain metatables
 ---Priority is given to the second table
+--- FIXME: this does not copy metatables
 ---@param t1 table
 ---@param t2 table
+---@param skip string[]
 ---@return table
-function M.merge(t1, t2)
+function M.merge(t1, t2, skip)
   for k, v in pairs(t2) do
-    if (type(v) == "table") and (type(t1[k] or false) == "table") then
-      M.merge(t1[k], t2[k])
-    else
-      t1[k] = v
+    if not skip or not vim.tbl_contains(skip, k) then
+      if (type(v) == "table") and (type(t1[k] or false) == "table") then
+        M.merge(t1[k], t2[k])
+      else
+        t1[k] = v
+      end
     end
   end
   return t1
@@ -197,7 +201,7 @@ end
 ---@param attribute string
 ---@return string
 function M.get_hl(name, attribute)
-  return fn.synIDattr(fn.hlID("Normal"), "fg")
+  return fn.synIDattr(fn.hlID(name), attribute)
 end
 
 function M.open_command()

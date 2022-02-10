@@ -1,5 +1,6 @@
 local utils = require("flutter-tools.utils")
 local path = require("flutter-tools.utils.path")
+local color = require("flutter-tools.lsp.color")
 
 local api = vim.api
 local lsp = vim.lsp
@@ -42,6 +43,20 @@ local function create_debug_log(level)
   end
 end
 
+---Handle progress notifications from the server
+---@param err table
+---@param result table
+---@param ctx table
+local function handle_progress(err, result, ctx)
+  -- Call the existing handler for progress so plugins can also handle the event
+  vim.lsp.handlers["$/progress"](err, result, ctx)
+  -- NOTE: this event gets called whenever the analysis server has completed some work
+  -- rather than just when the server has started.
+  if result and result.value and result.value.kind == "end" then
+    vim.cmd("doautocmd User FlutterToolsLspAnalysisComplete")
+  end
+end
+
 ---Create default config for dartls
 ---@param opts table
 ---@return table
@@ -66,6 +81,8 @@ local function get_defaults(opts)
       },
     },
     handlers = {
+      -- TODO: can this be replaced with the initialized capability
+      ["$/progress"] = handle_progress,
       ["dart/textDocument/publishClosingLabels"] = utils.lsp_handler(
         require("flutter-tools.labels").closing_tags
       ),
@@ -75,6 +92,7 @@ local function get_defaults(opts)
       ["dart/textDocument/publishFlutterOutline"] = utils.lsp_handler(
         require("flutter-tools.guides").widget_guides
       ),
+      ["textDocument/documentColor"] = require("flutter-tools.lsp.color").on_document_color,
     },
     commands = {
       ["refactor.perform"] = require("flutter-tools.lsp.commands").refactor_perform,
@@ -83,6 +101,9 @@ local function get_defaults(opts)
       local capabilities = lsp.protocol.make_client_capabilities()
       capabilities.workspace.configuration = true
       capabilities.textDocument.completion.completionItem.snippetSupport = true
+      capabilities.textDocument.documentColor = {
+        dynamicRegistration = true,
+      }
       -- @see: https://github.com/hrsh7th/nvim-compe#how-to-use-lsp-snippet
       capabilities.textDocument.completion.completionItem.resolveSupport = {
         properties = {
@@ -130,6 +151,19 @@ function M.get_lsp_root_dir()
   return client and client.config.root_dir or nil
 end
 
+-- FIXME: I'm not sure how to correctly wait till a server is ready before
+-- sending this request. Ideally we would wait till the server is ready.
+M.document_color = function()
+  local active_clients = vim.tbl_map(function(c)
+    return c.id
+  end, vim.lsp.get_active_clients())
+  local dartls = get_dartls_client()
+  if dartls and vim.tbl_contains(active_clients, dartls.id) then
+    color.document_color()
+  end
+end
+M.on_document_color = color.on_document_color
+
 ---This was heavily inspired by nvim-metals implementation of the attach functionality
 ---@return boolean
 function M.attach()
@@ -139,7 +173,7 @@ function M.attach()
 
   debug_log("attaching LSP")
 
-  local config = utils.merge({ name = SERVER_NAME }, user_config)
+  local config = utils.merge({ name = SERVER_NAME }, user_config, { "color" })
 
   local bufnr = api.nvim_get_current_buf()
 
