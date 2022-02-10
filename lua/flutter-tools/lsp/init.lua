@@ -136,20 +136,14 @@ function M.get_lsp_root_dir()
 end
 
 -- FIXME: I'm not sure how to correctly wait till a server is ready before
--- sending this request so we hack this by adding a retry delay if it's too early.
--- Ideally we would wait till the server is ready.
-M.document_color = function(cancel_retry)
+-- sending this request. Ideally we would wait till the server is ready.
+M.document_color = function()
   local active_clients = vim.tbl_map(function(c)
     return c.id
   end, vim.lsp.get_active_clients())
   local dartls = get_dartls_client()
   if dartls and vim.tbl_contains(active_clients, dartls.id) then
     color.document_color()
-  elseif not cancel_retry then
-    -- HACK: The language server might not have started yet so we wait 5secs and retry this command
-    vim.defer_fn(function()
-      M.document_color(true)
-    end, 5000)
   end
 end
 M.on_document_color = color.on_document_color
