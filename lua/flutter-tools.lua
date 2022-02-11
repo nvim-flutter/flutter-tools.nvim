@@ -86,7 +86,7 @@ local function setup_autocommands()
     },
   })
 
-  local color_enabled = require("flutter-tools.config").get('lsp').color.enabled
+  local color_enabled = require("flutter-tools.config").get("lsp").color.enabled
   if color_enabled then
     utils.augroup("FlutterToolsLspColors", {
       {
