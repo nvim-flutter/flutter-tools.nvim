@@ -92,6 +92,7 @@ local config = {
   lsp = {
     debug = M.debug_levels.WARN,
     color = {
+      enabled = false,
       background = false,
       foreground = false,
       virtual_text = true,
