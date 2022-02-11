@@ -158,7 +158,11 @@ M.document_color = function()
     return c.id
   end, vim.lsp.get_active_clients())
   local dartls = get_dartls_client()
-  if dartls and vim.tbl_contains(active_clients, dartls.id) then
+  if
+    dartls
+    and vim.tbl_contains(active_clients, dartls.id)
+    and dartls.server_capabilities.colorProvider
+  then
     color.document_color()
   end
 end
