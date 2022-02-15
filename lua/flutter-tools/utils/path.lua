@@ -19,6 +19,7 @@ end
 local uname = luv.os_uname()
 M.is_mac = uname.sysname == "Darwin"
 M.is_linux = uname.sysname == "Linux"
+---@type boolean
 M.is_windows = uname.version:match("Windows")
 M.path_sep = M.is_windows and "\\" or "/"
 

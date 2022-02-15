@@ -46,7 +46,8 @@ end
 
 local function _flutter_sdk_dart_bin(flutter_sdk)
   -- retrieve the Dart binary from the Flutter SDK
-  return path.join(flutter_sdk, "bin", "dart")
+  local binary_name = require("flutter-tools.utils.path").is_windows and "dart.bat" or "dart"
+  return path.join(flutter_sdk, "bin", binary_name)
 end
 
 ---Get paths for flutter and dart based on the binary locations
