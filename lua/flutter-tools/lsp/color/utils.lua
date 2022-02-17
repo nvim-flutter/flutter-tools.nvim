@@ -2,6 +2,9 @@ local tohex, bor, lshift, rshift, band = bit.tohex, bit.bor, bit.lshift, bit.rsh
 local validate, api = vim.validate, vim.api
 
 local M = {}
+-- The priority of the extmark highlight for lsp document color highlights
+-- it needs to be greater than 100 which is the priority of treesitter's highlights
+local HL_PRIORITY = 150
 
 --- Returns a table containing the RGB values produced by applying the alpha in
 --- @rgba with the background in @bg_rgb.
@@ -115,7 +118,7 @@ local function color_background(_, bufnr, range, rgb)
 
   local start_pos = { range["start"]["line"], range["start"]["character"] }
   local end_pos = { range["end"]["line"], range["end"]["character"] }
-  vim.highlight.range(bufnr, CLIENT_NS, hlname, start_pos, end_pos)
+  vim.highlight.range(bufnr, CLIENT_NS, hlname, start_pos, end_pos, nil, nil, HL_PRIORITY)
 end
 
 --- Changes the guifg to @rgb for the text in @range.
@@ -133,7 +136,7 @@ local function color_foreground(_, bufnr, range, rgb)
 
   local start_pos = { range["start"]["line"], range["start"]["character"] }
   local end_pos = { range["end"]["line"], range["end"]["character"] }
-  vim.highlight.range(bufnr, CLIENT_NS, hlname, start_pos, end_pos)
+  vim.highlight.range(bufnr, CLIENT_NS, hlname, start_pos, end_pos, nil, nil, HL_PRIORITY)
 end
 
 --- Adds virtual text with the color @rgb and the text @virtual_text_str on
