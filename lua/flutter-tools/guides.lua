@@ -158,10 +158,10 @@ local function render_guides(bufnum, guides, conf)
         )
       if not success and conf.debug then
         local name = api.nvim_buf_get_name(bufnum)
-        utils.notify({
+        utils.notify(
           fmt("error drawing widget guide for %s at line %d, col %d", name, lnum, start) .. msg,
-          utils.L.ERROR,
-        })
+          utils.L.ERROR
+        )
       end
     end
   end
