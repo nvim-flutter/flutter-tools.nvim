@@ -100,6 +100,10 @@ local function get_defaults(opts)
     capabilities = (function()
       local capabilities = lsp.protocol.make_client_capabilities()
       capabilities.workspace.configuration = true
+      -- This setting allows document changes to be made via the lsp e.g. renaming a file when
+      -- the containing class is renamed also
+      -- @see: https://microsoft.github.io/language-server-protocol/specifications/specification-current/#workspaceEdit
+      capabilities.workspace.workspaceEdit.documentChanges = true
       capabilities.textDocument.completion.completionItem.snippetSupport = true
       capabilities.textDocument.documentColor = {
         dynamicRegistration = true,
