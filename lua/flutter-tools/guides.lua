@@ -58,9 +58,9 @@ end
 ---@return string
 local function get_guide_character(lnum, end_line, parent_start, indent_size, children, lines)
   for index, child in ipairs(children) do
-    -- if the child is within the parent range i.e. not at the start or the end
+    -- if the child is within the parent range but not at the end
     local child_lnum = child.range.start.line
-    if index ~= #children and index ~= 1 and lnum == child_lnum then
+    if index ~= #children and lnum == child_lnum then
       local child_indent = first_marker_index(lines, child_lnum, MIDDLE_OFFSET) - parent_start
       return markers.middle .. markers.horizontal:rep(child_indent)
     end
