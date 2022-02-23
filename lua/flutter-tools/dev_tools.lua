@@ -112,8 +112,8 @@ end
 ---Open dev tools
 ---@param _ number
 ---@param data string
----@param __ Job
-local function handle_start(_, data, __)
+---@param _ Job
+local function handle_start(_, data, _)
   if #data > 0 then
     local json = fn.json_decode(data)
     if json and json.params then
@@ -129,8 +129,8 @@ end
 ---Handler errors whilst opening dev tools
 ---@param _ number
 ---@param data string
----@param __ Job
-local function handle_error(_, data, __)
+---@param _ Job
+local function handle_error(_, data, _)
   for _, str in ipairs(data) do
     if str:match("No active package devtools") then
       executable.flutter(function(cmd)
