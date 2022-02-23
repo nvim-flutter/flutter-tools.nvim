@@ -2,7 +2,6 @@ local path = require("flutter-tools.utils.path")
 local M = {}
 
 local fn = vim.fn
-local api = vim.api
 local fmt = string.format
 
 --- @param prefs table user preferences
@@ -49,9 +48,16 @@ local config = {
     enabled = false,
     debug = false,
   },
-  ui = {
+  ui = setmetatable({
     border = "single",
-  },
+  }, {
+    __index = function(_, k)
+      if k == "notification_style" then
+        local ok = pcall(require, "notify")
+        return ok and "native" or "plugin"
+      end
+    end,
+  }),
   decorations = {
     statusline = {
       app_version = false,

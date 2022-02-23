@@ -121,7 +121,7 @@ local function handle_start(_, data, __)
       devtools_url = string.format("http://%s:%s", json.params.host, json.params.port)
       start_browser()
       local msg = string.format("Serving DevTools at %s", devtools_url)
-      ui.notify({ msg }, 20000)
+      ui.notify({ msg }, { timeout = 20000 })
     end
   end
 end

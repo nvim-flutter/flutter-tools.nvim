@@ -76,7 +76,7 @@ end
 local function on_run_data(is_err, data)
   local dev_log_conf = config.get("dev_log")
   if is_err then
-    ui.notify({ data })
+    ui.notify({ data }, { level = ui.ERROR, timeout = 5000 })
   end
   dev_log.log(data, dev_log_conf)
 end
@@ -177,7 +177,7 @@ end
 function M.restart(quiet)
   send("restart", quiet, function()
     if not quiet then
-      ui.notify({ "Restarting..." }, 1500)
+      ui.notify({ "Restarting..." }, { timeout = 1500 })
     end
   end)
 end
@@ -186,7 +186,7 @@ end
 function M.quit(quiet)
   send("quit", quiet, function()
     if not quiet then
-      ui.notify({ "Closing flutter application..." }, 1500)
+      ui.notify({ "Closing flutter application..." }, { timeout = 1500 })
       shutdown()
     end
   end)
@@ -227,7 +227,7 @@ end
 ---@param result string[]
 local function on_pub_get(result, err)
   local timeout = err and 10000 or nil
-  ui.notify(result, timeout)
+  ui.notify(result, { timeout = timeout })
 end
 
 ---@type Job
@@ -275,11 +275,11 @@ function M.pub_upgrade(cmd_args)
       end
       pub_upgrade_job = Job:new({ command = cmd, args = args, cwd = lsp.get_lsp_root_dir() })
       pub_upgrade_job:after_success(vim.schedule_wrap(function(j)
-        ui.notify(j:result(), notify_timeout)
+        ui.notify(j:result(), { timeout = notify_timeout })
         pub_upgrade_job = nil
       end))
       pub_upgrade_job:after_failure(vim.schedule_wrap(function(j)
-        ui.notify(j:stderr_result(), notify_timeout)
+        ui.notify(j:stderr_result(), { timeout = notify_timeout })
         pub_upgrade_job = nil
       end))
       pub_upgrade_job:start()
@@ -323,7 +323,7 @@ function M.fvm_list(callback)
     end))
 
     fvm_list_job:after_failure(vim.schedule_wrap(function(j)
-      ui.notify(j:stderr_result())
+      ui.notify(j:stderr_result(), { level = ui.ERROR })
       fvm_list_job = nil
     end))
 
@@ -348,7 +348,7 @@ function M.fvm_use(sdk_name)
     end))
 
     fvm_use_job:after_failure(vim.schedule_wrap(function(j)
-      ui.notify(j:result(), 10000) -- FVM doesn't output to stderr, nice
+      ui.notify(j:result(), { timeout = 10000 }) -- FVM doesn't output to stderr, nice
       fvm_use_job = nil
     end))
 

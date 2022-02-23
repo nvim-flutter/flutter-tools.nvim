@@ -1,7 +1,13 @@
 local utils = require("flutter-tools.utils")
 local fmt = string.format
 
-local M = {}
+local M = {
+  ERROR = vim.log.levels.ERROR,
+  DEBUG = vim.log.levels.DEBUG,
+  INFO = vim.log.levels.INFO,
+  TRACE = vim.log.levels.TRACE,
+  WARN = vim.log.levels.WARN
+}
 
 local api = vim.api
 local fn = vim.fn
@@ -124,7 +130,7 @@ end
 ---Create a popup window to notify the user of an event
 ---@param lines string[]
 ---@param duration integer
-function M.notify(lines, duration)
+local function notify(lines, duration)
   assert(type(lines) == "table", "lines passed to notify should be a list of strings")
   duration = duration or 3000
   if not lines or #lines < 1 or invalid_lines(lines) then
@@ -190,6 +196,21 @@ function M.notify(lines, duration)
     end
     update_win_state(win)
   end)
+end
+
+local notification_style = require("flutter-tools.config").get("ui").notification_style
+---Post a message to UI so the user knows something has occurred.
+---@param lines string[]
+---@param opts table
+M.notify = function(lines, opts)
+  opts = opts or {}
+  local timeout = opts.timeout
+  local level = opts.level or "info"
+  if notification_style == "native" then
+    vim.notify(table.concat(lines, "\n"), level, { title = "Flutter tools", timeout = timeout })
+  else
+    notify(lines, timeout)
+  end
 end
 
 ---@class PopupOpts

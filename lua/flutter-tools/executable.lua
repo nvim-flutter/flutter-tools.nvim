@@ -80,7 +80,10 @@ local function path_from_lookup_cmd(lookup_cmd, callback)
 
   local job = Job:new({ command = cmd, args = args })
   job:after_failure(vim.schedule_wrap(function()
-    ui.notify({ string.format("Error running %s", lookup_cmd) })
+    ui.notify(
+      { string.format("Error running %s", lookup_cmd) },
+      { timeout = 5000, level = ui.ERROR }
+    )
   end))
   job:after_success(vim.schedule_wrap(function(j, _)
     local result = j:result()
