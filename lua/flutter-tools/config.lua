@@ -159,7 +159,7 @@ function M.set(user_config)
   for key, value in pairs(user_config) do
     handle_deprecation(key, value, user_config)
   end
-  config = vim.tbl_deep_extend("keep", user_config, config)
+  config = require('flutter-tools.utils').merge(config, user_config)
   return config
 end
 
