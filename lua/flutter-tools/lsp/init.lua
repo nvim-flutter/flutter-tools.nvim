@@ -49,7 +49,10 @@ end
 ---@param ctx table
 local function handle_progress(err, result, ctx)
   -- Call the existing handler for progress so plugins can also handle the event
-  vim.lsp.handlers["$/progress"](err, result, ctx)
+  -- but only whilst not editing the buffer as dartls can be spammy
+  if api.nvim_get_mode().mode ~= "i" then
+    vim.lsp.handlers["$/progress"](err, result, ctx)
+  end
   -- NOTE: this event gets called whenever the analysis server has completed some work
   -- rather than just when the server has started.
   if result and result.value and result.value.kind == "end" then
