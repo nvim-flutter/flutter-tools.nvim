@@ -6,7 +6,7 @@ local M = {
   DEBUG = vim.log.levels.DEBUG,
   INFO = vim.log.levels.INFO,
   TRACE = vim.log.levels.TRACE,
-  WARN = vim.log.levels.WARN
+  WARN = vim.log.levels.WARN,
 }
 
 local api = vim.api
@@ -207,7 +207,11 @@ M.notify = function(lines, opts)
   local timeout = opts.timeout
   local level = opts.level or "info"
   if notification_style == "native" then
-    vim.notify(table.concat(lines, "\n"), level, { title = "Flutter tools", timeout = timeout })
+    vim.notify(
+      table.concat(lines, "\n"),
+      level,
+      { title = "Flutter tools", timeout = timeout, icon = "" }
+    )
   else
     notify(lines, timeout)
   end
