@@ -1,9 +1,10 @@
 local utils = require("flutter-tools.utils")
 local path = require("flutter-tools.utils.path")
+local ui = require("flutter-tools.ui")
 
 local success, dap = pcall(require, "dap")
 if not success then
-  utils.notify("nvim-dap is not installed!\n" .. dap, utils.L.ERROR)
+  ui.notify({ "nvim-dap is not installed!", dap }, { level = ui.ERROR })
   return
 end
 
@@ -25,13 +26,16 @@ function M.install_debugger(silent)
     if silent then
       return
     end
-    return utils.notify(fmt("The debugger is already installed at %s", debugger_dir), utils.L.ERROR)
+    return ui.notify(
+      { fmt("The debugger is already installed at %s", debugger_dir) },
+      { level = ui.WARN }
+    )
   end
 
   if not has("npx") or not has("git") then
-    return utils.notify(
-      "You need npm > 5.2.0, npx and git in order to install the debugger",
-      utils.L.WARN
+    return ui.notify(
+      { "You need npm > 5.2.0, npx and git in order to install the debugger" },
+      ui.WARN
     )
   end
 

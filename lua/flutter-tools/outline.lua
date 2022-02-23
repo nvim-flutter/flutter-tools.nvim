@@ -372,7 +372,7 @@ local function request_code_actions()
   local line = fn.line(".")
   local uri = vim.b.outline_uri
   if not uri then
-    return utils.notify("Sorry! code actions not available")
+    return ui.notify({ "Sorry! code actions not available" })
   end
   local outline = M.outlines[uri]
   local item = outline[line]
@@ -407,12 +407,12 @@ local function select_outline_item()
   local line = fn.line(".")
   local uri = vim.b.outline_uri
   if not uri then
-    return utils.notify([[Sorry! this item can't be opened]])
+    return ui.notify({ [[Sorry! this item can't be opened]] }, { level = ui.WARN })
   end
   local outline = M.outlines[uri]
   local item = outline[line]
   if not item then
-    return utils.notify([[Sorry! this item can't be opened]])
+    return ui.notify({ [[Sorry! this item can't be opened]] }, { level = ui.WARN })
   end
   vim.cmd("drop " .. vim.uri_to_fname(uri))
   api.nvim_win_set_cursor(0, { item.start_line + 1, item.start_col + 1 })
@@ -470,7 +470,7 @@ function M.open(opts)
   opts = opts or {}
   local ok, lines, highlights, outline = get_outline_content()
   if not ok then
-    utils.notify("Sorry! There is no outline for this file")
+    ui.notify({"Sorry! There is no outline for this file"})
     return
   end
   local parent_win = api.nvim_get_current_win()

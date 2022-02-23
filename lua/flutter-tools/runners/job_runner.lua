@@ -1,5 +1,5 @@
 local Job = require("plenary.job")
-local utils = require("flutter-tools.utils")
+local ui = require("flutter-tools.ui")
 local dev_tools = require("flutter-tools.dev_tools")
 
 ---@type FlutterRunner
@@ -47,7 +47,10 @@ function JobRunner:send(cmd, quiet)
   if key ~= nil then
     run_job:send(key)
   elseif not quiet then
-    utils.notify("Command " .. cmd .. " is not yet implemented for CLI runner")
+    ui.notify(
+      { "Command " .. cmd .. " is not yet implemented for CLI runner" },
+      { level = ui.ERROR }
+    )
   end
 end
 

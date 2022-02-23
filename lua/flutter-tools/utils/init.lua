@@ -7,17 +7,6 @@ local fmt = string.format
 -- Global store of callback for autocommand (and eventually mappings)
 _G.__flutter_tools_callbacks = __flutter_tools_callbacks or {}
 
-M.L = vim.log.levels
-
----proxy for vim.notify
----@param msg string
----@param level integer
----@return nil
-function M.notify(msg, level)
-  level = level or M.L.INFO
-  vim.notify(msg, level, { title = "Flutter Tools" })
-end
-
 ---@param name string
 ---@return string
 function M.display_name(name, platform)

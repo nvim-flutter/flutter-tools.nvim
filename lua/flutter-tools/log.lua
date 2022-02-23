@@ -36,7 +36,10 @@ local function create(config)
   }
   ui.open_win(opts, function(buf, win)
     if not buf then
-      utils.notify("Failed to open the dev log as the buffer could not be found", utils.L.ERROR)
+      ui.notify(
+        { "Failed to open the dev log as the buffer could not be found" },
+        { level = ui.ERROR }
+      )
       return
     end
     M.buf = buf
@@ -74,7 +77,7 @@ local function autoscroll(buf, target_win)
   local buf_length = api.nvim_buf_line_count(buf)
   local success, err = pcall(api.nvim_win_set_cursor, win, { buf_length, 0 })
   if not success then
-    utils.notify(fmt("Failed to set cursor for log window %s: %s", win, err), utils.L.ERROR)
+    ui.notify({ fmt("Failed to set cursor for log window %s: %s", win, err) }, { level = ui.ERROR })
   end
 end
 

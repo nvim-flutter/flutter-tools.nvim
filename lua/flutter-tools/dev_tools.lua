@@ -176,7 +176,7 @@ function M.start()
       job:start()
     end)
   else
-    utils.notify("DevTools are already running!")
+    ui.notify({"DevTools are already running!"})
   end
 end
 

@@ -38,7 +38,7 @@ local function create_debug_log(level)
   return function(msg)
     local levels = require("flutter-tools.config").debug_levels
     if level <= levels.DEBUG then
-      utils.notify(msg)
+      require("flutter-tools.ui").notify({ msg }, { level = level })
     end
   end
 end

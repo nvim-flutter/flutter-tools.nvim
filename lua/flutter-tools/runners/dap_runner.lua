@@ -1,8 +1,9 @@
-local utils = require("flutter-tools.utils")
+local ui = require("flutter-tools.ui")
 local dev_tools = require("flutter-tools.dev_tools")
-local fmt = string.format
 local config = require("flutter-tools.config")
 local _, dap = pcall(require, "dap")
+
+local fmt = string.format
 
 ---@type FlutterRunner
 local DAPRunner = {}
@@ -92,7 +93,7 @@ function DAPRunner:run(paths, args, cwd, on_run_data, on_run_exit)
 
   local launch_config
   if launch_configuration_count == 0 then
-    utils.notify("No launch configuration for DAP found", utils.L.ERROR)
+    ui.notify({ "No launch configuration for DAP found" }, { level = ui.ERROR })
     return
   elseif launch_configuration_count == 1 then
     launch_config = launch_configurations[1]
@@ -136,7 +137,10 @@ function DAPRunner:send(cmd, quiet)
       },
     })
   elseif not quiet then
-    utils.notify("Command " .. cmd .. " is not yet implemented for DAP runner")
+    ui.notify(
+      { "Command " .. cmd .. " is not yet implemented for DAP runner" },
+      { level = ui.ERROR }
+    )
   end
 end
 

@@ -29,7 +29,10 @@ function M.use_dap_runner()
   local dap_requested = config.get("debugger").run_via_dap
   if dap_requested then
     if not dap_ok then
-      utils.notify("dap runner was request but nvim-dap is not installed!\n" .. dap, utils.L.ERROR)
+      ui.notify(
+        { "dap runner was request but nvim-dap is not installed!", dap },
+        { level = ui.ERROR }
+      )
       return false
     end
     return true
@@ -123,7 +126,7 @@ end
 ---@param opts table
 function M.run(opts)
   if M.is_running() then
-    return utils.notify("Flutter is already running!")
+    return ui.notify({ "Flutter is already running!" })
   end
   opts = opts or {}
   local device = opts.device
@@ -164,7 +167,7 @@ local function send(cmd, quiet, on_send)
       on_send()
     end
   elseif not quiet then
-    utils.notify("Sorry! Flutter is not running")
+    ui.notify({ "Sorry! Flutter is not running" })
   end
 end
 

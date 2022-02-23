@@ -134,13 +134,13 @@ local deprecations = {
 }
 
 local function handle_deprecation(key, value, conf)
-  local utils = require("flutter-tools.utils")
   local deprecation = deprecations[key]
   if not deprecation then
     return
   end
   vim.defer_fn(function()
-    utils.notify(fmt("%s is deprecated: %s", key, deprecation.message), utils.L.WARN)
+    local ui = require("flutter-tools.ui")
+    ui.notify({ fmt("%s is deprecated: %s", key, deprecation.message) }, { level = ui.WARN })
   end, 1000)
   if deprecation.fallback then
     conf[deprecation.fallback] = value
@@ -165,7 +165,7 @@ function M.set(user_config)
   for key, value in pairs(user_config) do
     handle_deprecation(key, value, user_config)
   end
-  config = require('flutter-tools.utils').merge(config, user_config)
+  config = require("flutter-tools.utils").merge(config, user_config)
   return config
 end
 
