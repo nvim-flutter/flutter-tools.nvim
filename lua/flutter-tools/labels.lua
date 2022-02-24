@@ -12,7 +12,7 @@ local function render_labels(labels, opts)
 
   for _, item in ipairs(labels) do
     local line = item.range["end"].line
-    api.nvim_buf_set_extmark(0, namespace, tonumber(line), -1, {
+    local ok, err = pcall(api.nvim_buf_set_extmark, 0, namespace, tonumber(line), -1, {
       virt_text = { {
         prefix .. item.label,
         highlight,
@@ -20,6 +20,14 @@ local function render_labels(labels, opts)
       virt_text_pos = "eol",
       hl_mode = "combine",
     })
+    if not ok then
+      local name = api.nvim_buf_get_name(0)
+      local ui = require("flutter-tools.ui")
+      ui.notify({
+        string.format("error drawing label for %s on line %d.", name, line),
+        "because: " .. err,
+      }, { level = ui.ERROR, source = "labels" })
+    end
   end
 end
 
