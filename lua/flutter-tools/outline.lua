@@ -470,7 +470,7 @@ function M.open(opts)
   opts = opts or {}
   local ok, lines, highlights, outline = get_outline_content()
   if not ok then
-    ui.notify({"Sorry! There is no outline for this file"})
+    ui.notify({ "Sorry! There is no outline for this file" })
     return
   end
   local parent_win = api.nvim_get_current_win()
