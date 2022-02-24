@@ -166,15 +166,14 @@ function M.commands(opts)
     })
   end
 
-  opts = opts and not vim.tbl_isempty(opts) and opts
-    or themes.get_dropdown({
-      previewer = false,
-      layout_config = {
-        height = #commands + MENU_PADDING,
-      },
-    })
+  local picker_opts = themes.get_dropdown({
+    previewer = false,
+    layout_config = {
+      height = #commands + MENU_PADDING,
+    },
+  })
 
-  pickers.new(opts, {
+  pickers.new(picker_opts, {
     prompt_title = "Flutter tools commands",
     finder = finders.new_table({
       results = commands,
