@@ -2,9 +2,6 @@ local tohex, bor, lshift, rshift, band = bit.tohex, bit.bor, bit.lshift, bit.rsh
 local validate, api = vim.validate, vim.api
 
 local M = {}
--- The priority of the extmark highlight for lsp document color highlights
--- it needs to be greater than 100 which is the priority of treesitter's highlights
-local HL_PRIORITY = 150
 
 --- Returns a table containing the RGB values produced by applying the alpha in
 --- @rgba with the background in @bg_rgb.
@@ -100,6 +97,16 @@ end
 
 local CLIENT_NS = api.nvim_create_namespace("flutter_tools_lsp_document_color")
 
+local function hl_range(bufnr, namespace, hlname, start_pos, end_pos)
+  local hl = vim.highlight
+  if vim.fn.has("nvim-0.7") then
+    hl.range(bufnr, namespace, hlname, start_pos, end_pos, { priority = hl.priorities.user })
+  else -- TODO: delete this clause once nvim 0.7 is stable
+    ---@diagnostic disable-next-line: redundant-parameter
+    hl.range(bufnr, namespace, hlname, start_pos, end_pos, nil, nil, 150)
+  end
+end
+
 --- Changes the guibg to @rgb for the text in @range. Also changes the guifg to
 --- either #ffffff or #000000 based on which makes the text easier to read for
 --- the given guibg
@@ -118,7 +125,7 @@ local function color_background(_, bufnr, range, rgb)
 
   local start_pos = { range["start"]["line"], range["start"]["character"] }
   local end_pos = { range["end"]["line"], range["end"]["character"] }
-  vim.highlight.range(bufnr, CLIENT_NS, hlname, start_pos, end_pos, nil, nil, HL_PRIORITY)
+  hl_range(bufnr, CLIENT_NS, hlname, start_pos, end_pos)
 end
 
 --- Changes the guifg to @rgb for the text in @range.
@@ -136,7 +143,7 @@ local function color_foreground(_, bufnr, range, rgb)
 
   local start_pos = { range["start"]["line"], range["start"]["character"] }
   local end_pos = { range["end"]["line"], range["end"]["character"] }
-  vim.highlight.range(bufnr, CLIENT_NS, hlname, start_pos, end_pos, nil, nil, HL_PRIORITY)
+  hl_range(bufnr, CLIENT_NS, hlname, start_pos, end_pos)
 end
 
 --- Adds virtual text with the color @rgb and the text @virtual_text_str on
