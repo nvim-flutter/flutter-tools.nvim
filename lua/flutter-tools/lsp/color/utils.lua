@@ -99,7 +99,7 @@ local CLIENT_NS = api.nvim_create_namespace("flutter_tools_lsp_document_color")
 
 local function hl_range(bufnr, namespace, hlname, start_pos, end_pos)
   local hl = vim.highlight
-  if vim.fn.has("nvim-0.7") then
+  if vim.fn.has("nvim-0.7") > 1 then
     hl.range(bufnr, namespace, hlname, start_pos, end_pos, { priority = hl.priorities.user })
   else -- TODO: delete this clause once nvim 0.7 is stable
     ---@diagnostic disable-next-line: redundant-parameter
