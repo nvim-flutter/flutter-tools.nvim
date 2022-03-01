@@ -6,7 +6,7 @@ local _, dap = pcall(require, "dap")
 local fmt = string.format
 
 ---@type FlutterRunner
-local DAPRunner = {}
+local DebuggerRunner = {}
 
 local service_extensions_isolateid = {}
 local service_extensions_state = {}
@@ -25,11 +25,11 @@ local service_activation_requests = {
   visual_debug = "ext.flutter.debugPaint",
 }
 
-function DAPRunner:is_running()
+function DebuggerRunner:is_running()
   return dap.session() ~= nil
 end
 
-function DAPRunner:run(paths, args, cwd, on_run_data, on_run_exit)
+function DebuggerRunner:run(paths, args, cwd, on_run_data, on_run_exit)
   local started = false
   local before_start_logs = {}
   service_extensions_isolateid = {}
@@ -119,7 +119,7 @@ function DAPRunner:run(paths, args, cwd, on_run_data, on_run_exit)
   dap.run(launch_config)
 end
 
-function DAPRunner:send(cmd, quiet)
+function DebuggerRunner:send(cmd, quiet)
   local request = command_requests[cmd]
   local service_activation_request = service_activation_requests[cmd]
   if request ~= nil then
@@ -146,10 +146,10 @@ function DAPRunner:send(cmd, quiet)
   end
 end
 
-function DAPRunner:cleanup()
+function DebuggerRunner:cleanup()
   if dap.session() then
     dap.terminate()
   end
 end
 
-return DAPRunner
+return DebuggerRunner

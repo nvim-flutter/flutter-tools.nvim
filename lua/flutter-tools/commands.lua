@@ -7,7 +7,7 @@ local executable = require("flutter-tools.executable")
 local dev_tools = require("flutter-tools.dev_tools")
 local lsp = require("flutter-tools.lsp")
 local job_runner = require("flutter-tools.runners.job_runner")
-local dap_runner = require("flutter-tools.runners.dap_runner")
+local debugger_runner = require("flutter-tools.runners.debugger_runner")
 local dev_log = require("flutter-tools.log")
 local dap_ok, dap = pcall(require, "dap")
 
@@ -25,12 +25,12 @@ local current_device = nil
 ---@type FlutterRunner
 local runner = nil
 
-function M.use_dap_runner()
-  local dap_requested = config.get("debugger").run_via_dap
-  if dap_requested then
+function M.use_debugger_runner()
+  local debugger_requested = config.get("debugger").run_via_dap
+  if debugger_requested then
     if not dap_ok then
       ui.notify(
-        { "dap runner was request but nvim-dap is not installed!", dap },
+        { "debugger runner was request but nvim-dap is not installed!", dap },
         { level = ui.ERROR }
       )
       return false
@@ -135,7 +135,7 @@ function M.run(opts)
   executable.get(function(paths)
     local args = cli_args or {}
     if not cli_args then
-      if not M.use_dap_runner() then
+      if not M.use_debugger_runner() then
         vim.list_extend(args, { "run" })
       end
       if not cmd_args and device and device.id then
@@ -152,7 +152,7 @@ function M.run(opts)
       end
     end
     ui.notify({ "Starting flutter project..." })
-    runner = M.use_dap_runner() and dap_runner or job_runner
+    runner = M.use_debugger_runner() and debugger_runner or job_runner
     runner:run(paths, args, lsp.get_lsp_root_dir(), on_run_data, on_run_exit)
   end)
 end
