@@ -198,20 +198,34 @@ local function notify(lines, duration)
   end)
 end
 
+local notifications = {
+  errors = {},
+}
+
 local notification_style = require("flutter-tools.config").get("ui").notification_style
 ---Post a message to UI so the user knows something has occurred.
 ---@param lines string[]
 ---@param opts table
 M.notify = function(lines, opts)
   opts = opts or {}
+  local source = opts.source
   local timeout = opts.timeout
   local level = opts.level or "info"
   if notification_style == "native" then
-    vim.notify(
-      table.concat(lines, "\n"),
-      level,
-      { title = "Flutter tools", timeout = timeout, icon = "" }
-    )
+    local is_error = level == M.ERROR or level == "error"
+    local prev_notification = is_error and notifications.errors[source] or nil
+    if prev_notification then
+      lines = vim.list_extend(prev_notification.message or {}, lines)
+    end
+    local notification = vim.notify(table.concat(lines, "\n"), level, {
+      title = "Flutter tools",
+      timeout = timeout,
+      icon = "",
+      replace = prev_notification,
+    })
+    if is_error and source then
+      notifications.errors[source] = notification
+    end
   else
     notify(lines, timeout)
   end

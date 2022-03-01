@@ -79,7 +79,7 @@ end
 local function on_run_data(is_err, data)
   local dev_log_conf = config.get("dev_log")
   if is_err then
-    ui.notify({ data }, { level = ui.ERROR, timeout = 5000 })
+    ui.notify({ data }, { level = ui.ERROR, timeout = 5000, source = "process" })
   end
   dev_log.log(data, dev_log_conf)
 end

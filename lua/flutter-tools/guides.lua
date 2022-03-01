@@ -160,7 +160,7 @@ local function render_guides(bufnum, guides, conf)
         ui.notify({
           fmt("error drawing widget guide for %s at line %d, col %d.", name, lnum, start),
           "because: " .. msg,
-        }, { level = ui.ERROR })
+        }, { level = ui.ERROR, source = "guides" })
       end
     end
   end
