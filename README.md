@@ -50,6 +50,31 @@ some basic setup might look like.
 
 ## Notices
 
+- This plugin no longer relies on dart code's debugger as flutter and dart now ship with a native debugger.
+  Versions of flutter before version 2.10.0 will still require the old dart code debugger.
+  Setup instructions for this can be found [here](https://github.com/mfussenegger/nvim-dap/wiki/Debug-Adapter-installation#dart).
+
+  Migration for existing users of the Dart code debugger on older flutter versions:
+
+  ```lua
+    local debugger_dir = path.join(fn.stdpath("cache"), "dart-code")
+    local debugger_path = path.join(debugger_dir, "out", "dist", "debug.js")
+
+    -- In config section for the debugger
+    debugger = {
+      enabled = true,
+      register.configurations = function()
+        local dap = require("dap")
+        dap.adapters.dart = {
+          type = "executable",
+          command = "node",
+          args = { debugger_path, "flutter" },
+        }
+        -- Other configuration herek
+      end,
+    },
+  ```
+
 - The `:FlutterOutline` command has been renamed to `:FlutterOutlineOpen`, and a `:FlutterOutlineToggle` has been added.
 
 ## Installation
@@ -198,7 +223,7 @@ require("flutter-tools").setup {
   },
   debugger = { -- integrate with nvim dap + install dart code debugger
     enabled = false,
-    run_via_dap = false, -- use dap instead of a plenary job to run flutter apps 
+    run_via_dap = false, -- use dap instead of a plenary job to run flutter apps
     register_configurations = function(paths)
       require("dap").configurations.dart = {
         <put here config that you would find in .vscode/launch.json>
@@ -357,7 +382,8 @@ Alternatively, if you prefer always running your app via dap, you can set `debug
 This way you benefit from the debugging abilities of DAP, AND you can still use `:FlutterRestart`, `:FlutterReload`, etc.
 
 You can use the `debugger.register_configurations` to register custom runner configuration (for example for different targets or flavor).
-If your flutter repo contains launch configurations in `.vscode/launch.json` you can use them via this config : 
+If your flutter repo contains launch configurations in `.vscode/launch.json` you can use them via this config :
+
 ```lua
   debugger = {
     enabled = true,
@@ -369,7 +395,6 @@ If your flutter repo contains launch configurations in `.vscode/launch.json` you
 ```
 
 Since there is an overlap between this plugin's log buffer and the repl buffer when running via dap, you may use the `dev_log.enabled` configuration option if you want.
-
 
 Also see:
 
