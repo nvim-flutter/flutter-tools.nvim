@@ -17,6 +17,8 @@ local command_requests = {
   restart = "hotRestart",
   reload = "hotReload",
   quit = "terminate",
+  inspect = "widgetInspector",
+  construction_lines = "constructionLines",
 }
 
 local service_activation_requests = {
