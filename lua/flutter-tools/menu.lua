@@ -93,6 +93,18 @@ function M.commands(opts)
         hint = "Quit running flutter project but leave the process running",
         command = require("flutter-tools.commands").detach,
       },
+      {
+        id = "flutter-tools-widget-inspector",
+        label = "Flutter tools: Widget Inspector",
+        hint = "Toggle the widget inspector",
+        command = require("flutter-tools.commands").widget_inspector,
+      },
+      {
+        id = "flutter-tools-construction-lines",
+        label = "Flutter tools: Construction Lines",
+        hint = "Display construction lines",
+        command = require("flutter-tools.commands").construction_lines,
+      },
     }
   else
     commands = {

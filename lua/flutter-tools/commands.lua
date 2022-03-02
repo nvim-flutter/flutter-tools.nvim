@@ -223,6 +223,16 @@ function M.copy_profiler_url()
   end
 end
 
+---@param quiet boolean
+function M.widget_inspector(quiet)
+  send("inspect", quiet)
+end
+
+---@param quiet boolean
+function M.construction_lines(quiet)
+  send("construction_lines", quiet)
+end
+
 -----------------------------------------------------------------------------//
 -- Pub commands
 -----------------------------------------------------------------------------//

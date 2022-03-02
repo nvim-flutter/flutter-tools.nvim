@@ -14,6 +14,8 @@ local command_keys = {
   quit = "q",
   visual_debug = "p",
   detach = "d",
+  inspect = "i",
+  construction_lines = "p",
 }
 
 function JobRunner:is_running()
