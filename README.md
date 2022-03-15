@@ -31,7 +31,7 @@ To set up the lsp client there are a few things to do/read:
 A minimal native LSP configuration might look like:
 
 ```vim
- " Jump to definition
+ " Show hover
 nnoremap K <Cmd>lua vim.lsp.buf.hover()<CR>
  " Jump to definition
 nnoremap gd <Cmd>lua vim.lsp.buf.definition()<CR>
