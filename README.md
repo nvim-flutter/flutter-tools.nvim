@@ -367,7 +367,7 @@ use 'mfussenegger/nvim-dap'
 
 This plugin integrates with [nvim-dap](https://github.com/mfussenegger/nvim-dap) to provide debug capabilities.
 Currently if `debugger.enabled` is set to `true` in the user's config **it will expect `nvim-dap` to be installed**.
-If `dap` is installed the plugin will attempt to install the debugger (Dart-Code's debugger).
+If `dap` is this plugin will use `flutter` or `dart` native debugger to debug your project.
 
 To use the debugger you need to run `:lua require('dap').continue()<CR>`. This will start your app. You should then be able
 to use `dap` commands to begin to debug it. For more information on how to use `nvim-dap` please read the project's README
