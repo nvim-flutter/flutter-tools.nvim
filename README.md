@@ -20,13 +20,8 @@ This plugin handles things like starting and managing flutter application proces
 selecting devices/emulators to run as well as niceties like an outline window, widget guides etc. Other core lsp functionality has to be
 configured via nvim lsp.
 
-To set up the lsp client there are a few things to do/read:
-
-1. Read the lsp documentation this can be found in `:h lsp` or a short summary can be found [here](https://github.com/neovim/nvim-lspconfig#lsp-overview).
-1. **Autocompletion:** Install an autocompletion plugin such as [`nvim-compe`](https://github.com/hrsh7th/nvim-compe).
-1. **Code actions/Rename UI:**
-   - For code actions, rename and other UI improvements, install an LSP UI plugin such as [`lspsaga`](https://github.com/glepnir/lspsaga.nvim)
-   - For code actions _only_: [lsp-fastaction.nvim](https://github.com/windwp/lsp-fastaction.nvim)
+To set up the lsp client please read the lsp documentation this can be found in `:h lsp` as well `nvim-lspconfig`'s [README](https://github.com/neovim/nvim-lspconfig#lsp-overview)
+which provides information on how to setup _autocompletion_ and _code-actions_, those are not configured via this plugin 🙏.
 
 A minimal native LSP configuration might look like:
 
