@@ -103,20 +103,22 @@ local function collect_guides(lines, data, guides)
       local end_index = first_marker_index(lines, lnum, END_OFFSET)
       if lines[lnum + 1] ~= "" and end_index ~= -1 then
         local indent_size = end_index - start_index
-        indent_size = indent_size > 0 and indent_size - 1 or indent_size
-
-        guides[lnum] = guides[lnum] or {}
-        -- Don't do the work to get characters we already have
-        -- also if the start index is out of range e.g. -1 don't add it
-        if not guides[lnum][start_index] and start_index >= 0 then
-          guides[lnum][start_index] = get_guide_character(
-            lnum,
-            end_lnum,
-            start_index,
-            indent_size,
-            data.children,
-            lines
-          )
+        -- Don't do the work when there is no indent
+        if indent_size > 0 then
+          indent_size = indent_size - 1
+          guides[lnum] = guides[lnum] or {}
+          -- Don't do the work to get characters we already have
+          -- also if the start index is out of range e.g. -1 don't add it
+          if not guides[lnum][start_index] and start_index >= 0 then
+            guides[lnum][start_index] = get_guide_character(
+              lnum,
+              end_lnum,
+              start_index,
+              indent_size,
+              data.children,
+              lines
+            )
+          end
         end
       end
     end
