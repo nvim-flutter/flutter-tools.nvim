@@ -83,7 +83,7 @@ end
 
 --- @param buf_id number
 --- @param lines table[]
---- @param ns_id integer
+--- @param ns_id integer?
 function M.add_highlights(buf_id, lines, ns_id)
   if not buf_id then
     return
@@ -141,6 +141,7 @@ local function notify(lines, duration)
   local row = vim.o.lines - #lines - vim.o.cmdheight - 2
 
   if state.last_opened then
+    ---@type table
     local config = api.nvim_win_get_config(state.last_opened)
     if config.row[false] then
       local next_row = config.row[false] - #lines - 2 -- one for padding
@@ -205,7 +206,7 @@ local notifications = {
 local notification_style = require("flutter-tools.config").get("ui").notification_style
 ---Post a message to UI so the user knows something has occurred.
 ---@param lines string[]
----@param opts table
+---@param opts table?
 M.notify = function(lines, opts)
   opts = opts or {}
   local source = opts.source

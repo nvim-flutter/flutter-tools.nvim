@@ -148,7 +148,7 @@ local function handle_deprecation(key, value, conf)
 end
 
 ---Get the configuration or just a key of the config
----@param key string
+---@param key string?
 ---@return any
 function M.get(key)
   if key then

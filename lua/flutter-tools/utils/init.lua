@@ -23,7 +23,7 @@ end
 ---Create a neovim command
 ---@param name string
 ---@param rhs string
----@param modifiers string[]
+---@param modifiers string[]?
 function M.command(name, rhs, modifiers)
   modifiers = modifiers or {}
   local nargs = modifiers and modifiers.nargs or 0
@@ -159,7 +159,7 @@ end
 --- FIXME: this does not copy metatables
 ---@param t1 table
 ---@param t2 table
----@param skip string[]
+---@param skip string[]?
 ---@return table
 function M.merge(t1, t2, skip)
   for k, v in pairs(t2) do

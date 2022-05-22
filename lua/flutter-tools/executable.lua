@@ -70,7 +70,7 @@ end
 
 ---Execute user's lookup command and pass it to the job callback
 ---@param lookup_cmd string
----@param callback fun(p: string, t: table<string, string>)
+---@param callback fun(p: string, t: table<string, string>?)
 ---@return table<string, string>
 local function path_from_lookup_cmd(lookup_cmd, callback)
   local paths = {}
