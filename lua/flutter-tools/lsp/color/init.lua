@@ -8,10 +8,9 @@ function M.document_color()
   local clients = vim.lsp.get_active_clients()
   for _, client in ipairs(clients) do
     if client.server_capabilities.colorProvider then
-      client.request( "textDocument/documentColor", params, nil ,0)
+      client.request("textDocument/documentColor", params, nil, 0)
     end
   end
-
 end
 
 M.on_document_color = require("flutter-tools.lsp.color.utils").on_document_color
