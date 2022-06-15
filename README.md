@@ -285,6 +285,11 @@ you jump to the definition of `StatelessWidget`, the lsp will not try and index 
 files in that directory. If for some reason you would like this behaviour set `analysisExcludedFolders = {}`
 You cannot/should not edit the files in the sdk directly so diagnostic analysis of these file is pointless.
 
+**Exclude Note for Windows:**
+To ignore packages installed with pub, consider adding `vim.fn.expand("$HOME/AppData/Local/Pub/Cache")` to 
+`analysisExcludedFolders` if you are using PowerShell.
+
+
 #### Flutter binary
 
 In order to run flutter commands you _might_ need to pass either a _path_ or a _command_ to the plugin so it can find your
