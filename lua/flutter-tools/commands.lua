@@ -223,6 +223,11 @@ function M.copy_profiler_url()
   end
 end
 
+function M.open_dev_tools(quiet)
+  send("open_dev_tools",quiet)
+end
+
+
 ---@param quiet boolean
 function M.widget_inspector(quiet)
   send("inspect", quiet)

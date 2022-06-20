@@ -26,6 +26,12 @@ local function setup_commands()
     "FlutterCopyProfilerUrl",
     [[lua require('flutter-tools.commands').copy_profiler_url()]]
   )
+  utils.command(
+    "FlutterOpenDevTools",
+    [[lua require('flutter-tools.commands').open_dev_tools()]]
+  )
+
+  --pub
   utils.command("FlutterPubGet", [[lua require('flutter-tools.commands').pub_get()]])
   utils.command(
     "FlutterPubUpgrade",

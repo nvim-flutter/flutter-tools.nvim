@@ -166,6 +166,12 @@ function M.commands(opts)
         hint = "Run the app and the DevTools first",
         command = require("flutter-tools.commands").copy_profiler_url,
       },
+      {
+        id = "flutter-tools-open-dev-tools",
+        label = "Flutter tools: Open Dev Tools",
+        hint = "Run the app and the Dev Tools first",
+        command = require("flutter-tools.commands").open_dev_tools,
+      },
     })
   else
     vim.list_extend(commands, {
