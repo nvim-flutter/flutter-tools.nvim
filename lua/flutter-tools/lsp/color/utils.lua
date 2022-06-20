@@ -79,6 +79,7 @@ function M.perceived_lightness(rgb)
   local function gamma_encode(v)
     return v / 255
   end
+
   local function linearize(v)
     return v <= 0.04045 and v / 12.92 or math.pow((v + 0.055) / 1.055, 2.4)
   end
@@ -171,7 +172,7 @@ function M.on_document_color(err, result, ctx, config)
   local client_id = ctx.client_id
   local bufnr = ctx.bufnr
   if err then
-    return require("flutter-tools.utils").notify(err)
+    return require("flutter-tools.ui").notify(err)
   end
   if not bufnr or not client_id then
     return
