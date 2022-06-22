@@ -30,6 +30,10 @@ local function setup_commands()
     "FlutterOpenDevTools",
     [[lua require('flutter-tools.commands').open_dev_tools()]]
   )
+  utils.command(
+    "FlutterGenerate",
+    [[lua require('flutter-tools.commands').generate()]]
+  )
 
   --pub
   utils.command("FlutterPubGet", [[lua require('flutter-tools.commands').pub_get()]])
@@ -112,6 +116,11 @@ local function setup_autocommands()
       },
     })
   end
+
+  utils.augroup("FlutterToolsHotReload", {
+    events = {"BUfWritePost", targets = {"*.arb"},
+    command = require('flutter-tools.commands').generate},
+  })
 
   utils.augroup("FlutterToolsHotReload", {
     {
