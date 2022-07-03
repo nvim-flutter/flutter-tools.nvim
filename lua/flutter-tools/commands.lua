@@ -18,27 +18,25 @@ local current_device = nil
 
 ---@class FlutterRunner
 ---@field is_running fun():boolean
----@field run fun(paths:table, args:table, cwd:string, on_run_data:fun(is_err:boolean, data:string), on_run_exit:fun(data:string[]))
+---@field run fun(runner: FlutterRunner, paths:table, args:table, cwd:string, on_run_data:fun(is_err:boolean, data:string), on_run_exit:fun(data:string[]))
 ---@field cleanup fun()
----@field send fun(cmd:string)
+---@field send fun(runner: FlutterRunner, cmd:string, quiet: boolean)
 
 ---@type FlutterRunner
 local runner = nil
 
 function M.use_debugger_runner()
-  local debugger_requested = config.get("debugger").run_via_dap
-  if debugger_requested then
-    if not dap_ok then
-      ui.notify(
-        { "debugger runner was request but nvim-dap is not installed!", dap },
-        { level = ui.ERROR }
-      )
-      return false
-    end
-    return true
-  else
+  if not config.get("debugger").run_via_dap then
     return false
   end
+  if dap_ok then
+    return true
+  end
+  ui.notify(
+    { "debugger runner was request but nvim-dap is not installed!", dap },
+    { level = ui.ERROR }
+  )
+  return false
 end
 
 function M.current_device()
