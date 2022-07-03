@@ -38,15 +38,6 @@ end
 
 ---Initialise various plugin modules
 local function start()
-  -- this loads plenary to check if it exists, so defer it till the plugin is starting up
-  if not pcall(require, "plenary") then
-    return vim.notify(
-      "plenary.nvim is a required dependency of this plugin, please ensure it is installed."
-        .. " Otherwise this plugin will not work correctly",
-      vim.log.levels.ERROR
-    )
-  end
-
   setup_commands()
 
   local conf = require("flutter-tools.config").get()
