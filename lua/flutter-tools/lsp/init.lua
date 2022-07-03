@@ -56,7 +56,7 @@ local function handle_progress(err, result, ctx)
   -- NOTE: this event gets called whenever the analysis server has completed some work
   -- rather than just when the server has started.
   if result and result.value and result.value.kind == "end" then
-    vim.cmd("doautocmd User FlutterToolsLspAnalysisComplete")
+    api.nvim_exec_autocmds("User", { pattern = "FlutterToolsLspAnalysisComplete" })
   end
 end
 
@@ -141,18 +141,10 @@ end
 
 local function get_dartls_client(server_name)
   server_name = server_name or SERVER_NAME
-  for _, buf in pairs(vim.fn.getbufinfo({ bufloaded = true })) do
-    if vim.bo[buf.bufnr].filetype == FILETYPE then
-      local clients = lsp.buf_get_clients(buf.bufnr)
-      for _, client in ipairs(clients) do
-        if client.config.name == server_name then
-          return client
-        end
-      end
-    end
-  end
+  return lsp.get_active_clients({ name = server_name })[1]
 end
 
+---@return string
 function M.get_lsp_root_dir()
   local client = get_dartls_client()
   return client and client.config.root_dir or nil
