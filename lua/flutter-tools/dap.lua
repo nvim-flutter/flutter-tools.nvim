@@ -14,8 +14,8 @@ function M.setup(config)
       type = "executable",
       command = "flutter",
       args = { "debug-adapter" },
-      options = {
-        initialize_timeout_sec = 6,
+      options = { -- Dartls is slow to start so avoid warnings from nvim-dap
+        initialize_timeout_sec = 30,
       },
     }
     config.debugger.register_configurations(paths)
