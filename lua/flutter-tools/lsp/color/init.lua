@@ -5,7 +5,7 @@ function M.document_color()
     textDocument = vim.lsp.util.make_text_document_params(),
   }
 
-  local clients = vim.lsp.get_active_clients()
+  local clients = vim.lsp.get_active_clients({ name = "dartls" })
   for _, client in ipairs(clients) do
     if client.server_capabilities.colorProvider then
       client.request("textDocument/documentColor", params, nil, 0)

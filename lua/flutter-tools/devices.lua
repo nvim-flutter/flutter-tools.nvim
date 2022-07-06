@@ -65,7 +65,7 @@ end
 --- Parse a list of lines looking for devices
 --- return the parsed list and the found devices if any
 ---@param result string[]
----@param device_type integer
+---@param device_type integer?
 ---@return string[]
 ---@return table
 function M.extract_device_props(result, device_type)

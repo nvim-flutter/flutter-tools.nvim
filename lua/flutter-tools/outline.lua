@@ -118,7 +118,7 @@ end
 ---@param item string
 ---@param hl string
 ---@param length number
----@param position number
+---@param position number?
 local function add_segment(list, highlights, item, hl, length, position)
   if item and item ~= "" then
     --- NOTE highlights are byte indexed
@@ -139,8 +139,8 @@ end
 
 ---@param result table
 ---@param node table
----@param indent string
----@param marker string
+---@param indent string?
+---@param marker string?
 local function parse_outline(result, node, indent, marker)
   indent = indent or ""
   marker = marker or ""
@@ -422,8 +422,8 @@ end
 ---@param win number
 ---@param lines table
 ---@param highlights table
----@param go_back boolean
-local function setup_outline_window(buf, win, lines, highlights, go_back)
+---@param _ boolean whether or not to go back to the original window
+local function setup_outline_window(buf, win, lines, highlights, _)
   state.outline_buf = buf
   state.outline_win = win
   vim.wo[win].number = false
@@ -465,7 +465,7 @@ function M.toggle()
 end
 
 ---Open the outline window
----@param opts table
+---@param opts table?
 function M.open(opts)
   opts = opts or {}
   local ok, lines, highlights, outline = get_outline_content()
@@ -485,6 +485,9 @@ function M.open(opts)
     end)
   else
     refresh_outline(state.outline_buf, lines, highlights)
+  end
+  if not outline then
+    return
   end
   vim.b.outline_uri = outline.uri
   if opts.go_back and api.nvim_win_is_valid(parent_win) then

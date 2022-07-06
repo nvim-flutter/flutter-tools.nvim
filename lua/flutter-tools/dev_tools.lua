@@ -172,6 +172,9 @@ function M.start()
           ui.notify({ "Dev tools closed" })
         end),
       })
+      if not job then
+        return
+      end
 
       job:start()
     end)
