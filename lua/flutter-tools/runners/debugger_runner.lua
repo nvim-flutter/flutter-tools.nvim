@@ -36,18 +36,14 @@ function DebuggerRunner:run(paths, args, cwd, on_run_data, on_run_exit)
   dap.listeners.after["event_output"][plugin_identifier] = function(_, body)
     if body and body.output then
       for line in body.output:gmatch("[^\r\n]+") do
-        if not started then
-          table.insert(before_start_logs, line)
-        end
+        if not started then table.insert(before_start_logs, line) end
         on_run_data(body.category == "sterr", line)
       end
     end
   end
 
   local handle_termination = function()
-    if next(before_start_logs) ~= nil then
-      on_run_exit(before_start_logs, args)
-    end
+    if next(before_start_logs) ~= nil then on_run_exit(before_start_logs, args) end
   end
 
   dap.listeners.before["event_exited"][plugin_identifier] = function(_, _)
@@ -64,9 +60,7 @@ function DebuggerRunner:run(paths, args, cwd, on_run_data, on_run_exit)
   end
 
   dap.listeners.before["event_dart.debuggerUris"][plugin_identifier] = function(_, body)
-    if body and body.observatoryUri then
-      dev_tools.register_profiler_url(body.observatoryUri)
-    end
+    if body and body.observatoryUri then dev_tools.register_profiler_url(body.observatoryUri) end
   end
 
   dap.listeners.before["event_dart.serviceExtensionAdded"][plugin_identifier] = function(_, body)
@@ -108,9 +102,7 @@ function DebuggerRunner:run(paths, args, cwd, on_run_data, on_run_exit)
       end
     )
   end
-  if not launch_config then
-    return
-  end
+  if not launch_config then return end
   launch_config = vim.deepcopy(launch_config)
   launch_config.cwd = cwd
   launch_config.args = vim.list_extend(launch_config.args or {}, args or {})
@@ -147,9 +139,7 @@ function DebuggerRunner:send(cmd, quiet)
 end
 
 function DebuggerRunner:cleanup()
-  if dap.session() then
-    dap.terminate()
-  end
+  if dap.session() then dap.terminate() end
 end
 
 return DebuggerRunner

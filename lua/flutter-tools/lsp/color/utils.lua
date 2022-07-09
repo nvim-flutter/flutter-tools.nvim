@@ -171,24 +171,16 @@ end
 function M.on_document_color(err, result, ctx, config)
   local client_id = ctx.client_id
   local bufnr = ctx.bufnr
-  if err then
-    return require("flutter-tools.ui").notify(err)
-  end
-  if not bufnr or not client_id then
-    return
-  end
+  if err then return require("flutter-tools.ui").notify(err) end
+  if not bufnr or not client_id then return end
   M.buf_clear_color(client_id, bufnr)
-  if not result then
-    return
-  end
+  if not result then return end
   M.buf_color(client_id, bufnr, result, config)
 end
 
 local function get_background_color()
   local normal_hl = api.nvim_get_hl_by_name("Normal", true)
-  if not normal_hl or not normal_hl.background then
-    return nil
-  end
+  if not normal_hl or not normal_hl.background then return nil end
   return M.decode_24bit_rgb(normal_hl.background)
 end
 
@@ -203,31 +195,23 @@ function M.buf_color(client_id, bufnr, color_infos, _)
     bufnr = { bufnr, "n", false },
     color_infos = { color_infos, "t", false },
   })
-  if not color_infos or not bufnr then
-    return
-  end
+  if not color_infos or not bufnr then return end
 
   local config = require("flutter-tools.config").get("lsp").color
 
   local background_color = config.background_color or get_background_color()
   -- FIXME: currently background_color is required to derive the rgb values for the colors
   -- till there is a good solution for this transparent backgrounds won't work with lsp colors
-  if not background_color then
-    return
-  end
+  if not background_color then return end
 
   for _, color_info in ipairs(color_infos) do
     local rgba, range = color_info.color, color_info.range
     local r, g, b, a = rgba.red * 255, rgba.green * 255, rgba.blue * 255, rgba.alpha
     local rgb = M.rgba_to_rgb({ r = r, g = g, b = b, a = a }, background_color)
 
-    if config.background then
-      color_background(client_id, bufnr, range, rgb)
-    end
+    if config.background then color_background(client_id, bufnr, range, rgb) end
 
-    if config.foreground then
-      color_foreground(client_id, bufnr, range, rgb)
-    end
+    if config.foreground then color_foreground(client_id, bufnr, range, rgb) end
 
     if config.virtual_text then
       color_virtual_text(client_id, bufnr, range, rgb, config.virtual_text_str)
@@ -244,9 +228,7 @@ function M.buf_clear_color(client_id, bufnr)
     client_id = { client_id, "n", true },
     bufnr = { bufnr, "n", true },
   })
-  if api.nvim_buf_is_valid(bufnr) then
-    api.nvim_buf_clear_namespace(bufnr, CLIENT_NS, 0, -1)
-  end
+  if api.nvim_buf_is_valid(bufnr) then api.nvim_buf_clear_namespace(bufnr, CLIENT_NS, 0, -1) end
 end
 
 return M

@@ -41,17 +41,11 @@ local function start()
   setup_commands()
 
   local conf = require("flutter-tools.config").get()
-  if conf.debugger.enabled then
-    require("flutter-tools.dap").setup(conf)
-  end
+  if conf.debugger.enabled then require("flutter-tools.dap").setup(conf) end
 
-  if conf.widget_guides.enabled then
-    require("flutter-tools.guides").setup()
-  end
+  if conf.widget_guides.enabled then require("flutter-tools.guides").setup() end
 
-  if conf.decorations then
-    require("flutter-tools.decorations").apply(conf.decorations)
-  end
+  if conf.decorations then require("flutter-tools.decorations").apply(conf.decorations) end
 end
 
 ---Create autocommands for the plugin

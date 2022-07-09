@@ -25,21 +25,15 @@ end
 ---@param user table|function
 ---@return table
 local function merge_config(default, user)
-  if type(user) == "function" then
-    return user(default)
-  end
-  if not user or vim.tbl_isempty(user) then
-    return default
-  end
+  if type(user) == "function" then return user(default) end
+  if not user or vim.tbl_isempty(user) then return default end
   return vim.tbl_deep_extend("force", default or {}, user or {})
 end
 
 local function create_debug_log(level)
   return function(msg)
     local levels = require("flutter-tools.config").debug_levels
-    if level <= levels.DEBUG then
-      require("flutter-tools.ui").notify({ msg }, { level = level })
-    end
+    if level <= levels.DEBUG then require("flutter-tools.ui").notify({ msg }, { level = level }) end
   end
 end
 
@@ -50,9 +44,7 @@ end
 local function handle_progress(err, result, ctx)
   -- Call the existing handler for progress so plugins can also handle the event
   -- but only whilst not editing the buffer as dartls can be spammy
-  if api.nvim_get_mode().mode ~= "i" then
-    vim.lsp.handlers["$/progress"](err, result, ctx)
-  end
+  if api.nvim_get_mode().mode ~= "i" then vim.lsp.handlers["$/progress"](err, result, ctx) end
   -- NOTE: this event gets called whenever the analysis server has completed some work
   -- rather than just when the server has started.
   if result and result.value and result.value.kind == "end" then

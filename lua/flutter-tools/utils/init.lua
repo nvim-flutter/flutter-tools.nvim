@@ -10,9 +10,7 @@ _G.__flutter_tools_callbacks = __flutter_tools_callbacks or {}
 ---@param name string
 ---@return string
 function M.display_name(name, platform)
-  if not name then
-    return ""
-  end
+  if not name then return "" end
   local symbol = "•"
   return symbol
     .. " "
@@ -32,20 +30,14 @@ end
 
 --- if every item in a table is an empty value return true
 function M.list_is_empty(tbl)
-  if not tbl then
-    return true
-  end
+  if not tbl then return true end
   return table.concat(tbl) == ""
 end
 
 function M.buf_valid(bufnr, name)
   local target = bufnr or name
-  if not target then
-    return false
-  end
-  if bufnr then
-    return api.nvim_buf_is_loaded(bufnr)
-  end
+  if not target then return false end
+  if bufnr then return api.nvim_buf_is_loaded(bufnr) end
   return vim.fn.bufexists(target) > 0 and vim.fn.buflisted(target) > 0
 end
 
@@ -148,9 +140,7 @@ end
 ---@return `T`
 function M.find(list, compare)
   for _, item in ipairs(list) do
-    if compare(item) then
-      return item
-    end
+    if compare(item) then return item end
   end
 end
 
@@ -175,9 +165,7 @@ function M.merge(t1, t2, skip)
 end
 
 function M.remove_newlines(str)
-  if not str or type(str) ~= "string" then
-    return str
-  end
+  if not str or type(str) ~= "string" then return str end
   return str:gsub("[\n\r]", "")
 end
 
@@ -195,15 +183,9 @@ end
 
 function M.open_command()
   local path = require("flutter-tools.utils.path")
-  if path.is_mac then
-    return "open"
-  end
-  if path.is_linux then
-    return "xdg-open"
-  end
-  if path.is_windows then
-    return "explorer"
-  end
+  if path.is_mac then return "open" end
+  if path.is_linux then return "xdg-open" end
+  if path.is_windows then return "explorer" end
   return nil, nil
 end
 

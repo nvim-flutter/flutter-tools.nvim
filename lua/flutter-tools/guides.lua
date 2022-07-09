@@ -37,13 +37,9 @@ local function first_marker_index(lines, lnum, offset)
   -- so this function makes it one based to correctly
   -- access the line
   local line = lines[lnum + 1]
-  if not line then
-    return -1
-  end
+  if not line then return -1 end
   local index = line:find("%S")
-  if not index then
-    return -1
-  end
+  if not index then return -1 end
   return index - offset
 end
 
@@ -85,9 +81,7 @@ end
 ---@param guides table<number, table>
 local function collect_guides(lines, data, guides)
   guides = guides or {}
-  if not data.children or vim.tbl_isempty(data.children) then
-    return
-  end
+  if not data.children or vim.tbl_isempty(data.children) then return end
   if data.kind == widget_kind then
     -- add one to the start line number because we want each marker to start beneath the symbol
     local start_lnum = data.range.start.line + 1
@@ -110,14 +104,8 @@ local function collect_guides(lines, data, guides)
           -- Don't do the work to get characters we already have
           -- also if the start index is out of range e.g. -1 don't add it
           if not guides[lnum][start_index] and start_index >= 0 then
-            guides[lnum][start_index] = get_guide_character(
-              lnum,
-              end_lnum,
-              start_index,
-              indent_size,
-              data.children,
-              lines
-            )
+            guides[lnum][start_index] =
+              get_guide_character(lnum, end_lnum, start_index, indent_size, data.children, lines)
           end
         end
       end
@@ -138,24 +126,15 @@ local function render_guides(bufnum, guides, conf)
   -- would it be more performant to do some sort of diff and patched
   -- update rather than replace the namespace each time, similar to Dart Code
   api.nvim_buf_clear_namespace(bufnum, widget_outline_ns_id, 0, -1)
-  if not guides then
-    return
-  end
+  if not guides then return end
   for lnum, guide in pairs(guides) do
     for start, character in pairs(guide) do
       local success, msg =
-        pcall(
-          api.nvim_buf_set_extmark,
-          bufnum,
-          widget_outline_ns_id,
-          lnum,
-          start,
-          {
-            virt_text = { { character, hl_group } },
-            virt_text_pos = "overlay",
-            hl_mode = "combine",
-          }
-        )
+        pcall(api.nvim_buf_set_extmark, bufnum, widget_outline_ns_id, lnum, start, {
+          virt_text = { { character, hl_group } },
+          virt_text_pos = "overlay",
+          hl_mode = "combine",
+        })
       if not success and conf.debug then
         local name = api.nvim_buf_get_name(bufnum)
         local ui = require("flutter-tools.ui")
@@ -170,9 +149,7 @@ end
 
 function M.setup()
   local color = utils.get_hl("Normal", "fg")
-  if color and color ~= "" then
-    utils.highlight(hl_group, { guifg = color })
-  end
+  if color and color ~= "" then utils.highlight(hl_group, { guifg = color }) end
 end
 
 local function is_buf_valid(bufnum)
@@ -186,9 +163,7 @@ function M.widget_guides(_, data, _, _)
   local conf = config.get().widget_guides
   if conf.enabled then
     local bufnum = vim.uri_to_bufnr(data.uri)
-    if not is_buf_valid(bufnum) then
-      return
-    end
+    if not is_buf_valid(bufnum) then return end
     -- TODO: should this be limited to the view port using vim.fn.line('w0'|'w$')
     -- although ideally having to track what the current visible
     -- segment of a buffer is and trying to apply the extmarks in

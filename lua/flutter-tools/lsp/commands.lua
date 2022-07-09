@@ -26,9 +26,7 @@ function M.refactor_perform(command, ctx)
   }
 
   local on_confirm = function(name)
-    if name == nil then
-      return
-    end
+    if name == nil then return end
 
     -- The 6th argument is the additional options of the refactor command.
     -- For the extract method/local variable/widget commands, we can specify an optional `name` option.
@@ -45,9 +43,7 @@ function M.refactor_perform(command, ctx)
     vim.ui.input(opts, on_confirm)
   else
     local input = vim.fn.input(opts)
-    if #input > 0 then
-      on_confirm(input)
-    end
+    if #input > 0 then on_confirm(input) end
   end
 end
 

@@ -26,12 +26,8 @@ local current_device = nil
 local runner = nil
 
 function M.use_debugger_runner()
-  if not config.get("debugger").run_via_dap then
-    return false
-  end
-  if dap_ok then
-    return true
-  end
+  if not config.get("debugger").run_via_dap then return false end
+  if dap_ok then return true end
   ui.notify(
     { "debugger runner was request but nvim-dap is not installed!", dap },
     { level = ui.ERROR }
@@ -48,9 +44,7 @@ function M.is_running()
 end
 
 local function match_error_string(line)
-  if not line then
-    return false
-  end
+  if not line then return false end
   -- match the error string if no devices are setup
   if line:match("No supported devices connected") ~= nil then
     -- match the error string returned if multiple devices are matched
@@ -65,9 +59,7 @@ end
 local function has_recoverable_error(lines)
   for _, line in pairs(lines) do
     local match, msg = match_error_string(line)
-    if match then
-      return match, msg
-    end
+    if match then return match, msg end
   end
   return false, nil
 end
@@ -76,16 +68,12 @@ end
 ---@param is_err boolean if this is stdout or stderr
 local function on_run_data(is_err, data)
   local dev_log_conf = config.get("dev_log")
-  if is_err then
-    ui.notify({ data }, { level = ui.ERROR, timeout = 5000, source = "process" })
-  end
+  if is_err then ui.notify({ data }, { level = ui.ERROR, timeout = 5000, source = "process" }) end
   dev_log.log(data, dev_log_conf)
 end
 
 local function shutdown()
-  if runner ~= nil then
-    runner:cleanup()
-  end
+  if runner ~= nil then runner:cleanup() end
   runner = nil
   current_device = nil
   dev_tools.on_flutter_shutdown()
@@ -123,9 +111,7 @@ end
 ---Run the flutter application
 ---@param opts table
 function M.run(opts)
-  if M.is_running() then
-    return ui.notify({ "Flutter is already running!" })
-  end
+  if M.is_running() then return ui.notify({ "Flutter is already running!" }) end
   opts = opts or {}
   local device = opts.device
   local cmd_args = opts.args
@@ -133,21 +119,13 @@ function M.run(opts)
   executable.get(function(paths)
     local args = cli_args or {}
     if not cli_args then
-      if not M.use_debugger_runner() then
-        vim.list_extend(args, { "run" })
-      end
-      if not cmd_args and device and device.id then
-        vim.list_extend(args, { "-d", device.id })
-      end
+      if not M.use_debugger_runner() then vim.list_extend(args, { "run" }) end
+      if not cmd_args and device and device.id then vim.list_extend(args, { "-d", device.id }) end
 
-      if cmd_args then
-        vim.list_extend(args, cmd_args)
-      end
+      if cmd_args then vim.list_extend(args, cmd_args) end
 
       local dev_url = dev_tools.get_url()
-      if dev_url then
-        vim.list_extend(args, { "--devtools-server-address", dev_url })
-      end
+      if dev_url then vim.list_extend(args, { "--devtools-server-address", dev_url }) end
     end
     ui.notify({ "Starting flutter project..." })
     runner = M.use_debugger_runner() and debugger_runner or job_runner
@@ -161,9 +139,7 @@ end
 local function send(cmd, quiet, on_send)
   if M.is_running() then
     runner:send(cmd, quiet)
-    if on_send then
-      on_send()
-    end
+    if on_send then on_send() end
   elseif not quiet then
     ui.notify({ "Sorry! Flutter is not running" })
   end
@@ -177,9 +153,7 @@ end
 ---@param quiet boolean
 function M.restart(quiet)
   send("restart", quiet, function()
-    if not quiet then
-      ui.notify({ "Restarting..." }, { timeout = 1500 })
-    end
+    if not quiet then ui.notify({ "Restarting..." }, { timeout = 1500 }) end
   end)
 end
 
@@ -281,9 +255,7 @@ function M.pub_upgrade(cmd_args)
     executable.flutter(function(cmd)
       local notify_timeout = 10000
       local args = { "pub", "upgrade" }
-      if cmd_args then
-        vim.list_extend(args, cmd_args)
-      end
+      if cmd_args then vim.list_extend(args, cmd_args) end
       pub_upgrade_job = Job:new({ command = cmd, args = args, cwd = lsp.get_lsp_root_dir() })
       pub_upgrade_job:after_success(vim.schedule_wrap(function(j)
         ui.notify(j:result(), { timeout = notify_timeout })

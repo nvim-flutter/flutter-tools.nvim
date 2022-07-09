@@ -20,9 +20,7 @@ local function get_devices(result, type)
   local devices = {}
   for _, line in pairs(result) do
     local device = M.parse(line, type)
-    if device then
-      table.insert(devices, device)
-    end
+    if device then table.insert(devices, device) end
   end
   return devices
 end
@@ -90,9 +88,7 @@ function M.extract_device_props(result, device_type)
 end
 
 function M.select_device(args)
-  if not vim.b.devices then
-    return ui.notify({ "Sorry there is no device on this line" })
-  end
+  if not vim.b.devices then return ui.notify({ "Sorry there is no device on this line" }) end
   local lnum = fn.line(".")
   local line = api.nvim_buf_get_lines(0, lnum - 1, lnum, false)
   local device = vim.b.devices[fn.trim(line[1])]
@@ -115,9 +111,7 @@ end
 ---@param devices table[]
 ---@param buf number
 local function setup_window(devices, buf)
-  if not vim.tbl_isempty(devices) then
-    api.nvim_buf_set_var(buf, "devices", devices)
-  end
+  if not vim.tbl_isempty(devices) then api.nvim_buf_set_var(buf, "devices", devices) end
   utils.map("n", "<CR>", M.select_device, { buffer = buf })
 end
 
@@ -131,16 +125,12 @@ local function handle_launch(job)
 end
 
 function M.close_emulator()
-  if M.emulator_job then
-    M.emulator_job:shutdown()
-  end
+  if M.emulator_job then M.emulator_job:shutdown() end
 end
 
 ---@param emulator table
 function M.launch_emulator(emulator)
-  if not emulator then
-    return
-  end
+  if not emulator then return end
   executable.flutter(function(cmd)
     M.emulator_job = Job:new({ command = cmd, args = { "emulators", "--launch", emulator.id } })
     M.emulator_job:after_success(vim.schedule_wrap(handle_launch))
