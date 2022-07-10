@@ -1,39 +1,62 @@
 local M = {}
 
+local api = vim.api
+
 local function setup_commands()
-  local utils = require("flutter-tools.utils")
+  local cmd = api.nvim_create_user_command
   -- Commands
-  utils.command(
-    "FlutterRun",
-    [[lua require('flutter-tools.commands').run_command(<q-args>)]],
-    { nargs = "*" }
-  )
-  utils.command("FlutterLspRestart", 'lua require("flutter-tools.lsp").restart()')
-  utils.command("FlutterDetach", [[lua require('flutter-tools.commands').detach()]])
-  utils.command("FlutterReload", [[lua require('flutter-tools.commands').reload()]])
-  utils.command("FlutterRestart", [[lua require('flutter-tools.commands').restart()]])
-  utils.command("FlutterQuit", [[lua require('flutter-tools.commands').quit()]])
-  utils.command("FlutterVisualDebug", [[lua require('flutter-tools.commands').visual_debug()]])
+  cmd("FlutterRun", function(data)
+    require("flutter-tools.commands").run_command(data.args)
+  end, { nargs = "*" })
+  cmd("FlutterLspRestart", function()
+    require("flutter-tools.lsp").restart()
+  end, {})
+  cmd("FlutterDetach", function()
+    require("flutter-tools.commands").detach()
+  end, {})
+  cmd("FlutterReload", function()
+    require("flutter-tools.commands").reload()
+  end, {})
+  cmd("FlutterRestart", function()
+    require("flutter-tools.commands").restart()
+  end, {})
+  cmd("FlutterQuit", function()
+    require("flutter-tools.commands").quit()
+  end, {})
+  cmd("FlutterVisualDebug", function()
+    require("flutter-tools.commands").visual_debug()
+  end, {})
   -- Lists
-  utils.command("FlutterDevices", [[lua require('flutter-tools.devices').list_devices()]])
-  utils.command("FlutterEmulators", [[lua require('flutter-tools.devices').list_emulators()]])
+  cmd("FlutterDevices", function()
+    require("flutter-tools.devices").list_devices()
+  end, {})
+  cmd("FlutterEmulators", function()
+    require("flutter-tools.devices").list_emulators()
+  end, {})
   --- Outline
-  utils.command("FlutterOutlineOpen", [[lua require('flutter-tools.outline').open()]])
-  utils.command("FlutterOutlineToggle", [[lua require('flutter-tools.outline').toggle()]])
+  cmd("FlutterOutlineOpen", function()
+    require("flutter-tools.outline").open()
+  end, {})
+  cmd("FlutterOutlineToggle", function()
+    require("flutter-tools.outline").toggle()
+  end, {})
   --- Dev tools
-  utils.command("FlutterDevTools", [[lua require('flutter-tools.dev_tools').start()]])
-  utils.command(
-    "FlutterCopyProfilerUrl",
-    [[lua require('flutter-tools.commands').copy_profiler_url()]]
-  )
-  utils.command("FlutterPubGet", [[lua require('flutter-tools.commands').pub_get()]])
-  utils.command(
-    "FlutterPubUpgrade",
-    [[lua require('flutter-tools.commands').pub_upgrade_command(<q-args>)]],
-    { nargs = "*" }
-  )
+  cmd("FlutterDevTools", function()
+    require("flutter-tools.dev_tools").start()
+  end, {})
+  cmd("FlutterCopyProfilerUrl", function()
+    require("flutter-tools.commands").copy_profiler_url()
+  end, {})
+  cmd("FlutterPubGet", function()
+    require("flutter-tools.commands").pub_get()
+  end, {})
+  cmd("FlutterPubUpgrade", function(data)
+    require("flutter-tools.commands").pub_upgrade_command(data.args)
+  end, { nargs = "*" })
   --- Log
-  utils.command("FlutterLogClear", [[lua require('flutter-tools.log').clear()]])
+  cmd("FlutterLogClear", function()
+    require("flutter-tools.log").clear()
+  end, {})
 end
 
 ---Initialise various plugin modules

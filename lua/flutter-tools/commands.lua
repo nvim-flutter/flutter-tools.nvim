@@ -134,7 +134,7 @@ function M.run(opts)
 end
 
 ---@param cmd string
----@param quiet boolean
+---@param quiet boolean?
 ---@param on_send function|nil
 local function send(cmd, quiet, on_send)
   if M.is_running() then
@@ -145,19 +145,19 @@ local function send(cmd, quiet, on_send)
   end
 end
 
----@param quiet boolean
+---@param quiet boolean?
 function M.reload(quiet)
   send("reload", quiet)
 end
 
----@param quiet boolean
+---@param quiet boolean?
 function M.restart(quiet)
   send("restart", quiet, function()
     if not quiet then ui.notify({ "Restarting..." }, { timeout = 1500 }) end
   end)
 end
 
----@param quiet boolean
+---@param quiet boolean?
 function M.quit(quiet)
   send("quit", quiet, function()
     if not quiet then
@@ -167,12 +167,12 @@ function M.quit(quiet)
   end)
 end
 
----@param quiet boolean
+---@param quiet boolean?
 function M.visual_debug(quiet)
   send("visual_debug", quiet)
 end
 
----@param quiet boolean
+---@param quiet boolean?
 function M.detach(quiet)
   send("detach", quiet)
 end

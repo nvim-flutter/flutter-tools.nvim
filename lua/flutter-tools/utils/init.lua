@@ -18,16 +18,6 @@ function M.display_name(name, platform)
     .. (platform and platform ~= "" and (" " .. symbol .. " ") .. platform or "")
 end
 
----Create a neovim command
----@param name string
----@param rhs string
----@param modifiers string[]?
-function M.command(name, rhs, modifiers)
-  modifiers = modifiers or {}
-  local nargs = modifiers and modifiers.nargs or 0
-  vim.cmd(fmt("command! -nargs=%s %s %s", nargs, name, rhs))
-end
-
 --- if every item in a table is an empty value return true
 function M.list_is_empty(tbl)
   if not tbl then return true end
