@@ -42,9 +42,7 @@ local function start()
 
   local conf = require("flutter-tools.config").get()
   if conf.debugger.enabled then require("flutter-tools.dap").setup(conf) end
-
   if conf.widget_guides.enabled then require("flutter-tools.guides").setup() end
-
   if conf.decorations then require("flutter-tools.decorations").apply(conf.decorations) end
 end
 
@@ -59,15 +57,6 @@ local function setup_autocommands()
       targets = { "*.dart" },
       modifiers = { "++once" },
       command = start,
-    },
-  })
-
-  -- Setup LSP autocommand to attach to dart files
-  utils.augroup("FlutterToolsLsp", {
-    {
-      events = { "FileType" },
-      targets = { "dart" },
-      command = "lua require('flutter-tools.lsp').attach()",
     },
   })
 
