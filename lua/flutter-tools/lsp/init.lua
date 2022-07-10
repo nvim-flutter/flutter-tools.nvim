@@ -9,6 +9,7 @@ local fmt = string.format
 
 local FILETYPE = "dart"
 local SERVER_NAME = "dartls"
+local ROOT_PATTERNS = { ".git", "pubspec.yaml" }
 
 local M = {
   lsps = {},
@@ -126,7 +127,9 @@ function M.restart()
     client.stop()
     local client_id = lsp.start_client(client.config)
     for _, buf in pairs(bufs) do
-      lsp.buf_attach_client(buf, client_id)
+      if client_id then
+        lsp.buf_attach_client(buf, client_id)
+      end
     end
   end
 end
@@ -166,21 +169,17 @@ M.on_document_color = color.on_document_color
 local function get_server_config(user_config, callback)
   local config = utils.merge({ name = SERVER_NAME }, user_config, { "color" })
   local executable = require("flutter-tools.executable")
-  --- TODO: if a user specifies a command we do not need to call
-  --- executable.dart_sdk_root_path
+  --- TODO: if a user specifies a command we do not need to call executable.get
   executable.get(function(paths)
     local defaults = get_defaults({ flutter_sdk = paths.flutter_sdk })
     local root_path = paths.dart_sdk
     local debug_log = create_debug_log(user_config.debug)
     debug_log(fmt("dart_sdk_path: %s", root_path))
 
-    config.cmd = config.cmd or { paths.dart_bin, analysis_server_snapshot_path(root_path), "--lsp" }
-    config.root_patterns = config.root_patterns or { ".git", "pubspec.yaml" }
+    config.cmd = config.cmd
+      or { paths.dart_bin, analysis_server_snapshot_path(root_path), "--lsp" }
 
-    local current_dir = fn.expand("%:p:h")
-    config.root_dir = path.find_root(config.root_patterns, current_dir) or current_dir
     config.filetypes = { FILETYPE }
-
     config.capabilities = merge_config(defaults.capabilities, config.capabilities)
     config.init_options = merge_config(defaults.init_options, config.init_options)
     config.handlers = merge_config(defaults.handlers, config.handlers)
@@ -194,32 +193,48 @@ local function get_server_config(user_config, callback)
   end)
 end
 
+--- TODO: deprecate this once nvim 0.8 is stable
+---@param bufnr number
+---@param user_config table
+local function legacy_server_init(bufnr, user_config)
+  -- Check to see if dartls is already attached, and if so attach
+  local existing_client = get_dartls_client()
+  if existing_client then
+    lsp.buf_attach_client(bufnr, existing_client.id)
+  end
+
+  get_server_config(user_config, function (c)
+    ---@diagnostic disable-next-line: missing-parameter
+    local current_dir = fn.expand("%:p:h")
+    c.root_dir = path.find_root(ROOT_PATTERNS, current_dir) or current_dir
+    local client_id = M.lsps[c.root_dir]
+    if not client_id then
+      client_id = lsp.start_client(c)
+      M.lsps[c.root_dir] = client_id
+      if client_id then
+        lsp.buf_attach_client(bufnr, client_id)
+      end
+    end
+  end)
+end
+
 ---This was heavily inspired by nvim-metals implementation of the attach functionality
----@return boolean
 function M.attach()
   local conf = require("flutter-tools.config").get()
   local user_config = conf.lsp
   local debug_log = create_debug_log(user_config.debug)
-
   debug_log("attaching LSP")
 
-  local bufnr = api.nvim_get_current_buf()
-  -- Check to see if dartls is already attached, and if so attatch
-  local existing_client = get_dartls_client()
-  if existing_client then
-    lsp.buf_attach_client(bufnr, existing_client.id)
-    return true
+  -- FIXME: When nvim 0.8 is released remove the legacy_server_init
+  if vim.version().minor < 8 then
+    legacy_server_init(api.nvim_get_current_buf(), user_config)
+  else
+    local fs = vim.fs
+    get_server_config(user_config, function (c)
+      c.root_dir = fs.dirname(fs.find(ROOT_PATTERNS, { upward = true })[1])
+      vim.lsp.start(c)
+    end)
   end
-
-  get_server_config(user_config, function(config)
-    local client_id = M.lsps[config.root_dir]
-    if not client_id then
-      client_id = lsp.start_client(config)
-      M.lsps[config.root_dir] = client_id
-      if client_id then lsp.buf_attach_client(bufnr, client_id) end
-    end
-  end)
-  return true
 end
 
 return M
