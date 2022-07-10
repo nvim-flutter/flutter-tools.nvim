@@ -174,8 +174,7 @@ local function get_server_config(user_config, callback)
     local debug_log = create_debug_log(user_config.debug)
     debug_log(fmt("dart_sdk_path: %s", root_path))
 
-    config.cmd = config.cmd
-      or { paths.dart_bin, analysis_server_snapshot_path(root_path), "--lsp" }
+    config.cmd = config.cmd or { paths.dart_bin, analysis_server_snapshot_path(root_path), "--lsp" }
     config.root_patterns = config.root_patterns or { ".git", "pubspec.yaml" }
 
     local current_dir = fn.expand("%:p:h")
@@ -212,14 +211,12 @@ function M.attach()
     return true
   end
 
-  get_server_config(user_config, function (config)
+  get_server_config(user_config, function(config)
     local client_id = M.lsps[config.root_dir]
     if not client_id then
       client_id = lsp.start_client(config)
       M.lsps[config.root_dir] = client_id
-      if client_id then
-        lsp.buf_attach_client(bufnr, client_id)
-      end
+      if client_id then lsp.buf_attach_client(bufnr, client_id) end
     end
   end)
   return true
