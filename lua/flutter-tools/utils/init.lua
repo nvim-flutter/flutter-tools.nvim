@@ -65,37 +65,7 @@ function M.map(mode, lhs, rhs, opts)
   end
 end
 
----@class FlutterAutocmd
----@field events string[] list of autocommand events
----@field targets string[] list of autocommand patterns
----@field modifiers string[] e.g. nested, once
----@field command string | function
-
----Create an autocommand
----@param name string
----@param commands FlutterAutocmd[]
-function M.augroup(name, commands)
-  vim.cmd("augroup " .. name)
-  vim.cmd("autocmd!")
-  for _, c in ipairs(commands) do
-    local command = c.command
-    if type(command) == "function" then
-      local fn_id = _create(command)
-      command = fmt("lua require('flutter-tools.utils')._execute(%s)", fn_id)
-    end
-    vim.cmd(
-      string.format(
-        "autocmd %s %s %s %s",
-        table.concat(c.events, ","),
-        table.concat(c.targets or {}, ","),
-        table.concat(c.modifiers or {}, " "),
-        command
-      )
-    )
-  end
-  vim.cmd("augroup END")
-end
-
+local colorscheme_group = api.nvim_create_augroup("FlutterToolsColorscheme", { clear = true})
 ---Add a highlight group and an accompanying autocommand to refresh it
 ---if the colorscheme changes
 ---@param name string
@@ -107,13 +77,7 @@ function M.highlight(name, opts)
   end
   local hl_cmd = fmt("highlight! %s %s", name, table.concat(hls, " "))
   vim.cmd(hl_cmd)
-  M.augroup(name .. "Refresh", {
-    {
-      events = { "ColorScheme" },
-      targets = { "*" },
-      command = hl_cmd,
-    },
-  })
+  api.nvim_create_autocmd("ColorScheme", { callback = hl_cmd, augroup = colorscheme_group })
 end
 
 function M.fold(accumulator, callback, list)

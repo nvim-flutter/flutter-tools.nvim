@@ -69,65 +69,65 @@ local function start()
   if conf.decorations then require("flutter-tools.decorations").apply(conf.decorations) end
 end
 
+local AUGROUP = api.nvim_create_augroup("FlutterToolsGroup", { clear = true })
 ---Create autocommands for the plugin
 local function setup_autocommands()
-  local utils = require("flutter-tools.utils")
+  local autocmd = api.nvim_create_autocmd
 
   -- delay plugin setup till we enter a dart file
-  utils.augroup("FlutterToolsStart", {
-    {
-      events = { "BufEnter" },
-      targets = { "*.dart" },
-      modifiers = { "++once" },
-      command = start,
-    },
+  autocmd({ "BufEnter" }, {
+    group = AUGROUP,
+    pattern = { "*.dart" },
+    once = true,
+    callback = start,
   })
 
-  local color_enabled = require("flutter-tools.config").get("lsp").color.enabled
-  if color_enabled then
-    utils.augroup("FlutterToolsLspColors", {
-      {
-        events = { "BufEnter", "TextChanged", "InsertLeave" },
-        targets = { "*.dart" },
-        command = function()
-          require("flutter-tools.lsp").document_color()
-        end,
-      },
-      {
-        -- NOTE: we piggyback of this event to check for when the server is first initialized
-        events = { "User FlutterToolsLspAnalysisComplete" },
-        modifiers = { "++once" },
-        command = function()
-          require("flutter-tools.lsp").document_color()
-        end,
-      },
+  if require("flutter-tools.config").get("lsp").color.enabled then
+    autocmd({ "BufEnter", "TextChanged", "InsertLeave" }, {
+      group = AUGROUP,
+      pattern = { "*.dart" },
+      callback = function()
+        require("flutter-tools.lsp").document_color()
+      end,
+    })
+    -- NOTE: we piggyback of this event to check for when the server is first initialized
+    autocmd({ "User" }, {
+      group = AUGROUP,
+      pattern = "FlutterToolsLspAnalysisComplete",
+      once = true,
+      callback = function()
+        require("flutter-tools.lsp").document_color()
+      end,
     })
   end
 
-  utils.augroup("FlutterToolsHotReload", {
-    {
-      events = { "BufWritePost" },
-      targets = { "*.dart" },
-      command = "lua require('flutter-tools.commands').reload(true)",
-    },
-    {
-      events = { "BufWritePost" },
-      targets = { "*/pubspec.yaml" },
-      command = "lua require('flutter-tools.commands').pub_get()",
-    },
-    {
-      events = { "BufEnter" },
-      targets = { require("flutter-tools.log").filename },
-      command = "lua require('flutter-tools.log').__resurrect()",
-    },
+  autocmd({ "BufWritePost" }, {
+    group = AUGROUP,
+    pattern = { "*.dart" },
+    callback = function()
+      require("flutter-tools.commands").reload(true)
+    end,
   })
-
-  utils.augroup("FlutterToolsOnClose", {
-    {
-      events = { "VimLeavePre" },
-      targets = { "*" },
-      command = "lua require('flutter-tools.dev_tools').stop()",
-    },
+  autocmd({ "BufWritePost" }, {
+    group = AUGROUP,
+    pattern = { "*/pubspec.yaml" },
+    callback = function()
+      require("flutter-tools.commands").pub_get()
+    end,
+  })
+  autocmd({ "BufEnter" }, {
+    group = AUGROUP,
+    pattern = { require("flutter-tools.log").filename },
+    callback = function()
+      require("flutter-tools.log").__resurrect()
+    end,
+  })
+  autocmd({ "VimLeavePre" }, {
+    group = AUGROUP,
+    pattern = { "*" },
+    callback = function()
+      require("flutter-tools.dev_tools").stop()
+    end,
   })
 end
 

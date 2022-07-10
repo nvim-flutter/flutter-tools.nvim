@@ -2,7 +2,7 @@ local M = {
   statusline = {},
 }
 
-local fn = vim.fn
+local fn, api = vim.fn, vim.api
 
 ---Asynchronously read the data in the pubspec yaml and pass the results to a callback
 ---@param callback fun(data: string):nil
@@ -32,11 +32,9 @@ local function device_show()
 end
 
 function M.statusline.device()
-  require("flutter-tools.utils").augroup("FlutterToolsDeviceStatus", {
-    {
-      events = { "User FlutterToolsAppStarted" },
-      command = device_show,
-    },
+  api.nvim_create_autocmd("User", {
+    pattern = "FlutterToolsAppStarted",
+    callback = device_show,
   })
 end
 
@@ -55,12 +53,9 @@ function M.statusline.app_version()
   -- show the version decoration immediately
   app_version_show()
   -- Refresh the statusline item when a user leaves the pubspec file
-  require("flutter-tools.utils").augroup("FlutterToolsAppVersion", {
-    {
-      events = { "BufLeave", "BufWritePost" },
-      targets = { "pubspec.yaml" },
-      command = app_version_show,
-    },
+  api.nvim_create_autocmd({ "BufLeave", "BufWritePost" }, {
+    pattern = { "pubspec.yaml" },
+    callback = app_version_show,
   })
 end
 

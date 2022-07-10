@@ -42,12 +42,9 @@ local function create(config)
     end
     M.buf = buf
     M.win = win
-    utils.augroup("FlutterToolsBuffer" .. buf, {
-      {
-        events = { "BufWipeout" },
-        targets = { "<buffer>" },
-        command = close_dev_log,
-      },
+    api.nvim_create_autocmd("BufWipeout", {
+      buffer = buf,
+      callback = close_dev_log,
     })
   end)
 end

@@ -280,27 +280,28 @@ local function set_current_item()
   end
 end
 
+local AUGROUP = api.nvim_create_augroup("FlutterToolsOutline", { clear = true })
 local function setup_autocommands()
-  utils.augroup("FlutterToolsOutline", {
-    {
-      events = { "User FlutterOutlineChanged" },
-      command = function()
-        if not utils.buf_valid(state.outline_buf) then return end
-        local ok, lines, highlights = get_outline_content()
-        if not ok then return end
-        refresh_outline(state.outline_buf, lines, highlights)
-      end,
-    },
-    {
-      events = { "CursorHold" },
-      targets = { "*.dart" },
-      command = set_current_item,
-    },
-    {
-      events = { "BufEnter" },
-      targets = { "*.dart" },
-      command = "doautocmd User FlutterOutlineChanged",
-    },
+  local autocmd = api.nvim_create_autocmd
+  autocmd({ "User" }, {
+    group = AUGROUP,
+    pattern = "FlutterOutlineChanged",
+    callback = function()
+      if not utils.buf_valid(state.outline_buf) then return end
+      local ok, lines, highlights = get_outline_content()
+      if not ok then return end
+      refresh_outline(state.outline_buf, lines, highlights)
+    end,
+  })
+  autocmd({ "CursorHold" }, {
+    group = AUGROUP,
+    pattern = { "*.dart" },
+    callback = set_current_item,
+  })
+  autocmd({ "BufEnter" }, {
+    group = AUGROUP,
+    pattern = { "*.dart" },
+    command = "doautocmd User FlutterOutlineChanged",
   })
 end
 
