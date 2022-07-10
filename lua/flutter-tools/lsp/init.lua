@@ -127,7 +127,9 @@ function M.restart()
     client.stop()
     local client_id = lsp.start_client(client.config)
     for _, buf in pairs(bufs) do
-      lsp.buf_attach_client(buf, client_id)
+      if client_id then
+        lsp.buf_attach_client(buf, client_id)
+      end
     end
   end
 end
