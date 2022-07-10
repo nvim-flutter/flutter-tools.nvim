@@ -65,7 +65,7 @@ function M.map(mode, lhs, rhs, opts)
   end
 end
 
-local colorscheme_group = api.nvim_create_augroup("FlutterToolsColorscheme", { clear = true})
+local colorscheme_group = api.nvim_create_augroup("FlutterToolsColorscheme", { clear = true })
 ---Add a highlight group and an accompanying autocommand to refresh it
 ---if the colorscheme changes
 ---@param name string
