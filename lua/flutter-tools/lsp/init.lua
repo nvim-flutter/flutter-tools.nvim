@@ -131,12 +131,14 @@ function M.restart()
   end
 end
 
+---@param server_name string?
+---@return table?
 local function get_dartls_client(server_name)
   server_name = server_name or SERVER_NAME
   return lsp.get_active_clients({ name = server_name })[1]
 end
 
----@return string
+---@return string?
 function M.get_lsp_root_dir()
   local client = get_dartls_client()
   return client and client.config.root_dir or nil
@@ -159,46 +161,26 @@ M.document_color = function()
 end
 M.on_document_color = color.on_document_color
 
----This was heavily inspired by nvim-metals implementation of the attach functionality
----@return boolean
-function M.attach()
-  local conf = require("flutter-tools.config").get()
-  local user_config = conf.lsp
-  local debug_log = create_debug_log(user_config.debug)
-
-  debug_log("attaching LSP")
-
+---@param user_config table
+---@param callback fun(table)
+local function get_server_config(user_config, callback)
   local config = utils.merge({ name = SERVER_NAME }, user_config, { "color" })
-
-  local bufnr = api.nvim_get_current_buf()
-
-  -- Check to see if dartls is already attached, and if so attatch
-  local existing_client = get_dartls_client(config.name)
-  if existing_client then
-    lsp.buf_attach_client(bufnr, existing_client.id)
-    return true
-  end
-
-  config.filetypes = { FILETYPE }
-
   local executable = require("flutter-tools.executable")
   --- TODO: if a user specifies a command we do not need to call
   --- executable.dart_sdk_root_path
   executable.get(function(paths)
     local defaults = get_defaults({ flutter_sdk = paths.flutter_sdk })
     local root_path = paths.dart_sdk
+    local debug_log = create_debug_log(user_config.debug)
     debug_log(fmt("dart_sdk_path: %s", root_path))
 
     config.cmd = config.cmd
-      or {
-        paths.dart_bin,
-        analysis_server_snapshot_path(root_path),
-        "--lsp",
-      }
+      or { paths.dart_bin, analysis_server_snapshot_path(root_path), "--lsp" }
     config.root_patterns = config.root_patterns or { ".git", "pubspec.yaml" }
 
     local current_dir = fn.expand("%:p:h")
     config.root_dir = path.find_root(config.root_patterns, current_dir) or current_dir
+    config.filetypes = { FILETYPE }
 
     config.capabilities = merge_config(defaults.capabilities, config.capabilities)
     config.init_options = merge_config(defaults.init_options, config.init_options)
@@ -209,15 +191,38 @@ function M.attach()
     config.on_init = function(client, _)
       return client.notify("workspace/didChangeConfiguration", { settings = config.settings })
     end
+    callback(config)
+  end)
+end
 
+---This was heavily inspired by nvim-metals implementation of the attach functionality
+---@return boolean
+function M.attach()
+  local conf = require("flutter-tools.config").get()
+  local user_config = conf.lsp
+  local debug_log = create_debug_log(user_config.debug)
+
+  debug_log("attaching LSP")
+
+  local bufnr = api.nvim_get_current_buf()
+  -- Check to see if dartls is already attached, and if so attatch
+  local existing_client = get_dartls_client()
+  if existing_client then
+    lsp.buf_attach_client(bufnr, existing_client.id)
+    return true
+  end
+
+  get_server_config(user_config, function (config)
     local client_id = M.lsps[config.root_dir]
     if not client_id then
       client_id = lsp.start_client(config)
       M.lsps[config.root_dir] = client_id
+      if client_id then
+        lsp.buf_attach_client(bufnr, client_id)
+      end
     end
-
-    lsp.buf_attach_client(bufnr, client_id)
   end)
+  return true
 end
 
 return M
