@@ -127,9 +127,7 @@ function M.restart()
     client.stop()
     local client_id = lsp.start_client(client.config)
     for _, buf in pairs(bufs) do
-      if client_id then
-        lsp.buf_attach_client(buf, client_id)
-      end
+      if client_id then lsp.buf_attach_client(buf, client_id) end
     end
   end
 end
@@ -176,8 +174,7 @@ local function get_server_config(user_config, callback)
     local debug_log = create_debug_log(user_config.debug)
     debug_log(fmt("dart_sdk_path: %s", root_path))
 
-    config.cmd = config.cmd
-      or { paths.dart_bin, analysis_server_snapshot_path(root_path), "--lsp" }
+    config.cmd = config.cmd or { paths.dart_bin, analysis_server_snapshot_path(root_path), "--lsp" }
 
     config.filetypes = { FILETYPE }
     config.capabilities = merge_config(defaults.capabilities, config.capabilities)
@@ -199,11 +196,9 @@ end
 local function legacy_server_init(bufnr, user_config)
   -- Check to see if dartls is already attached, and if so attach
   local existing_client = get_dartls_client()
-  if existing_client then
-    lsp.buf_attach_client(bufnr, existing_client.id)
-  end
+  if existing_client then lsp.buf_attach_client(bufnr, existing_client.id) end
 
-  get_server_config(user_config, function (c)
+  get_server_config(user_config, function(c)
     ---@diagnostic disable-next-line: missing-parameter
     local current_dir = fn.expand("%:p:h")
     c.root_dir = path.find_root(ROOT_PATTERNS, current_dir) or current_dir
@@ -211,9 +206,7 @@ local function legacy_server_init(bufnr, user_config)
     if not client_id then
       client_id = lsp.start_client(c)
       M.lsps[c.root_dir] = client_id
-      if client_id then
-        lsp.buf_attach_client(bufnr, client_id)
-      end
+      if client_id then lsp.buf_attach_client(bufnr, client_id) end
     end
   end)
 end
@@ -230,7 +223,7 @@ function M.attach()
     legacy_server_init(api.nvim_get_current_buf(), user_config)
   else
     local fs = vim.fs
-    get_server_config(user_config, function (c)
+    get_server_config(user_config, function(c)
       c.root_dir = fs.dirname(fs.find(ROOT_PATTERNS, { upward = true })[1])
       vim.lsp.start(c)
     end)
