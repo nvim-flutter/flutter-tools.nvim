@@ -91,7 +91,7 @@ end
 ---@generic T
 ---@param compare fun(item: T): boolean
 ---@param list `T`
----@return `T`
+---@return `T`?
 function M.find(list, compare)
   for _, item in ipairs(list) do
     if compare(item) then return item end

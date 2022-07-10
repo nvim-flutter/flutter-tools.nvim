@@ -389,8 +389,8 @@ local function select_outline_item()
   api.nvim_win_set_cursor(0, { item.start_line + 1, item.start_col + 1 })
 end
 
----@param buf number
----@param win number
+---@param buf integer
+---@param win integer
 ---@param lines table
 ---@param highlights table
 ---@param _ boolean whether or not to go back to the original window

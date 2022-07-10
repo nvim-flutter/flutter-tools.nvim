@@ -19,7 +19,7 @@ end
 
 ---Add/update item to/in the decorations table
 ---@param key string
----@param value string|number
+---@param value table
 local function set_decoration_item(key, value)
   local decorations = vim.g.flutter_tools_decorations or {}
   decorations[key] = value
