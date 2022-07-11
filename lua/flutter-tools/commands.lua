@@ -197,12 +197,12 @@ end
 
 ---@param quiet boolean
 function M.open_dev_tools(quiet)
-  send("open_dev_tools",quiet)
+  send("open_dev_tools", quiet)
 end
 
 ---@param quiet boolean
 function M.generate(quiet)
-  send("generate",quiet)
+  send("generate", quiet)
 end
 
 ---@param quiet boolean
