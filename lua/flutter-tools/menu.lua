@@ -147,6 +147,12 @@ function M.commands(opts)
       command = require("flutter-tools.outline").open,
     },
     {
+      id = "flutter-tools-generate",
+      label = "Flutter tools: Generate ",
+      hint = "Generate code",
+      command = require("flutter-tools.commands").generate,
+    },
+    {
       id = "flutter-tools-clear-dev-log",
       label = "Flutter tools: Clear Dev Log",
       hint = "Clear previous logs in the output buffer",
@@ -163,6 +169,12 @@ function M.commands(opts)
         label = "Flutter tools: Copy Profiler Url",
         hint = "Run the app and the DevTools first",
         command = require("flutter-tools.commands").copy_profiler_url,
+      },
+      {
+        id = "flutter-tools-open-dev-tools",
+        label = "Flutter tools: Open Dev Tools",
+        hint = "Run the app and the Dev Tools first",
+        command = require("flutter-tools.commands").open_dev_tools,
       },
     })
   else

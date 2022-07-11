@@ -16,6 +16,8 @@ local command_keys = {
   detach = "d",
   inspect = "i",
   construction_lines = "p",
+  open_dev_tools = "v",
+  generate = "g",
 }
 
 function JobRunner:is_running()
