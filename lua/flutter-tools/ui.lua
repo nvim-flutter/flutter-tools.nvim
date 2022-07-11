@@ -52,9 +52,7 @@ local function calculate_width(lines)
   local max_width = math.ceil(vim.o.columns * 0.8)
   local max_length = 0
   for _, line in pairs(lines) do
-    if #line > max_length then
-      max_length = #line
-    end
+    if #line > max_length then max_length = #line end
   end
   return max_length <= max_width and max_length or max_width
 end
@@ -85,13 +83,9 @@ end
 --- @param lines table[]
 --- @param ns_id integer?
 function M.add_highlights(buf_id, lines, ns_id)
-  if not buf_id then
-    return
-  end
+  if not buf_id then return end
   ns_id = ns_id or namespace_id
-  if not lines then
-    return
-  end
+  if not lines then return end
   for _, line in ipairs(lines) do
     api.nvim_buf_add_highlight(
       buf_id,
@@ -109,9 +103,7 @@ end
 --- @param lines table
 local function invalid_lines(lines)
   for _, line in pairs(lines) do
-    if line ~= "" then
-      return false
-    end
+    if line ~= "" then return false end
   end
   return true
 end
@@ -122,9 +114,7 @@ local function update_win_state(win)
   state.open_windows = vim.tbl_filter(function(id)
     return id ~= win
   end, state.open_windows)
-  if state.last_opened == win then
-    state.last_opened = nil
-  end
+  if state.last_opened == win then state.last_opened = nil end
 end
 
 ---Create a popup window to notify the user of an event
@@ -133,9 +123,7 @@ end
 local function notify(lines, duration)
   assert(type(lines) == "table", "lines passed to notify should be a list of strings")
   duration = duration or 3000
-  if not lines or #lines < 1 or invalid_lines(lines) then
-    return
-  end
+  if not lines or #lines < 1 or invalid_lines(lines) then return end
   lines = pad_lines(lines)
 
   local row = vim.o.lines - #lines - vim.o.cmdheight - 2
@@ -150,9 +138,7 @@ local function notify(lines, duration)
       if next_row <= 0 then
         if #state.open_windows > 1 then
           for _, win in ipairs(state.open_windows) do
-            if api.nvim_win_is_valid(win) then
-              api.nvim_win_close(win, { force = true })
-            end
+            if api.nvim_win_is_valid(win) then api.nvim_win_close(win, true) end
           end
         end
       else
@@ -192,9 +178,7 @@ local function notify(lines, duration)
   vim.wo[win].winblend = WIN_BLEND
   vim.bo[buf].modifiable = false
   fn.timer_start(duration, function()
-    if api.nvim_win_is_valid(win) then
-      api.nvim_win_close(win, true)
-    end
+    if api.nvim_win_is_valid(win) then api.nvim_win_close(win, true) end
     update_win_state(win)
   end)
 end
@@ -215,18 +199,14 @@ M.notify = function(lines, opts)
   if notification_style == "native" then
     local is_error = level == M.ERROR or level == "error"
     local prev_notification = is_error and notifications.errors[source] or nil
-    if prev_notification then
-      lines = vim.list_extend(prev_notification.message or {}, lines)
-    end
+    if prev_notification then lines = vim.list_extend(prev_notification.message or {}, lines) end
     local notification = vim.notify(table.concat(lines, "\n"), level, {
       title = "Flutter tools",
       timeout = timeout,
       icon = "",
       replace = prev_notification,
     })
-    if is_error and source then
-      notifications.errors[source] = notification
-    end
+    if is_error and source then notifications.errors[source] = notification end
   else
     notify(lines, timeout)
   end
@@ -251,9 +231,7 @@ function M.popup_create(opts)
   local display = opts.display or { winblend = WIN_BLEND }
   local position = opts.position or {}
 
-  if not lines or #lines < 1 or invalid_lines(lines) then
-    return
-  end
+  if not lines or #lines < 1 or invalid_lines(lines) then return end
 
   lines = pad_lines(lines)
   local width = calculate_width(lines)
@@ -320,9 +298,7 @@ function M.popup_create(opts)
     nowait = true,
   })
   vim.cmd(string.format([[autocmd! WinLeave <buffer> silent! execute 'bw %d']], buf))
-  if on_create then
-    on_create(buf, win)
-  end
+  if on_create then on_create(buf, win) end
 end
 
 ---Create a split window
@@ -340,9 +316,7 @@ function M.open_win(opts, on_open)
   local buf = api.nvim_get_current_buf()
   vim.bo[buf].swapfile = false
   vim.bo[buf].buftype = "nofile"
-  if on_open then
-    on_open(buf, win)
-  end
+  if on_open then on_open(buf, win) end
 end
 
 return M

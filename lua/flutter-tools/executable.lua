@@ -21,9 +21,7 @@ local function _dart_sdk_root(paths)
     -- On Linux installations with snap the dart SDK can be further nested inside a bin directory
     -- so it's /bin/cache/dart-sdk whereas else where it is /cache/dart-sdk
     local segments = { paths.flutter_sdk, "cache" }
-    if not path.is_dir(path.join(unpack(segments))) then
-      table.insert(segments, 2, "bin")
-    end
+    if not path.is_dir(path.join(unpack(segments))) then table.insert(segments, 2, "bin") end
     if path.is_dir(path.join(unpack(segments))) then
       -- remove the /cache/ directory as it's already part of the SDK path above
       segments[#segments] = nil
@@ -37,9 +35,7 @@ local function _dart_sdk_root(paths)
     return path.join(flutter_bin, dart_sdk)
   end
 
-  if utils.executable("dart") then
-    return fn.resolve(fn.exepath("dart"))
-  end
+  if utils.executable("dart") then return fn.resolve(fn.exepath("dart")) end
 
   return ""
 end
@@ -108,9 +104,7 @@ end
 function M.get(callback)
   local conf = require("flutter-tools.config").get()
 
-  if _paths then
-    return callback(_paths)
-  end
+  if _paths then return callback(_paths) end
 
   if conf.fvm then
     local flutter_bin_symlink = path.join(luv.cwd(), ".fvm", "flutter_sdk", "bin", "flutter")
@@ -149,9 +143,7 @@ function M.get(callback)
   if not _paths then
     _paths = get_default_binaries()
     _paths.dart_sdk = _dart_sdk_root(_paths)
-    if _paths.flutter_sdk then
-      _paths.dart_bin = _flutter_sdk_dart_bin(_paths.flutter_sdk)
-    end
+    if _paths.flutter_sdk then _paths.dart_bin = _flutter_sdk_dart_bin(_paths.flutter_sdk) end
   end
 
   return callback(_paths)

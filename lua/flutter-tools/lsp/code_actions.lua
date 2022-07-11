@@ -29,9 +29,7 @@ function M.execute(action, bufnr, on_complete)
   -- If it is a CodeAction, it can have either an edit, a command or both.
   -- Edits should be executed first
   if action.edit or type(action.command) == "table" then
-    if action.edit then
-      vim.lsp.util.apply_workspace_edit(action.edit, "utf-8")
-    end
+    if action.edit then vim.lsp.util.apply_workspace_edit(action.edit, "utf-8") end
     if type(action.command) == "table" then
       vim.lsp.buf_request(bufnr, "workspace/executeCommand", action.command, on_complete)
     else
@@ -46,9 +44,7 @@ end
 ---@param actions table[]
 ---@param on_create fun(buf: number, win: number)
 function M.create_popup(actions, on_create)
-  if not actions or vim.tbl_isempty(actions) then
-    return
-  end
+  if not actions or vim.tbl_isempty(actions) then return end
 
   local lines = vim.tbl_map(function(action)
     return action.title:gsub("\r\n", "\\r\\n"):gsub("\n", "\\n")

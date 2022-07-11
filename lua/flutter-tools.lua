@@ -1,151 +1,136 @@
 local M = {}
 
-local function setup_commands()
-  local utils = require("flutter-tools.utils")
-  -- Commands
-  utils.command(
-    "FlutterRun",
-    [[lua require('flutter-tools.commands').run_command(<q-args>)]],
-    { nargs = "*" }
-  )
-  utils.command("FlutterLspRestart", 'lua require("flutter-tools.lsp").restart()')
-  utils.command("FlutterDetach", [[lua require('flutter-tools.commands').detach()]])
-  utils.command("FlutterReload", [[lua require('flutter-tools.commands').reload()]])
-  utils.command("FlutterRestart", [[lua require('flutter-tools.commands').restart()]])
-  utils.command("FlutterQuit", [[lua require('flutter-tools.commands').quit()]])
-  utils.command("FlutterVisualDebug", [[lua require('flutter-tools.commands').visual_debug()]])
-  -- Lists
-  utils.command("FlutterDevices", [[lua require('flutter-tools.devices').list_devices()]])
-  utils.command("FlutterEmulators", [[lua require('flutter-tools.devices').list_emulators()]])
-  --- Outline
-  utils.command("FlutterOutlineOpen", [[lua require('flutter-tools.outline').open()]])
-  utils.command("FlutterOutlineToggle", [[lua require('flutter-tools.outline').toggle()]])
-  --- Dev tools
-  utils.command("FlutterDevTools", [[lua require('flutter-tools.dev_tools').start()]])
-  utils.command(
-    "FlutterCopyProfilerUrl",
-    [[lua require('flutter-tools.commands').copy_profiler_url()]]
-  )
-  utils.command(
-    "FlutterOpenDevTools",
-    [[lua require('flutter-tools.commands').open_dev_tools()]]
-  )
-  utils.command(
-    "FlutterGenerate",
-    [[lua require('flutter-tools.commands').generate()]]
-  )
+local api = vim.api
 
-  --pub
-  utils.command("FlutterPubGet", [[lua require('flutter-tools.commands').pub_get()]])
-  utils.command(
-    "FlutterPubUpgrade",
-    [[lua require('flutter-tools.commands').pub_upgrade_command(<q-args>)]],
-    { nargs = "*" }
-  )
+local function setup_commands()
+  local cmd = api.nvim_create_user_command
+  -- Commands
+  cmd("FlutterRun", function(data)
+    require("flutter-tools.commands").run_command(data.args)
+  end, { nargs = "*" })
+  cmd("FlutterLspRestart", function()
+    require("flutter-tools.lsp").restart()
+  end, {})
+  cmd("FlutterDetach", function()
+    require("flutter-tools.commands").detach()
+  end, {})
+  cmd("FlutterReload", function()
+    require("flutter-tools.commands").reload()
+  end, {})
+  cmd("FlutterRestart", function()
+    require("flutter-tools.commands").restart()
+  end, {})
+  cmd("FlutterQuit", function()
+    require("flutter-tools.commands").quit()
+  end, {})
+  cmd("FlutterVisualDebug", function()
+    require("flutter-tools.commands").visual_debug()
+  end, {})
+  -- Lists
+  cmd("FlutterDevices", function()
+    require("flutter-tools.devices").list_devices()
+  end, {})
+  cmd("FlutterEmulators", function()
+    require("flutter-tools.devices").list_emulators()
+  end, {})
+  --- Outline
+  cmd("FlutterOutlineOpen", function()
+    require("flutter-tools.outline").open()
+  end, {})
+  cmd("FlutterOutlineToggle", function()
+    require("flutter-tools.outline").toggle()
+  end, {})
+  --- Dev tools
+  cmd("FlutterDevTools", function()
+    require("flutter-tools.dev_tools").start()
+  end, {})
+  cmd("FlutterCopyProfilerUrl", function()
+    require("flutter-tools.commands").copy_profiler_url()
+  end, {})
+  cmd("FlutterOpenDevTools", function()
+    require("flutter-tools.commands").open_dev_tools()
+  end, {})
+  cmd("FlutterPubGet", function()
+    require("flutter-tools.commands").pub_get()
+  end, {})
+  cmd("FlutterPubUpgrade", function(data)
+    require("flutter-tools.commands").pub_upgrade_command(data.args)
+  end, { nargs = "*" })
   --- Log
-  utils.command("FlutterLogClear", [[lua require('flutter-tools.log').clear()]])
+  cmd("FlutterLogClear", function()
+    require("flutter-tools.log").clear()
+  end, {})
 end
 
 ---Initialise various plugin modules
 local function start()
-  -- this loads plenary to check if it exists, so defer it till the plugin is starting up
-  if not pcall(require, "plenary") then
-    return vim.notify(
-      "plenary.nvim is a required dependency of this plugin, please ensure it is installed."
-        .. " Otherwise this plugin will not work correctly",
-      vim.log.levels.ERROR
-    )
-  end
-
   setup_commands()
 
   local conf = require("flutter-tools.config").get()
-  if conf.debugger.enabled then
-    require("flutter-tools.dap").setup(conf)
-  end
-
-  if conf.widget_guides.enabled then
-    require("flutter-tools.guides").setup()
-  end
-
-  if conf.decorations then
-    require("flutter-tools.decorations").apply(conf.decorations)
-  end
+  if conf.debugger.enabled then require("flutter-tools.dap").setup(conf) end
+  if conf.widget_guides.enabled then require("flutter-tools.guides").setup() end
+  if conf.decorations then require("flutter-tools.decorations").apply(conf.decorations) end
 end
 
+local AUGROUP = api.nvim_create_augroup("FlutterToolsGroup", { clear = true })
 ---Create autocommands for the plugin
 local function setup_autocommands()
-  local utils = require("flutter-tools.utils")
+  local autocmd = api.nvim_create_autocmd
 
   -- delay plugin setup till we enter a dart file
-  utils.augroup("FlutterToolsStart", {
-    {
-      events = { "BufEnter" },
-      targets = { "*.dart" },
-      modifiers = { "++once" },
-      command = start,
-    },
+  autocmd({ "BufEnter" }, {
+    group = AUGROUP,
+    pattern = { "*.dart" },
+    once = true,
+    callback = start,
   })
 
-  -- Setup LSP autocommand to attach to dart files
-  utils.augroup("FlutterToolsLsp", {
-    {
-      events = { "FileType" },
-      targets = { "dart" },
-      command = "lua require('flutter-tools.lsp').attach()",
-    },
-  })
-
-  local color_enabled = require("flutter-tools.config").get("lsp").color.enabled
-  if color_enabled then
-    utils.augroup("FlutterToolsLspColors", {
-      {
-        events = { "BufEnter", "TextChanged", "InsertLeave" },
-        targets = { "*.dart" },
-        command = function()
-          require("flutter-tools.lsp").document_color()
-        end,
-      },
-      {
-        -- NOTE: we piggyback of this event to check for when the server is first initialized
-        events = { "User FlutterToolsLspAnalysisComplete" },
-        modifiers = { "++once" },
-        command = function()
-          require("flutter-tools.lsp").document_color()
-        end,
-      },
+  if require("flutter-tools.config").get("lsp").color.enabled then
+    autocmd({ "BufEnter", "TextChanged", "InsertLeave" }, {
+      group = AUGROUP,
+      pattern = { "*.dart" },
+      callback = function()
+        require("flutter-tools.lsp").document_color()
+      end,
+    })
+    -- NOTE: we piggyback of this event to check for when the server is first initialized
+    autocmd({ "User" }, {
+      group = AUGROUP,
+      pattern = "FlutterToolsLspAnalysisComplete",
+      once = true,
+      callback = function()
+        require("flutter-tools.lsp").document_color()
+      end,
     })
   end
 
-  utils.augroup("FlutterToolsHotReload", {
-    events = {"BUfWritePost", targets = {"*.arb"},
-    command = require('flutter-tools.commands').generate},
+  autocmd({ "BufWritePost" }, {
+    group = AUGROUP,
+    pattern = { "*.dart" },
+    callback = function()
+      require("flutter-tools.commands").reload(true)
+    end,
   })
-
-  utils.augroup("FlutterToolsHotReload", {
-    {
-      events = { "BufWritePost" },
-      targets = { "*.dart" },
-      command = "lua require('flutter-tools.commands').reload(true)",
-    },
-    {
-      events = { "BufWritePost" },
-      targets = { "*/pubspec.yaml" },
-      command = "lua require('flutter-tools.commands').pub_get()",
-    },
-    {
-      events = { "BufEnter" },
-      targets = { require("flutter-tools.log").filename },
-      command = "lua require('flutter-tools.log').__resurrect()",
-    },
+  autocmd({ "BufWritePost" }, {
+    group = AUGROUP,
+    pattern = { "*/pubspec.yaml" },
+    callback = function()
+      require("flutter-tools.commands").pub_get()
+    end,
   })
-
-  utils.augroup("FlutterToolsOnClose", {
-    {
-      events = { "VimLeavePre" },
-      targets = { "*" },
-      command = "lua require('flutter-tools.dev_tools').stop()",
-    },
+  autocmd({ "BufEnter" }, {
+    group = AUGROUP,
+    pattern = { require("flutter-tools.log").filename },
+    callback = function()
+      require("flutter-tools.log").__resurrect()
+    end,
+  })
+  autocmd({ "VimLeavePre" }, {
+    group = AUGROUP,
+    pattern = { "*" },
+    callback = function()
+      require("flutter-tools.dev_tools").stop()
+    end,
   })
 end
 

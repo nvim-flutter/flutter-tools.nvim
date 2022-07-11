@@ -2,7 +2,7 @@ local M = {
   statusline = {},
 }
 
-local fn = vim.fn
+local fn, api = vim.fn, vim.api
 
 ---Asynchronously read the data in the pubspec yaml and pass the results to a callback
 ---@param callback fun(data: string):nil
@@ -19,7 +19,7 @@ end
 
 ---Add/update item to/in the decorations table
 ---@param key string
----@param value string|number
+---@param value table
 local function set_decoration_item(key, value)
   local decorations = vim.g.flutter_tools_decorations or {}
   decorations[key] = value
@@ -28,17 +28,13 @@ end
 
 local function device_show()
   local device = require("flutter-tools.commands").current_device()
-  if device then
-    set_decoration_item("device", device)
-  end
+  if device then set_decoration_item("device", device) end
 end
 
 function M.statusline.device()
-  require("flutter-tools.utils").augroup("FlutterToolsDeviceStatus", {
-    {
-      events = { "User FlutterToolsAppStarted" },
-      command = device_show,
-    },
+  api.nvim_create_autocmd("User", {
+    pattern = "FlutterToolsAppStarted",
+    callback = device_show,
   })
 end
 
@@ -57,27 +53,20 @@ function M.statusline.app_version()
   -- show the version decoration immediately
   app_version_show()
   -- Refresh the statusline item when a user leaves the pubspec file
-  require("flutter-tools.utils").augroup("FlutterToolsAppVersion", {
-    {
-      events = { "BufLeave", "BufWritePost" },
-      targets = { "pubspec.yaml" },
-      command = app_version_show,
-    },
+  api.nvim_create_autocmd({ "BufLeave", "BufWritePost" }, {
+    pattern = { "pubspec.yaml" },
+    callback = app_version_show,
   })
 end
 
 ---@param config table<string, table<string, boolean>>
 function M.apply(config)
-  if not config or vim.tbl_isempty(config) then
-    return
-  end
+  if not config or vim.tbl_isempty(config) then return end
   for name, conf in pairs(config) do
     if M[name] and conf and type(conf) == "table" then
       for key, enabled in pairs(conf) do
         local func = M[name][key]
-        if func and enabled then
-          func()
-        end
+        if func and enabled then func() end
       end
     end
   end

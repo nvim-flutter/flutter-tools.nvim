@@ -41,7 +41,7 @@ some basic setup might look like.
 
 ## Prerequisites
 
-- neovim 0.5+
+- neovim 0.7.0+
 
 ## Notices
 
@@ -114,7 +114,7 @@ EOF
 require("flutter-tools").setup{} -- use defaults
 ```
 
-# Functionality
+## Features
 
 #### Run flutter app with hot reloading
 

@@ -9,6 +9,7 @@ local fmt = string.format
 
 local FILETYPE = "dart"
 local SERVER_NAME = "dartls"
+local ROOT_PATTERNS = { ".git", "pubspec.yaml" }
 
 local M = {
   lsps = {},
@@ -25,21 +26,15 @@ end
 ---@param user table|function
 ---@return table
 local function merge_config(default, user)
-  if type(user) == "function" then
-    return user(default)
-  end
-  if not user or vim.tbl_isempty(user) then
-    return default
-  end
+  if type(user) == "function" then return user(default) end
+  if not user or vim.tbl_isempty(user) then return default end
   return vim.tbl_deep_extend("force", default or {}, user or {})
 end
 
 local function create_debug_log(level)
   return function(msg)
     local levels = require("flutter-tools.config").debug_levels
-    if level <= levels.DEBUG then
-      require("flutter-tools.ui").notify({ msg }, { level = level })
-    end
+    if level <= levels.DEBUG then require("flutter-tools.ui").notify({ msg }, { level = level }) end
   end
 end
 
@@ -50,13 +45,11 @@ end
 local function handle_progress(err, result, ctx)
   -- Call the existing handler for progress so plugins can also handle the event
   -- but only whilst not editing the buffer as dartls can be spammy
-  if api.nvim_get_mode().mode ~= "i" then
-    vim.lsp.handlers["$/progress"](err, result, ctx)
-  end
+  if api.nvim_get_mode().mode ~= "i" then vim.lsp.handlers["$/progress"](err, result, ctx) end
   -- NOTE: this event gets called whenever the analysis server has completed some work
   -- rather than just when the server has started.
   if result and result.value and result.value.kind == "end" then
-    vim.cmd("doautocmd User FlutterToolsLspAnalysisComplete")
+    api.nvim_exec_autocmds("User", { pattern = "FlutterToolsLspAnalysisComplete" })
   end
 end
 
@@ -134,25 +127,19 @@ function M.restart()
     client.stop()
     local client_id = lsp.start_client(client.config)
     for _, buf in pairs(bufs) do
-      lsp.buf_attach_client(buf, client_id)
+      if client_id then lsp.buf_attach_client(buf, client_id) end
     end
   end
 end
 
+---@param server_name string?
+---@return table?
 local function get_dartls_client(server_name)
   server_name = server_name or SERVER_NAME
-  for _, buf in pairs(vim.fn.getbufinfo({ bufloaded = true })) do
-    if vim.bo[buf.bufnr].filetype == FILETYPE then
-      local clients = lsp.buf_get_clients(buf.bufnr)
-      for _, client in ipairs(clients) do
-        if client.config.name == server_name then
-          return client
-        end
-      end
-    end
-  end
+  return lsp.get_active_clients({ name = server_name })[1]
 end
 
+---@return string?
 function M.get_lsp_root_dir()
   local client = get_dartls_client()
   return client and client.config.root_dir or nil
@@ -175,47 +162,21 @@ M.document_color = function()
 end
 M.on_document_color = color.on_document_color
 
----This was heavily inspired by nvim-metals implementation of the attach functionality
----@return boolean
-function M.attach()
-  local conf = require("flutter-tools.config").get()
-  local user_config = conf.lsp
-  local debug_log = create_debug_log(user_config.debug)
-
-  debug_log("attaching LSP")
-
+---@param user_config table
+---@param callback fun(table)
+local function get_server_config(user_config, callback)
   local config = utils.merge({ name = SERVER_NAME }, user_config, { "color" })
-
-  local bufnr = api.nvim_get_current_buf()
-
-  -- Check to see if dartls is already attached, and if so attatch
-  local existing_client = get_dartls_client(config.name)
-  if existing_client then
-    lsp.buf_attach_client(bufnr, existing_client.id)
-    return true
-  end
-
-  config.filetypes = { FILETYPE }
-
   local executable = require("flutter-tools.executable")
-  --- TODO: if a user specifies a command we do not need to call
-  --- executable.dart_sdk_root_path
+  --- TODO: if a user specifies a command we do not need to call executable.get
   executable.get(function(paths)
     local defaults = get_defaults({ flutter_sdk = paths.flutter_sdk })
     local root_path = paths.dart_sdk
+    local debug_log = create_debug_log(user_config.debug)
     debug_log(fmt("dart_sdk_path: %s", root_path))
 
-    config.cmd = config.cmd
-      or {
-        paths.dart_bin,
-        analysis_server_snapshot_path(root_path),
-        "--lsp",
-      }
-    config.root_patterns = config.root_patterns or { ".git", "pubspec.yaml" }
+    config.cmd = config.cmd or { paths.dart_bin, analysis_server_snapshot_path(root_path), "--lsp" }
 
-    local current_dir = fn.expand("%:p:h")
-    config.root_dir = path.find_root(config.root_patterns, current_dir) or current_dir
-
+    config.filetypes = { FILETYPE }
     config.capabilities = merge_config(defaults.capabilities, config.capabilities)
     config.init_options = merge_config(defaults.init_options, config.init_options)
     config.handlers = merge_config(defaults.handlers, config.handlers)
@@ -225,15 +186,48 @@ function M.attach()
     config.on_init = function(client, _)
       return client.notify("workspace/didChangeConfiguration", { settings = config.settings })
     end
-
-    local client_id = M.lsps[config.root_dir]
-    if not client_id then
-      client_id = lsp.start_client(config)
-      M.lsps[config.root_dir] = client_id
-    end
-
-    lsp.buf_attach_client(bufnr, client_id)
+    callback(config)
   end)
+end
+
+--- TODO: deprecate this once nvim 0.8 is stable
+---@param bufnr number
+---@param user_config table
+local function legacy_server_init(bufnr, user_config)
+  -- Check to see if dartls is already attached, and if so attach
+  local existing_client = get_dartls_client()
+  if existing_client then lsp.buf_attach_client(bufnr, existing_client.id) end
+
+  get_server_config(user_config, function(c)
+    ---@diagnostic disable-next-line: missing-parameter
+    local current_dir = fn.expand("%:p:h")
+    c.root_dir = path.find_root(ROOT_PATTERNS, current_dir) or current_dir
+    local client_id = M.lsps[c.root_dir]
+    if not client_id then
+      client_id = lsp.start_client(c)
+      M.lsps[c.root_dir] = client_id
+      if client_id then lsp.buf_attach_client(bufnr, client_id) end
+    end
+  end)
+end
+
+---This was heavily inspired by nvim-metals implementation of the attach functionality
+function M.attach()
+  local conf = require("flutter-tools.config").get()
+  local user_config = conf.lsp
+  local debug_log = create_debug_log(user_config.debug)
+  debug_log("attaching LSP")
+
+  -- FIXME: When nvim 0.8 is released remove the legacy_server_init
+  if vim.version().minor < 8 then
+    legacy_server_init(api.nvim_get_current_buf(), user_config)
+  else
+    local fs = vim.fs
+    get_server_config(user_config, function(c)
+      c.root_dir = fs.dirname(fs.find(ROOT_PATTERNS, { upward = true })[1])
+      vim.lsp.start(c)
+    end)
+  end
 end
 
 return M

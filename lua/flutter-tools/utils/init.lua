@@ -10,9 +10,7 @@ _G.__flutter_tools_callbacks = __flutter_tools_callbacks or {}
 ---@param name string
 ---@return string
 function M.display_name(name, platform)
-  if not name then
-    return ""
-  end
+  if not name then return "" end
   local symbol = "•"
   return symbol
     .. " "
@@ -20,32 +18,16 @@ function M.display_name(name, platform)
     .. (platform and platform ~= "" and (" " .. symbol .. " ") .. platform or "")
 end
 
----Create a neovim command
----@param name string
----@param rhs string
----@param modifiers string[]?
-function M.command(name, rhs, modifiers)
-  modifiers = modifiers or {}
-  local nargs = modifiers and modifiers.nargs or 0
-  vim.cmd(fmt("command! -nargs=%s %s %s", nargs, name, rhs))
-end
-
 --- if every item in a table is an empty value return true
 function M.list_is_empty(tbl)
-  if not tbl then
-    return true
-  end
+  if not tbl then return true end
   return table.concat(tbl) == ""
 end
 
 function M.buf_valid(bufnr, name)
   local target = bufnr or name
-  if not target then
-    return false
-  end
-  if bufnr then
-    return api.nvim_buf_is_loaded(bufnr)
-  end
+  if not target then return false end
+  if bufnr then return api.nvim_buf_is_loaded(bufnr) end
   return vim.fn.bufexists(target) > 0 and vim.fn.buflisted(target) > 0
 end
 
@@ -83,37 +65,7 @@ function M.map(mode, lhs, rhs, opts)
   end
 end
 
----@class FlutterAutocmd
----@field events string[] list of autocommand events
----@field targets string[] list of autocommand patterns
----@field modifiers string[] e.g. nested, once
----@field command string | function
-
----Create an autocommand
----@param name string
----@param commands FlutterAutocmd[]
-function M.augroup(name, commands)
-  vim.cmd("augroup " .. name)
-  vim.cmd("autocmd!")
-  for _, c in ipairs(commands) do
-    local command = c.command
-    if type(command) == "function" then
-      local fn_id = _create(command)
-      command = fmt("lua require('flutter-tools.utils')._execute(%s)", fn_id)
-    end
-    vim.cmd(
-      string.format(
-        "autocmd %s %s %s %s",
-        table.concat(c.events, ","),
-        table.concat(c.targets or {}, ","),
-        table.concat(c.modifiers or {}, " "),
-        command
-      )
-    )
-  end
-  vim.cmd("augroup END")
-end
-
+local colorscheme_group = api.nvim_create_augroup("FlutterToolsColorscheme", { clear = true })
 ---Add a highlight group and an accompanying autocommand to refresh it
 ---if the colorscheme changes
 ---@param name string
@@ -125,13 +77,7 @@ function M.highlight(name, opts)
   end
   local hl_cmd = fmt("highlight! %s %s", name, table.concat(hls, " "))
   vim.cmd(hl_cmd)
-  M.augroup(name .. "Refresh", {
-    {
-      events = { "ColorScheme" },
-      targets = { "*" },
-      command = hl_cmd,
-    },
-  })
+  api.nvim_create_autocmd("ColorScheme", { callback = hl_cmd, augroup = colorscheme_group })
 end
 
 function M.fold(accumulator, callback, list)
@@ -145,12 +91,10 @@ end
 ---@generic T
 ---@param compare fun(item: T): boolean
 ---@param list `T`
----@return `T`
+---@return `T`?
 function M.find(list, compare)
   for _, item in ipairs(list) do
-    if compare(item) then
-      return item
-    end
+    if compare(item) then return item end
   end
 end
 
@@ -175,9 +119,7 @@ function M.merge(t1, t2, skip)
 end
 
 function M.remove_newlines(str)
-  if not str or type(str) ~= "string" then
-    return str
-  end
+  if not str or type(str) ~= "string" then return str end
   return str:gsub("[\n\r]", "")
 end
 
@@ -195,15 +137,9 @@ end
 
 function M.open_command()
   local path = require("flutter-tools.utils.path")
-  if path.is_mac then
-    return "open"
-  end
-  if path.is_linux then
-    return "xdg-open"
-  end
-  if path.is_windows then
-    return "explorer"
-  end
+  if path.is_mac then return "open" end
+  if path.is_linux then return "xdg-open" end
+  if path.is_windows then return "explorer" end
   return nil, nil
 end
 

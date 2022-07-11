@@ -44,9 +44,7 @@ end
 
 local function start_browser()
   local auto_open_browser = require("flutter-tools.config").get("dev_tools").auto_open_browser
-  if not auto_open_browser then
-    return
-  end
+  if not auto_open_browser then return end
   local url = M.get_profiler_url()
   local open_command = utils.open_command()
   if not open_command then
@@ -55,15 +53,11 @@ local function start_browser()
       vim.log.levels.ERROR
     )
   end
-  if url and open_command then
-    vim.fn.jobstart({ open_command, url }, { detach = true })
-  end
+  if url and open_command then vim.fn.jobstart({ open_command, url }, { detach = true }) end
 end
 
 function M.handle_log(data)
-  if devtools_profiler_url or (profiler_url and devtools_url) then
-    return
-  end
+  if devtools_profiler_url or (profiler_url and devtools_url) then return end
 
   devtools_profiler_url = try_get_tools_flutter(data)
 
@@ -72,15 +66,11 @@ function M.handle_log(data)
     return
   end
 
-  if profiler_url then
-    return
-  end
+  if profiler_url then return end
 
   profiler_url = try_get_profiler_url_chrome(data)
 
-  if profiler_url then
-    M.register_profiler_url(profiler_url)
-  end
+  if profiler_url then M.register_profiler_url(profiler_url) end
 end
 
 function M.register_profiler_url(url)
@@ -172,9 +162,7 @@ function M.start()
           ui.notify({ "Dev tools closed" })
         end),
       })
-      if not job then
-        return
-      end
+      if not job then return end
 
       job:start()
     end)

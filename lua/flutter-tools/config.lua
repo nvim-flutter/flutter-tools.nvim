@@ -135,32 +135,24 @@ local deprecations = {
 
 local function handle_deprecation(key, value, conf)
   local deprecation = deprecations[key]
-  if not deprecation then
-    return
-  end
+  if not deprecation then return end
   vim.defer_fn(function()
     local ui = require("flutter-tools.ui")
     ui.notify({ fmt("%s is deprecated: %s", key, deprecation.message) }, { level = ui.WARN })
   end, 1000)
-  if deprecation.fallback then
-    conf[deprecation.fallback] = value
-  end
+  if deprecation.fallback then conf[deprecation.fallback] = value end
 end
 
 ---Get the configuration or just a key of the config
 ---@param key string?
 ---@return any
 function M.get(key)
-  if key then
-    return config[key]
-  end
+  if key then return config[key] end
   return config
 end
 
 function M.set(user_config)
-  if not user_config or type(user_config) ~= "table" then
-    return config
-  end
+  if not user_config or type(user_config) ~= "table" then return config end
   validate_prefs(user_config)
   for key, value in pairs(user_config) do
     handle_deprecation(key, value, user_config)
