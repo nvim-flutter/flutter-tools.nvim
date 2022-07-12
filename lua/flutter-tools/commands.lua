@@ -105,12 +105,13 @@ end
 ---@param args string
 function M.run_command(args)
   args = args and args ~= "" and vim.split(args, " ") or nil
-  M.run({ args = args })
+  M.run('run', { args = args })
 end
 
 ---Run the flutter application
+---@param action string
 ---@param opts table
-function M.run(opts)
+function M.run(action, opts)
   if M.is_running() then return ui.notify({ "Flutter is already running!" }) end
   opts = opts or {}
   local device = opts.device
@@ -119,7 +120,7 @@ function M.run(opts)
   executable.get(function(paths)
     local args = cli_args or {}
     if not cli_args then
-      if not M.use_debugger_runner() then vim.list_extend(args, { "run" }) end
+      if not M.use_debugger_runner() then vim.list_extend(args, { action }) end
       if not cmd_args and device and device.id then vim.list_extend(args, { "-d", device.id }) end
 
       if cmd_args then vim.list_extend(args, cmd_args) end
@@ -173,6 +174,12 @@ function M.visual_debug(quiet)
 end
 
 ---@param quiet boolean?
+function M.attach_command(args)
+  args = args and args ~= "" and vim.split(args, " ") or nil
+  M.run('attach', { args = args })
+end
+
+---@param quiet boolean?
 function M.detach(quiet)
   send("detach", quiet)
 end
@@ -197,12 +204,12 @@ end
 
 ---@param quiet boolean
 function M.open_dev_tools(quiet)
-  send("open_dev_tools",quiet)
+  send("open_dev_tools", quiet)
 end
 
 ---@param quiet boolean
 function M.generate(quiet)
-  send("generate",quiet)
+  send("generate", quiet)
 end
 
 ---@param quiet boolean
