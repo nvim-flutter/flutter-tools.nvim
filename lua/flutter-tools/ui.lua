@@ -198,15 +198,26 @@ M.notify = function(lines, opts)
   local level = opts.level or "info"
   if notification_style == "native" then
     local is_error = level == M.ERROR or level == "error"
-    local prev_notification = is_error and notifications.errors[source] or nil
-    if prev_notification then lines = vim.list_extend(prev_notification.message or {}, lines) end
-    local notification = vim.notify(table.concat(lines, "\n"), level, {
+    local previous = is_error and notifications.errors[source] or {}
+    local str = table.concat(lines, "\n")
+    local message = not vim.tbl_isempty(previous) and previous.message .. "\n" .. str or str
+
+    -- FIXME: you can't replace a notification which times out since it might not be there
+    -- when you go to replace it.
+    local notification = vim.notify(message, level, {
       title = "Flutter tools",
       timeout = timeout,
       icon = "",
-      replace = prev_notification,
+      replace = previous.notification,
+      hide_from_history = previous.notification ~= nil,
     })
-    if is_error and source then notifications.errors[source] = notification end
+
+    if is_error and source then
+      notifications.errors[source] = {
+        notification = notification,
+        message = message,
+      }
+    end
   else
     notify(lines, timeout)
   end
