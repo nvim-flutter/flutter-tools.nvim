@@ -303,7 +303,7 @@ end
 
 ---Create a split window
 ---@param opts table
----@param on_open fun(buf: number, win: number)
+---@param on_open fun(buf: integer, win: integer)
 ---@return nil
 function M.open_win(opts, on_open)
   local open_cmd = opts.open_cmd or "botright 30vnew"

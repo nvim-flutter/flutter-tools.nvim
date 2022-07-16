@@ -117,8 +117,8 @@ end
 ---@param highlights table
 ---@param item string
 ---@param hl string
----@param length number
----@param position number?
+---@param length integer
+---@param position integer?
 local function add_segment(list, highlights, item, hl, length, position)
   if item and item ~= "" then
     --- NOTE highlights are byte indexed
@@ -213,7 +213,7 @@ end
 
 ---@param buf integer the buf number
 ---@param lines table the lines to append
----@param highlights table the highlights to apply
+---@param highlights? table the highlights to apply
 local function refresh_outline(buf, lines, highlights)
   vim.bo[buf].modifiable = true
   local ok = pcall(api.nvim_buf_set_lines, buf, 0, -1, false, lines)
@@ -289,7 +289,7 @@ local function setup_autocommands()
     callback = function()
       if not utils.buf_valid(state.outline_buf) then return end
       local ok, lines, highlights = get_outline_content()
-      if not ok then return end
+      if not ok or not lines then return end
       refresh_outline(state.outline_buf, lines, highlights)
     end,
   })
@@ -335,7 +335,7 @@ end
 
 ---Find the window the outline relates to
 ---@param uri string
----@return number, number[]
+---@return number?, number[]?
 local function find_code_window(uri)
   local code_buf = vim.uri_to_bufnr(uri)
   local code_wins = fn.win_findbuf(code_buf)
@@ -355,6 +355,8 @@ local function request_code_actions()
   local code_buf = vim.uri_to_bufnr(uri)
   local code_win = find_code_window(uri)
   local outline_win = api.nvim_get_current_win()
+
+  if not code_win then return end
 
   lsp.buf_request(
     params.bufnr,
@@ -392,7 +394,7 @@ end
 ---@param buf integer
 ---@param win integer
 ---@param lines table
----@param highlights table
+---@param highlights table?
 ---@param _ boolean whether or not to go back to the original window
 local function setup_outline_window(buf, win, lines, highlights, _)
   state.outline_buf = buf
@@ -438,7 +440,7 @@ end
 function M.open(opts)
   opts = opts or {}
   local ok, lines, highlights, outline = get_outline_content()
-  if not ok then
+  if not ok  or not lines then
     ui.notify({ "Sorry! There is no outline for this file" })
     return
   end
