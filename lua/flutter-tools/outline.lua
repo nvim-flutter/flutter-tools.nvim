@@ -440,7 +440,7 @@ end
 function M.open(opts)
   opts = opts or {}
   local ok, lines, highlights, outline = get_outline_content()
-  if not ok  or not lines then
+  if not ok or not lines then
     ui.notify({ "Sorry! There is no outline for this file" })
     return
   end
