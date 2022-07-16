@@ -5,9 +5,9 @@ local api = vim.api
 local fmt = string.format
 
 local M = {
-  --@type number
+  --@type integer
   buf = nil,
-  --@type number
+  --@type integer
   win = nil,
 }
 
