@@ -111,9 +111,7 @@ end
 local function check_if_web(args)
   for _, arg in ipairs(args) do
     local formatted = arg:lower()
-    if formatted:match("chrome") or formatted:match("web") then
-      return true
-    end
+    if formatted:match("chrome") or formatted:match("web") then return true end
   end
   return false
 end
@@ -139,9 +137,7 @@ function M.run(opts)
     end
     -- NOTE: debugging does not currently work with flutter web
     local is_web = check_if_web(args)
-    if not vim.tbl_contains(args, "run") and is_web then
-      table.insert(args, 1, "run")
-    end
+    if not vim.tbl_contains(args, "run") and is_web then table.insert(args, 1, "run") end
     ui.notify({ "Starting flutter project..." })
     runner = (M.use_debugger_runner() and not is_web) and debugger_runner or job_runner
     runner:run(paths, args, lsp.get_lsp_root_dir(), on_run_data, on_run_exit)
