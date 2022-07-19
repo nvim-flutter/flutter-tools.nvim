@@ -29,8 +29,8 @@ local END_OFFSET = 1
 
 ---find the index of the first character in a line
 ---@param lines string[]
----@param lnum number
----@param offset number
+---@param lnum integer
+---@param offset integer
 ---@return integer
 local function first_marker_index(lines, lnum, offset)
   -- the lnum passed in is 0 based from the range
@@ -44,10 +44,10 @@ local function first_marker_index(lines, lnum, offset)
 end
 
 ---get the correct indent character
----@param lnum number
----@param end_line number
----@param parent_start number
----@param indent_size number
+---@param lnum integer
+---@param end_line integer
+---@param parent_start integer
+---@param indent_size integer
 ---@param children table[]
 ---@return string
 local function get_guide_character(lnum, end_line, parent_start, indent_size, children, lines)
@@ -78,7 +78,8 @@ end
 --   }
 ---@param lines string[]
 ---@param data table
----@param guides table<number, table>
+---@param guides table<number, table>?
+---@return table<number, table>?
 local function collect_guides(lines, data, guides)
   guides = guides or {}
   if not data.children or vim.tbl_isempty(data.children) then return end
@@ -119,7 +120,7 @@ end
 
 ---Parse and render the widget outline guides
 ---@param bufnum number
----@param guides table<number,table>
+---@param guides table<number,table>?
 ---@param conf table
 local function render_guides(bufnum, guides, conf)
   -- TODO:
@@ -167,7 +168,7 @@ function M.widget_guides(_, data, _, _)
     -- TODO: should this be limited to the view port using vim.fn.line('w0'|'w$')
     -- although ideally having to track what the current visible
     -- segment of a buffer is and trying to apply the extmarks in
-    -- in realtime might prove difficult e.g. what autocommand do we use
+    -- in real-time might prove difficult e.g. what autocommand do we use
     -- also will this actually be faster
     local lines = vim.api.nvim_buf_get_lines(bufnum, 0, -1, false)
     render_guides(bufnum, collect_guides(lines, data.outline), conf)

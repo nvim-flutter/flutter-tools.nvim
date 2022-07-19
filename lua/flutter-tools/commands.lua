@@ -13,7 +13,7 @@ local dap_ok, dap = pcall(require, "dap")
 
 local M = {}
 
----@type table
+---@type table?
 local current_device = nil
 
 ---@class FlutterRunner
@@ -22,7 +22,7 @@ local current_device = nil
 ---@field cleanup fun()
 ---@field send fun(runner: FlutterRunner, cmd:string, quiet: boolean)
 
----@type FlutterRunner
+---@type FlutterRunner?
 local runner = nil
 
 function M.use_debugger_runner()
@@ -55,7 +55,7 @@ local function match_error_string(line)
 end
 
 ---@param lines string[]
----@return boolean, string
+---@return boolean, string?
 local function has_recoverable_error(lines)
   for _, line in pairs(lines) do
     local match, msg = match_error_string(line)
@@ -148,7 +148,7 @@ end
 ---@param quiet boolean?
 ---@param on_send function|nil
 local function send(cmd, quiet, on_send)
-  if M.is_running() then
+  if M.is_running() and runner then
     runner:send(cmd, quiet)
     if on_send then on_send() end
   elseif not quiet then
@@ -206,7 +206,7 @@ function M.copy_profiler_url()
   end
 end
 
----@param quiet boolean
+---@param quiet boolean?
 function M.open_dev_tools(quiet)
   send("open_dev_tools", quiet)
 end
@@ -236,7 +236,7 @@ local function on_pub_get(result, err)
   ui.notify(result, { timeout = timeout })
 end
 
----@type Job
+---@type Job?
 local pub_get_job = nil
 
 function M.pub_get()
@@ -260,7 +260,7 @@ function M.pub_get()
   end
 end
 
----@type Job
+---@type Job?
 local pub_upgrade_job = nil
 
 --- Take arguments from the commandline and pass
@@ -295,7 +295,7 @@ end
 -- FVM commands
 -----------------------------------------------------------------------------//
 
----@type Job
+---@type Job?
 local fvm_list_job = nil
 
 --- Returns table<{name: string, status: active|global|nil}>
@@ -335,7 +335,7 @@ function M.fvm_list(callback)
   end
 end
 
----@type Job
+---@type Job?
 local fvm_use_job = nil
 
 function M.fvm_use(sdk_name)
