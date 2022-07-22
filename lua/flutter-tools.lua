@@ -80,7 +80,7 @@ local function setup_autocommands()
   -- delay plugin setup till we enter a dart file
   autocmd({ "BufEnter" }, {
     group = AUGROUP,
-    pattern = { "*.dart" },
+    pattern = { "*.dart", "pubspec.yaml" },
     once = true,
     callback = start,
   })
