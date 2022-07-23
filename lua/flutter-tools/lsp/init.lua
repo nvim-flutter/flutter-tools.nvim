@@ -224,7 +224,7 @@ function M.attach()
   else
     local fs = vim.fs
     get_server_config(user_config, function(c)
-      c.root_dir = fs.dirname(fs.find(ROOT_PATTERNS, { upward = true })[1])
+      c.root_dir = M.get_lsp_root_dir() or fs.dirname(fs.find(ROOT_PATTERNS, { upward = true })[1])
       vim.lsp.start(c)
     end)
   end
