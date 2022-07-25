@@ -77,7 +77,7 @@ function M.highlight(name, opts)
   end
   local hl_cmd = fmt("highlight! %s %s", name, table.concat(hls, " "))
   vim.cmd(hl_cmd)
-  api.nvim_create_autocmd("ColorScheme", { callback = hl_cmd, group = colorscheme_group })
+  api.nvim_create_autocmd("ColorScheme", { callback = function() vim.cmd(hl_cmd) end, group = colorscheme_group })
 end
 
 function M.fold(accumulator, callback, list)
