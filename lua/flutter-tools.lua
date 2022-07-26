@@ -61,14 +61,8 @@ local function setup_commands()
     require("flutter-tools.log").clear()
   end, {})
   --- LSP
-  local lsp = vim.lsp
   cmd("FlutterSuper", function()
-    lsp.buf_request(
-      0,
-      "dart/textDocument/super",
-      lsp.util.make_position_params(),
-      lsp.handlers["textDocument/definition"]
-    )
+    require("flutter-tools.lsp").super()
   end, {})
 end
 

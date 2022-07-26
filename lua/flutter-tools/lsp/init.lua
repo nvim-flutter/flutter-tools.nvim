@@ -230,4 +230,13 @@ function M.attach()
   end
 end
 
+function M.super()
+  lsp.buf_request(
+    0,
+    "dart/textDocument/super",
+    lsp.util.make_position_params(),
+    lsp.handlers["textDocument/definition"]
+  )
+end
+
 return M
