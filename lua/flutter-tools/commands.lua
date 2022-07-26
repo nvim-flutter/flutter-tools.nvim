@@ -20,7 +20,7 @@ local current_device = nil
 ---@field is_running fun():boolean
 ---@field run fun(runner: FlutterRunner, paths:table, args:table, cwd:string, on_run_data:fun(is_err:boolean, data:string), on_run_exit:fun(data:string[]))
 ---@field cleanup fun()
----@field send fun(runner: FlutterRunner, cmd:string, quiet: boolean)
+---@field send fun(runner: FlutterRunner, cmd:string, quiet: boolean?)
 
 ---@type FlutterRunner?
 local runner = nil
