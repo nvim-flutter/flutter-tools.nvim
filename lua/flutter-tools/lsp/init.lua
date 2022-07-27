@@ -89,6 +89,7 @@ local function get_defaults(opts)
         require("flutter-tools.guides").widget_guides
       ),
       ["textDocument/documentColor"] = require("flutter-tools.lsp.color").on_document_color,
+      ["dart/textDocument/super"] = lsp.handlers["textDocument/definition"],
     },
     commands = {
       ["refactor.perform"] = require("flutter-tools.lsp.commands").refactor_perform,
@@ -161,6 +162,10 @@ M.document_color = function()
   end
 end
 M.on_document_color = color.on_document_color
+
+function M.dart_lsp_super()
+  lsp.buf_request(0, "dart/textDocument/super", lsp.util.make_position_params())
+end
 
 ---@param user_config table
 ---@param callback fun(table)
