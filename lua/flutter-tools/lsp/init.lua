@@ -89,6 +89,8 @@ local function get_defaults(opts)
         require("flutter-tools.guides").widget_guides
       ),
       ["textDocument/documentColor"] = require("flutter-tools.lsp.color").on_document_color,
+      ["dart/textDocument/super"] = lsp.handlers["textDocument/definition"],
+      ["dart/reanalyze"] = function() end, -- returns: None
     },
     commands = {
       ["refactor.perform"] = require("flutter-tools.lsp.commands").refactor_perform,
@@ -161,6 +163,22 @@ M.document_color = function()
   end
 end
 M.on_document_color = color.on_document_color
+
+function M.dart_lsp_super()
+  local conf = require("flutter-tools.config").get()
+  local user_config = conf.lsp
+  local debug_log = create_debug_log(user_config.debug)
+  local client = get_dartls_client()
+  if client == nil then
+    debug_log("No active dartls server found")
+    return
+  end
+  client.request("dart/textDocument/super", nil, nil, 0)
+end
+
+function M.dart_reanalyze()
+  lsp.buf_request(0, "dart/reanalyze")
+end
 
 ---@param user_config table
 ---@param callback fun(table)
