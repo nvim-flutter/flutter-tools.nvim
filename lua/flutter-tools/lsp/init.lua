@@ -218,13 +218,18 @@ function M.attach()
   local debug_log = create_debug_log(user_config.debug)
   debug_log("attaching LSP")
 
+  local buf = api.nvim_get_current_buf()
   -- FIXME: When nvim 0.8 is released remove the legacy_server_init
   if vim.version().minor < 8 then
-    legacy_server_init(api.nvim_get_current_buf(), user_config)
+    legacy_server_init(buf, user_config)
   else
     local fs = vim.fs
     get_server_config(user_config, function(c)
-      c.root_dir = M.get_lsp_root_dir() or fs.dirname(fs.find(ROOT_PATTERNS, { upward = true })[1])
+      c.root_dir = M.get_lsp_root_dir()
+        or fs.dirname(fs.find(ROOT_PATTERNS, {
+          path = api.nvim_buf_get_name(buf),
+          upward = true,
+        })[1])
       vim.lsp.start(c)
     end)
   end
