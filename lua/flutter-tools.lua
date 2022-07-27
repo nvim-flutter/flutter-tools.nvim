@@ -64,6 +64,9 @@ local function setup_commands()
   cmd("FlutterSuper", function()
     require("flutter-tools.lsp").dart_lsp_super()
   end, {})
+  cmd("FlutterReanalyze", function()
+    require("flutter-tools.lsp").dart_reanalyze()
+  end, {})
 end
 
 ---Initialise various plugin modules
