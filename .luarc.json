@@ -1,6 +1,9 @@
 {
     "$schema": "https://raw.githubusercontent.com/sumneko/vscode-lua/master/setting/schema.json",
     "Lua.diagnostics.disable": [
-        "duplicate-doc-param"
+        "duplicate-doc-param",
+        "cast-local-type",
+        "missing-parameter",
+        "param-type-mismatch"
     ]
 }
