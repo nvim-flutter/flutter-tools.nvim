@@ -163,4 +163,14 @@ function M.lsp_handler(func)
   end
 end
 
+-- Prevent writes to files in the pub cache and FVM folder.
+function M.set_framework_files_nomodifiable()
+    local full_path = vim.fn.expand "%:p"
+    if string.find(full_path, ".pub-cache") or
+      string.find(full_path, [[Pub\Cache]]) or
+      string.find(full_path, "/fvm/versions/") then
+      vim.opt_local.modifiable = false
+    end
+end
+
 return M
