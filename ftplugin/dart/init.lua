@@ -5,7 +5,8 @@ vim.opt_local.commentstring = [[//%s]]
 
 local full_path = vim.fn.expand("%:p")
 -- Prevent writes to files in the pub cache and FVM folder.
-if string.find(full_path, ".pub-cache")
+if
+     string.find(full_path, ".pub-cache")
   or string.find(full_path, [[Pub\Cache]])
   or string.find(full_path, "/fvm/versions/")
 then
