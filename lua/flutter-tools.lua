@@ -139,14 +139,6 @@ local function setup_autocommands()
       require("flutter-tools.dev_tools").stop()
     end,
   })
-
-  autocmd({ "FileType" }, {
-    group = AUGROUP,
-    pattern = { "dart" },
-    callback = function()
-      require("flutter-tools.utils").set_framework_files_nomodifiable()
-    end,
-  })
 end
 
 ---Entry point for this plugin
