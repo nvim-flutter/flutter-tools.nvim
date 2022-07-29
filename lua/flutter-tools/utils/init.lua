@@ -1,7 +1,6 @@
 local M = {}
 local fn = vim.fn
 local api = vim.api
-local fmt = string.format
 
 -- FIXME: remove this when lua autocommands are officially supported
 -- Global store of callback for autocommand (and eventually mappings)

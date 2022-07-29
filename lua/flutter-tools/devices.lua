@@ -66,6 +66,7 @@ end
 ---@param device_type integer?
 ---@return string[]
 ---@return table
+---@return table<string, string>
 function M.extract_device_props(result, device_type)
   device_type = device_type or DEVICE
   local lines = {}
