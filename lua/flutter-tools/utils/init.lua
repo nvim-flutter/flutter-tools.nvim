@@ -71,13 +71,11 @@ local colorscheme_group = api.nvim_create_augroup("FlutterToolsColorscheme", { c
 ---@param name string
 ---@param opts table
 function M.highlight(name, opts)
-  local hls = {}
-  for k, v in pairs(opts) do
-    table.insert(hls, fmt("%s=%s", k, v))
+  local function hl()
+    api.nvim_set_hl(0, name, opts)
   end
-  local hl_cmd = fmt("highlight! %s %s", name, table.concat(hls, " "))
-  vim.cmd(hl_cmd)
-  api.nvim_create_autocmd("ColorScheme", { callback = hl_cmd, group = colorscheme_group })
+  hl()
+  api.nvim_create_autocmd("ColorScheme", { callback = hl, group = colorscheme_group })
 end
 
 function M.fold(accumulator, callback, list)

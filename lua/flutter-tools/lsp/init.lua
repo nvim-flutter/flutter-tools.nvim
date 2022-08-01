@@ -89,6 +89,8 @@ local function get_defaults(opts)
         require("flutter-tools.guides").widget_guides
       ),
       ["textDocument/documentColor"] = require("flutter-tools.lsp.color").on_document_color,
+      ["dart/textDocument/super"] = lsp.handlers["textDocument/definition"],
+      ["dart/reanalyze"] = function() end, -- returns: None
     },
     commands = {
       ["refactor.perform"] = require("flutter-tools.lsp.commands").refactor_perform,
@@ -162,6 +164,22 @@ M.document_color = function()
 end
 M.on_document_color = color.on_document_color
 
+function M.dart_lsp_super()
+  local conf = require("flutter-tools.config").get()
+  local user_config = conf.lsp
+  local debug_log = create_debug_log(user_config.debug)
+  local client = get_dartls_client()
+  if client == nil then
+    debug_log("No active dartls server found")
+    return
+  end
+  client.request("dart/textDocument/super", nil, nil, 0)
+end
+
+function M.dart_reanalyze()
+  lsp.buf_request(0, "dart/reanalyze")
+end
+
 ---@param user_config table
 ---@param callback fun(table)
 local function get_server_config(user_config, callback)
@@ -218,13 +236,18 @@ function M.attach()
   local debug_log = create_debug_log(user_config.debug)
   debug_log("attaching LSP")
 
+  local buf = api.nvim_get_current_buf()
   -- FIXME: When nvim 0.8 is released remove the legacy_server_init
   if vim.version().minor < 8 then
-    legacy_server_init(api.nvim_get_current_buf(), user_config)
+    legacy_server_init(buf, user_config)
   else
     local fs = vim.fs
     get_server_config(user_config, function(c)
-      c.root_dir = M.get_lsp_root_dir() or fs.dirname(fs.find(ROOT_PATTERNS, { upward = true })[1])
+      c.root_dir = M.get_lsp_root_dir()
+        or fs.dirname(fs.find(ROOT_PATTERNS, {
+          path = api.nvim_buf_get_name(buf),
+          upward = true,
+        })[1])
       vim.lsp.start(c)
     end)
   end

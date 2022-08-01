@@ -63,6 +63,13 @@ local function setup_commands()
   cmd("FlutterLogClear", function()
     require("flutter-tools.log").clear()
   end, {})
+  --- LSP
+  cmd("FlutterSuper", function()
+    require("flutter-tools.lsp").dart_lsp_super()
+  end, {})
+  cmd("FlutterReanalyze", function()
+    require("flutter-tools.lsp").dart_reanalyze()
+  end, {})
 end
 
 ---Initialise various plugin modules

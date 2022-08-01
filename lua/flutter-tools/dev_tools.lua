@@ -121,6 +121,9 @@ end
 ---@param data string
 ---@param _ Job
 local function handle_error(_, data, _)
+  if not vim.tbl_islist(data) then
+    return ui.notify({ "Sorry! devtools couldn't be opened", vim.inspect(data) })
+  end
   for _, str in ipairs(data) do
     if str:match("No active package devtools") then
       executable.flutter(function(cmd)

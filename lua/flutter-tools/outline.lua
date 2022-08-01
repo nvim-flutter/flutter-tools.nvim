@@ -90,7 +90,7 @@ M.outlines = setmetatable({}, {
 ---@param name string
 ---@param group string
 local function hl_link(name, group)
-  vim.cmd(fmt("highlight default link %s%s %s", hl_prefix, name, group))
+  api.nvim_set_hl(0, hl_prefix .. name, { link = group })
 end
 
 ---@param name string
