@@ -126,7 +126,7 @@ local function notify(lines, duration)
   if not lines or #lines < 1 or invalid_lines(lines) then return end
   lines = pad_lines(lines)
   for i = 1, #lines do
-  	lines[i] = lines[1]:gsub("\\([nt])", {n="\n", t="\t"})
+  	lines[i] = lines[i]:gsub("\\([nt])", {n="\n", t="\t"})
   end
 
   local row = vim.o.lines - #lines - vim.o.cmdheight - 2
