@@ -129,7 +129,12 @@ end
 ---@param attribute string
 ---@return string
 function M.get_hl(name, attribute)
-  return fn.synIDattr(fn.hlID(name), attribute)
+  local ok, hl = pcall(api.nvim_get_hl_by_name, name, true)
+  if not ok then return "NONE" end
+  hl.foreground = hl.foreground and "#" .. bit.tohex(hl.foreground, 6)
+  hl.background = hl.background and "#" .. bit.tohex(hl.background, 6)
+  local attr = ({ bg = "background", fg = "foreground" })[attribute] or attribute
+  return hl[attr] or "NONE"
 end
 
 function M.open_command()
