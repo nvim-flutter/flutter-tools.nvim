@@ -193,10 +193,10 @@ end
 M.notify = function(lines, opts)
   opts = opts or {}
   local timeout = opts.timeout
-  local level = vim.log.levels[opts.level:upper() or "INFO"]
+  local level = (opts.level and type(opts.level) == "string") and opts.level or "INFO"
   local notification_style = config.get("ui").notification_style
   if notification_style == "native" then
-    vim.notify(table.concat(lines, "\n"), level, {
+    vim.notify(table.concat(lines, "\n"), vim.log.levels[level:upper()], {
       title = "Flutter tools",
       timeout = timeout,
       icon = "",
