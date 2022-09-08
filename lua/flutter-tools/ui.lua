@@ -1,4 +1,5 @@
 local utils = require("flutter-tools.utils")
+local config = require("flutter-tools.config")
 local fmt = string.format
 
 local M = {
@@ -126,16 +127,16 @@ local function notify(lines, duration)
   if not lines or #lines < 1 or invalid_lines(lines) then return end
   lines = pad_lines(lines)
   for i = 1, #lines do
-  	lines[i] = lines[i]:gsub("\\([nt])", {n="\n", t="\t"})
+    lines[i] = lines[i]:gsub("\\([nt])", { n = "\n", t = "\t" })
   end
 
   local row = vim.o.lines - #lines - vim.o.cmdheight - 2
 
   if state.last_opened then
     ---@type table
-    local config = api.nvim_win_get_config(state.last_opened)
-    if config.row[false] then
-      local next_row = config.row[false] - #lines - 2 -- one for padding
+    local win_config = api.nvim_win_get_config(state.last_opened)
+    if win_config.row[false] then
+      local next_row = win_config.row[false] - #lines - 2 -- one for padding
       -- if the next row will be outside the window then close all open windows
       -- if there is more than one, otherwise let them start to stack again from the bottom
       if next_row <= 0 then
@@ -186,41 +187,20 @@ local function notify(lines, duration)
   end)
 end
 
-local notifications = {
-  errors = {},
-}
-
-local notification_style = require("flutter-tools.config").get("ui").notification_style
 ---Post a message to UI so the user knows something has occurred.
 ---@param lines string[]
 ---@param opts table?
 M.notify = function(lines, opts)
   opts = opts or {}
-  local source = opts.source
   local timeout = opts.timeout
-  local level = opts.level or "info"
+  local level = vim.log.levels[opts.level:upper() or "INFO"]
+  local notification_style = config.get("ui").notification_style
   if notification_style == "native" then
-    local is_error = level == M.ERROR or level == "error"
-    local previous = is_error and notifications.errors[source] or {}
-    local str = table.concat(lines, "\n")
-    local message = not vim.tbl_isempty(previous) and previous.message .. "\n" .. str or str
-
-    -- FIXME: you can't replace a notification which times out since it might not be there
-    -- when you go to replace it.
-    local notification = vim.notify(message, level, {
+    vim.notify(table.concat(lines, "\n"), level, {
       title = "Flutter tools",
       timeout = timeout,
       icon = "",
-      replace = previous.notification,
-      hide_from_history = previous.notification ~= nil,
     })
-
-    if is_error and source then
-      notifications.errors[source] = {
-        notification = notification,
-        message = message,
-      }
-    end
   else
     notify(lines, timeout)
   end
