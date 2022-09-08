@@ -221,6 +221,9 @@ require("flutter-tools").setup {
   debugger = { -- integrate with nvim dap + install dart code debugger
     enabled = false,
     run_via_dap = false, -- use dap instead of a plenary job to run flutter apps
+    -- if empty dap will not stop on any exceptions, otherwise it will stop on those specified
+    -- see |:help dap.set_exception_breakpoints()| for more info
+    exception_breakpoints = {}
     register_configurations = function(paths)
       require("dap").configurations.dart = {
         <put here config that you would find in .vscode/launch.json>
@@ -288,9 +291,8 @@ files in that directory. If for some reason you would like this behaviour set `a
 You cannot/should not edit the files in the sdk directly so diagnostic analysis of these file is pointless.
 
 **Exclude Note for Windows:**
-To ignore packages installed with pub, consider adding `vim.fn.expand("$HOME/AppData/Local/Pub/Cache")` to 
+To ignore packages installed with pub, consider adding `vim.fn.expand("$HOME/AppData/Local/Pub/Cache")` to
 `analysisExcludedFolders` if you are using PowerShell.
-
 
 #### Flutter binary
 
