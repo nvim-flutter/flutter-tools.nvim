@@ -35,7 +35,7 @@ local function _dart_sdk_root(paths)
     return path.join(flutter_bin, dart_sdk)
   end
 
-  if utils.executable("dart") then return fn.resolve(fn.exepath("dart")) end
+  if utils.executable("dart") then return fn.resolve(path.dirname(path.dirname(fn.exepath("dart")))) end
 
   return ""
 end
