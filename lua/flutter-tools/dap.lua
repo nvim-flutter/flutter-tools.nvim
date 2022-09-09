@@ -9,6 +9,7 @@ end
 local M = {}
 
 function M.setup(config)
+  local opts = config.debugger
   require("flutter-tools.executable").get(function(paths)
     dap.adapters.dart = {
       type = "executable",
@@ -18,7 +19,10 @@ function M.setup(config)
         initialize_timeout_sec = 30,
       },
     }
-    config.debugger.register_configurations(paths)
+    opts.register_configurations(paths)
+    if opts.exception_breakpoints and type(opts.exception_breakpoints) == "table" then
+      dap.defaults.dart.exception_breakpoints = opts.exception_breakpoints
+    end
   end)
 end
 
