@@ -106,6 +106,7 @@ local config = {
       virtual_text_str = "■",
       background_color = nil,
     },
+    inlay_hints = { enabled = true },
   },
   outline = setmetatable({
     auto_open = false,

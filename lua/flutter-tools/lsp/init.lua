@@ -1,6 +1,7 @@
 local utils = require("flutter-tools.utils")
 local path = require("flutter-tools.utils.path")
 local color = require("flutter-tools.lsp.color")
+local inlay_hint = require("flutter-tools.lsp.inlay_hint")
 
 local api = vim.api
 local lsp = vim.lsp
@@ -89,6 +90,7 @@ local function get_defaults(opts)
         require("flutter-tools.guides").widget_guides
       ),
       ["textDocument/documentColor"] = require("flutter-tools.lsp.color").on_document_color,
+      ["textDocument/inlayHint"] = inlay_hint.on_inlay_hint,
       ["dart/textDocument/super"] = lsp.handlers["textDocument/definition"],
       ["dart/reanalyze"] = function() end, -- returns: None
     },
@@ -154,15 +156,28 @@ M.document_color = function()
     return c.id
   end, vim.lsp.get_active_clients())
   local dartls = get_dartls_client()
-  if
-    dartls
-    and vim.tbl_contains(active_clients, dartls.id)
-    and dartls.server_capabilities.colorProvider
+  if dartls
+      and vim.tbl_contains(active_clients, dartls.id)
+      and dartls.server_capabilities.colorProvider
   then
     color.document_color()
   end
 end
 M.on_document_color = color.on_document_color
+
+M.inlay_hint = function()
+
+  local active_clients = vim.tbl_map(function(c)
+    return c.id
+  end, vim.lsp.get_active_clients())
+  local dartls = get_dartls_client()
+  if dartls
+      and vim.tbl_contains(active_clients, dartls.id)
+      and dartls.server_capabilities.inlayHintProvider
+  then
+    inlay_hint.request()
+  end
+end
 
 function M.dart_lsp_super()
   local conf = require("flutter-tools.config").get()
@@ -244,10 +259,10 @@ function M.attach()
     local fs = vim.fs
     get_server_config(user_config, function(c)
       c.root_dir = M.get_lsp_root_dir()
-        or fs.dirname(fs.find(ROOT_PATTERNS, {
-          path = api.nvim_buf_get_name(buf),
-          upward = true,
-        })[1])
+          or fs.dirname(fs.find(ROOT_PATTERNS, {
+            path = api.nvim_buf_get_name(buf),
+            upward = true,
+          })[1])
       vim.lsp.start(c)
     end)
   end

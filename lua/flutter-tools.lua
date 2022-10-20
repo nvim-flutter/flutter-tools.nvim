@@ -111,6 +111,20 @@ local function setup_autocommands()
     })
   end
 
+  if require("flutter-tools.config").get("lsp").inlay_hints.enabled then
+    autocmd({ "BufEnter", "TextChanged", "InsertLeave" }, {
+      group = AUGROUP,
+      pattern = "*.dart",
+      callback = require("flutter-tools.lsp").inlay_hint,
+    })
+    autocmd({ "User" }, {
+      group = AUGROUP,
+      pattern = "FlutterToolsLspAnalysisComplete",
+      once = true,
+      callback = require("flutter-tools.lsp").inlay_hint,
+    })
+  end
+
   autocmd({ "BufWritePost" }, {
     group = AUGROUP,
     pattern = { "*.dart" },
