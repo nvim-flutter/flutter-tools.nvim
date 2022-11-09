@@ -10,6 +10,7 @@ local fmt = string.format
 local FILETYPE = "dart"
 local SERVER_NAME = "dartls"
 local ROOT_PATTERNS = { ".git", "pubspec.yaml" }
+local INVALID_FILE_URIS = { "diffview://" }
 
 local M = {
   lsps = {},
@@ -242,10 +243,14 @@ function M.attach()
     legacy_server_init(buf, user_config)
   else
     local fs = vim.fs
+    local bufferPath = api.nvim_buf_get_name(buf)
+    for _, invalid_uri_prefix in ipairs(INVALID_FILE_URIS) do
+      if bufferPath:find("^" .. invalid_uri_prefix) then return end
+    end
     get_server_config(user_config, function(c)
       c.root_dir = M.get_lsp_root_dir()
         or fs.dirname(fs.find(ROOT_PATTERNS, {
-          path = api.nvim_buf_get_name(buf),
+          path = bufferPath,
           upward = true,
         })[1])
       vim.lsp.start(c)
