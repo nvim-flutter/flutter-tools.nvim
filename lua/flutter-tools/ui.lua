@@ -196,7 +196,12 @@ M.notify = function(lines, opts)
   local level = (opts.level and type(opts.level) == "string") and opts.level or "INFO"
   local notification_style = config.get("ui").notification_style
   if notification_style == "native" then
-    vim.notify(table.concat(lines, "\n"), vim.log.levels[level:upper()], {
+    local message = table.concat(lines, "\n")
+    if message == "" then
+      -- There is no point show empty notification.
+      return
+    end
+    vim.notify(message, vim.log.levels[level:upper()], {
       title = "Flutter tools",
       timeout = timeout,
       icon = "",
