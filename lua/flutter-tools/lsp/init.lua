@@ -10,7 +10,7 @@ local fmt = string.format
 local FILETYPE = "dart"
 local SERVER_NAME = "dartls"
 local ROOT_PATTERNS = { ".git", "pubspec.yaml" }
-local INVALID_FILE_URIS = { "diffview://" }
+local INVALID_FILE_URIS = { "diffview://", "fugitive://" }
 
 local M = {
   lsps = {},
