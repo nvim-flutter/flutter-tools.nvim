@@ -229,6 +229,14 @@ local function legacy_server_init(bufnr, user_config)
   end)
 end
 
+--- Checks if buffer path is valid for attaching LSP
+local function is_valid_path(buffer_path)
+  local start_index, _, uri_prefix = buffer_path:find("^(%w+://).*")
+  -- Do not attach LSP if file URI prefix is not file.
+  -- For example LSP will not be attached for diffview:// or fugitive:// buffers.
+  return not start_index or uri_prefix == "file://"
+end
+
 ---This was heavily inspired by nvim-metals implementation of the attach functionality
 function M.attach()
   local conf = require("flutter-tools.config").get()
@@ -242,10 +250,14 @@ function M.attach()
     legacy_server_init(buf, user_config)
   else
     local fs = vim.fs
+    local buffer_path = api.nvim_buf_get_name(buf)
+
+    if not is_valid_path(buffer_path) then return end
+
     get_server_config(user_config, function(c)
       c.root_dir = M.get_lsp_root_dir()
         or fs.dirname(fs.find(ROOT_PATTERNS, {
-          path = api.nvim_buf_get_name(buf),
+          path = buffer_path,
           upward = true,
         })[1])
       vim.lsp.start(c)
