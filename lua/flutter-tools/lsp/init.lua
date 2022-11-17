@@ -232,12 +232,9 @@ end
 --- Checks if buffer path is valid for attaching LSP
 local function is_valid_path(buffer_path)
   local start_index, _, uri_prefix = buffer_path:find("^(%w+://).*")
-  if start_index and uri_prefix ~= "file://" then
-    -- Do not attach LSP if file URI prefix is not file.
-    -- For example LSP will not be attached for diffview:// or fugitive:// buffers.
-    return false
-  end
-  return true
+  -- Do not attach LSP if file URI prefix is not file.
+  -- For example LSP will not be attached for diffview:// or fugitive:// buffers.
+  return not start_index or uri_prefix == "file://"
 end
 
 ---This was heavily inspired by nvim-metals implementation of the attach functionality
