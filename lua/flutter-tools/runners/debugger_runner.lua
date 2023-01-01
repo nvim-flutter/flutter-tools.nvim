@@ -60,7 +60,7 @@ function DebuggerRunner:run(paths, args, cwd, on_run_data, on_run_exit)
   end
 
   dap.listeners.before["event_dart.debuggerUris"][plugin_identifier] = function(_, body)
-    if body and body.observatoryUri then dev_tools.register_profiler_url(body.observatoryUri) end
+    if body and body.vmServiceUri then dev_tools.register_profiler_url(body.vmServiceUri) end
   end
 
   dap.listeners.before["event_dart.serviceExtensionAdded"][plugin_identifier] = function(_, body)
@@ -70,11 +70,11 @@ function DebuggerRunner:run(paths, args, cwd, on_run_data, on_run_exit)
   end
 
   dap.listeners.before["event_flutter.serviceExtensionStateChanged"][plugin_identifier] =
-    function(_, body)
-      if body and body.extension and body.value then
-        service_extensions_state[body.extension] = body.value
-      end
+  function(_, body)
+    if body and body.extension and body.value then
+      service_extensions_state[body.extension] = body.value
     end
+  end
 
   local launch_configurations = {}
   local launch_configuration_count = 0
