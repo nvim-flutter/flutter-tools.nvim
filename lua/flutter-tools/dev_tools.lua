@@ -122,15 +122,13 @@ end
 ---@param _ Job
 local function handle_error(_, data, _)
   if not data:match("No active package devtools") then
-    ui.notify({ "Sorry! devtools couldn't be opened", vim.pretty_print(data) })
+    ui.notify({ "Sorry! devtools couldn't be opened", vim.inspect(data) })
     return
   end
-  executable.flutter(function(cmd)
-    ui.notify({
-      "Flutter pub global devtools has not been activated.",
-      "Run :FlutterDevToolsActivate to activate it.",
-    })
-  end)
+  ui.notify({
+    "Flutter pub global devtools has not been activated.",
+    "Run :FlutterDevToolsActivate to activate it.",
+  })
 end
 
 --- @return boolean
@@ -176,7 +174,7 @@ function M.activate()
       command = cmd,
       args = activate_cmd,
       on_stderr = vim.schedule_wrap(function(_, data, _)
-        ui.notify({ "Unable to activate devtools!", vim.pretty_print(data) })
+        ui.notify({ "Unable to activate devtools!", vim.inspect(data) })
       end),
       on_exit = vim.schedule_wrap(function()
         job = nil
