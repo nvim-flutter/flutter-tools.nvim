@@ -176,9 +176,9 @@ function M.activate()
       on_stderr = vim.schedule_wrap(function(_, data, _)
         ui.notify({ "Unable to activate devtools!", vim.inspect(data) })
       end),
-      on_exit = vim.schedule_wrap(function()
+      on_exit = vim.schedule_wrap(function(_, return_value)
         job = nil
-        ui.notify({ "Dev tools activated" })
+        if return_value == 0 then ui.notify({ "Dev tools activated" }) end
       end),
     })
     if not job then return end
