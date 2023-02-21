@@ -28,7 +28,7 @@ local runner = nil
 function M.use_debugger_runner()
   if not config.get("debugger").run_via_dap then return false end
   if dap_ok then return true end
-  ui.notify(utils.join("debugger runner was request but nvim-dap is not installed!", dap), ui.ERROR)
+  ui.notify(utils.join({"debugger runner was request but nvim-dap is not installed!", dap}), ui.ERROR)
   return false
 end
 
