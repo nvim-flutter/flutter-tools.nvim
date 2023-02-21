@@ -2,7 +2,7 @@ local ui = require("flutter-tools.ui")
 
 local success, dap = pcall(require, "dap")
 if not success then
-  ui.notify({ "nvim-dap is not installed!", dap }, { level = ui.ERROR })
+  ui.notify(string.format("nvim-dap is not installed!\n%s", dap), ui.ERROR)
   return
 end
 

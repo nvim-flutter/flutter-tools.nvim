@@ -1,4 +1,5 @@
 local api = vim.api
+local fmt = string.format
 
 local M = {}
 
@@ -23,10 +24,7 @@ local function render_labels(labels, opts)
     if not ok then
       local name = api.nvim_buf_get_name(0)
       local ui = require("flutter-tools.ui")
-      ui.notify({
-        string.format("error drawing label for %s on line %d.", name, line),
-        "because: " .. err,
-      }, { level = ui.ERROR, source = "labels" })
+      ui.notify(fmt("error drawing label for %s on line %d.\nbecause: ", name, line, err), ui.ERROR)
     end
   end
 end
