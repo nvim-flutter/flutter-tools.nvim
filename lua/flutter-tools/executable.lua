@@ -67,7 +67,7 @@ end
 ---Execute user's lookup command and pass it to the job callback
 ---@param lookup_cmd string
 ---@param callback fun(p: string, t: table<string, string>?)
----@return table<string, string>
+---@return table<string, string>?
 local function path_from_lookup_cmd(lookup_cmd, callback)
   local paths = {}
   local parts = vim.split(lookup_cmd, " ")
@@ -120,10 +120,7 @@ function M.get(callback)
 
   if conf.flutter_path then
     local flutter_path = fn.resolve(conf.flutter_path)
-    _paths = {
-      flutter_bin = flutter_path,
-      flutter_sdk = _flutter_sdk_root(flutter_path),
-    }
+    _paths = { flutter_bin = flutter_path, flutter_sdk = _flutter_sdk_root(flutter_path), }
     _paths.dart_sdk = _dart_sdk_root(_paths)
     _paths.dart_bin = _flutter_sdk_dart_bin(_paths.flutter_sdk)
     return callback(_paths)

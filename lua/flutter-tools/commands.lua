@@ -17,8 +17,8 @@ local M = {}
 local current_device = nil
 
 ---@class FlutterRunner
----@field is_running fun():boolean
----@field run fun(runner: FlutterRunner, paths:table, args:table, cwd:string, on_run_data:fun(is_err:boolean, data:string), on_run_exit:fun(data:string[]))
+---@field is_running fun(runner: FlutterRunner):boolean
+---@field run fun(runner: FlutterRunner, paths:table, args:table, cwd:string, on_run_data:fun(is_err:boolean, data:string), on_run_exit:fun(data:string[], args: table))
 ---@field cleanup fun(funner: FlutterRunner)
 ---@field send fun(runner: FlutterRunner, cmd:string, quiet: boolean?)
 
@@ -242,7 +242,7 @@ function M.pub_get()
       pub_get_job = Job:new({
         command = cmd,
         args = { "pub", "get" },
-        cwd = lsp.get_lsp_root_dir(),
+        cwd = lsp.get_lsp_root_dir() --[[@as string]],
       })
       pub_get_job:after_success(vim.schedule_wrap(function(j)
         on_pub_get(j:result())
