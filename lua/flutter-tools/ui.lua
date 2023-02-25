@@ -108,10 +108,11 @@ end
 M.notify = function(lines, level, opts)
   opts = opts or {}
   level = level or M.INFO
-  local timeout = opts.timeout
-  vim.notify(table.concat(lines, "\n"), level, {
+  local msg = table.concat(lines, "\n")
+  if msg == "" then return end
+  vim.notify(msg, level, {
     title = "Flutter tools",
-    timeout = timeout,
+    timeout = opts.timeout,
     icon = "",
   })
 end
