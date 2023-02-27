@@ -102,13 +102,13 @@ local function invalid_lines(lines)
 end
 
 ---Post a message to UI so the user knows something has occurred.
----@param lines string[]
+---@param msg string | string[]
 ---@param level integer
 ---@param opts {timeout: number}?
-M.notify = function(lines, level, opts)
+M.notify = function(msg, level, opts)
   opts = opts or {}
   level = level or M.INFO
-  local msg = table.concat(lines, "\n")
+  msg = type(msg) == "table" and utils.join(msg) or msg
   if msg == "" then return end
   vim.notify(msg, level, {
     title = "Flutter tools",
