@@ -139,17 +139,12 @@ end
 function M.start()
   if can_start() then
     ui.notify({ "Starting dev tools..." })
-    executable.flutter(function(cmd)
+    executable.dart(function(cmd)
       job = Job:new({
         command = cmd,
         args = {
-          "pub",
-          "global",
-          "run",
           "devtools",
           "--machine",
-          "--try-ports",
-          "10",
         },
         on_stdout = vim.schedule_wrap(handle_start),
         on_stderr = vim.schedule_wrap(handle_error),
