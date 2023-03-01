@@ -1,7 +1,7 @@
 name: Formatting
 on:
   push:
-    branches: ["main"]
+    branches: [ "main" ]
     paths-ignore:
       - ".github/**"
       - "*.md"
@@ -21,7 +21,7 @@ jobs:
 
       - uses: stefanzweifel/git-auto-commit-action@v4
         with:
-          commit_message: "style(format): run stylua"
+          commit_message: "chore: formatting"
           branch: ${{ github.head_ref }}
 
       - name: Push changes
