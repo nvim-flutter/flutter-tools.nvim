@@ -1,8 +1,10 @@
 ---
-name: Run tests
+name: Tests
 on:
   pull_request: ~
   push:
+    paths-ignore:
+      - "*.md"
     branches:
       - main
 
@@ -12,24 +14,15 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
-
-      - name: Get neovim v0.7.2
-        uses: actions/cache@v2
-        with:
-          path: build/neovim/v0.7.2
-          key: ${{ runner.os }}-appimage-0.7.2
-
-      - name: Fetch dependencies
+      - uses: actions/checkout@v3
+      - name: Install Neovim
+        shell: bash
         run: |
-          git clone --depth 1 https://github.com/nvim-lua/plenary.nvim ~/.local/share/nvim/site/pack/vendor/start/plenary.nvim
-          ln -s $(pwd) ~/.local/share/nvim/site/pack/vendor/start
+          wget -q https://github.com/neovim/neovim/releases/download/nightly/nvim-linux64.deb -O /tmp/nvim.deb
+          sudo dpkg -i /tmp/nvim.deb
 
       - name: Run tests
         run: |
-          test -d build/neovim/v0.7.2 || {
-            mkdir -p build/neovim/v0.7.2
-            curl -Lo build/neovim/v0.7.2/nvim https://github.com/neovim/neovim/releases/download/v0.7.2/nvim.appimage
-            chmod +x build/neovim/v0.7.2/nvim
-          }
-          build/neovim/v0.7.2/nvim --headless --noplugin -u tests/minimal.vim -c "PlenaryBustedDirectory tests/ {minimal_init = 'tests/minimal.vim'}"
+          nvim --version
+          [ ! -d tests ] && exit 0
+          nvim --headless -u tests/init.lua -c "PlenaryBustedDirectory tests/ {minimal_init = 'tests/init.lua', sequential = true}"

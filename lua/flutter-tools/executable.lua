@@ -152,4 +152,13 @@ function M.flutter(callback)
   end)
 end
 
+---Fetch the path to the users dart installation.
+---@param callback fun(paths: table<string, string>)
+---@return nil
+function M.dart(callback)
+  M.get(function(paths)
+    callback(paths.dart_bin)
+  end)
+end
+
 return M
