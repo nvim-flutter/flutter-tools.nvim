@@ -69,8 +69,10 @@ function DebuggerRunner:run(paths, args, cwd, on_run_data, on_run_exit)
     end
   end
 
-  dap.listeners.before["event_flutter.serviceExtensionStateChanged"][plugin_identifier] =
-  function(_, body)
+  dap.listeners.before["event_flutter.serviceExtensionStateChanged"][plugin_identifier] = function(
+    _,
+    body
+  )
     if body and body.extension and body.value then
       service_extensions_state[body.extension] = body.value
     end
