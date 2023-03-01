@@ -4,5 +4,5 @@ quote_style = "AutoPreferDouble"
 indent_width = 2
 collapse_simple_statement = "ConditionalOnly"
 
-[sort_requires]
-enabled = true
+# [sort_requires]
+# enabled = true
