@@ -10,13 +10,10 @@ jobs:
   stylua:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
+      - uses: JohnnyMorganz/stylua-action@v2
         with:
-          token: ${{ secrets.WORKFLOW_ACCESS_TOKEN }}
-
-      - uses: JohnnyMorganz/stylua-action@1.0.0
-        with:
-          token: ${{ secrets.WORKFLOW_ACCESS_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           args: --config-path=stylua.toml lua/
 
       - uses: stefanzweifel/git-auto-commit-action@v4
