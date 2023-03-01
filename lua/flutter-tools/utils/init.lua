@@ -145,8 +145,14 @@ function M.open_command()
   return nil, nil
 end
 
+---@param lines string[]
+---@return string
+function M.join(lines)
+  return table.concat(lines, "\n")
+end
+
 ---Create an lsp handler compatible with the new handler signature
----@see: https://github.com/neovim/neovim/pull/15504/
+---see: https://github.com/neovim/neovim/pull/15504/
 ---@param func function
 ---@return function
 function M.lsp_handler(func)

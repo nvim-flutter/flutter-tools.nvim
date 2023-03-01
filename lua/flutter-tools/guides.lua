@@ -139,10 +139,16 @@ local function render_guides(bufnum, guides, conf)
       if not success and conf.debug then
         local name = api.nvim_buf_get_name(bufnum)
         local ui = require("flutter-tools.ui")
-        ui.notify({
-          fmt("error drawing widget guide for %s at line %d, col %d.", name, lnum, start),
-          "because: " .. msg,
-        }, { level = ui.ERROR, source = "guides" })
+        ui.notify(
+          fmt(
+            "error drawing widget guide for %s at line %d, col %d.\nbecause: %s",
+            name,
+            lnum,
+            start,
+            msg
+          ),
+          ui.ERROR
+        )
       end
     end
   end

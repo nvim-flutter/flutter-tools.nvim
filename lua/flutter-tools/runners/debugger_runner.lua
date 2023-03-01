@@ -91,7 +91,7 @@ function DebuggerRunner:run(paths, args, cwd, on_run_data, on_run_exit)
 
   local launch_config
   if launch_configuration_count == 0 then
-    ui.notify({ "No launch configuration for DAP found" }, { level = ui.ERROR })
+    ui.notify("No launch configuration for DAP found", ui.ERROR)
     return
   elseif launch_configuration_count == 1 then
     launch_config = launch_configurations[1]
@@ -133,10 +133,7 @@ function DebuggerRunner:send(cmd, quiet)
       },
     })
   elseif not quiet then
-    ui.notify(
-      { "Command " .. cmd .. " is not yet implemented for DAP runner" },
-      { level = ui.ERROR }
-    )
+    ui.notify("Command " .. cmd .. " is not yet implemented for DAP runner", ui.ERROR)
   end
 end
 

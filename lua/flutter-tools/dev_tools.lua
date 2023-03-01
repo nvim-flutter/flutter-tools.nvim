@@ -86,7 +86,7 @@ end
 
 function M.handle_devtools_available()
   start_browser()
-  ui.notify({ "Detected devtools url", "Execute FlutterCopyProfilerUrl to copy it" })
+  ui.notify("Detected devtools url\nExecute FlutterCopyProfilerUrl to copy it")
 end
 
 --[[ {
@@ -111,7 +111,7 @@ local function handle_start(_, data, _)
       devtools_url = string.format("http://%s:%s", json.params.host, json.params.port)
       start_browser()
       local msg = string.format("Serving DevTools at %s", devtools_url)
-      ui.notify({ msg }, { timeout = 20000 })
+      ui.notify(msg, ui.INFO, { timeout = 20000 })
     end
   end
 end
@@ -122,7 +122,7 @@ end
 ---@param _ Job
 local function handle_error(_, data, _)
   if not data:match("No active package devtools") then
-    ui.notify({ "Sorry! devtools couldn't be opened", vim.inspect(data) })
+    ui.notify(utils.join({ "Sorry! devtools couldn't be opened", vim.inspect(data) }), ui.ERROR)
     return
   end
   ui.notify({
@@ -138,7 +138,7 @@ end
 
 function M.start()
   if can_start() then
-    ui.notify({ "Starting dev tools..." })
+    ui.notify("Starting dev tools...")
     executable.dart(function(cmd)
       job = Job:new({
         command = cmd,
@@ -150,7 +150,7 @@ function M.start()
         on_stderr = vim.schedule_wrap(handle_error),
         on_exit = vim.schedule_wrap(function()
           job = nil
-          ui.notify({ "Dev tools closed" })
+          ui.notify("Dev tools closed")
         end),
       })
       if not job then return end
@@ -158,7 +158,7 @@ function M.start()
       job:start()
     end)
   else
-    ui.notify({ "DevTools are already running!" })
+    ui.notify("DevTools are already running!")
   end
 end
 

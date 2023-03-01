@@ -51,10 +51,7 @@ function JobRunner:send(cmd, quiet)
   if key ~= nil then
     run_job:send(key)
   elseif not quiet then
-    ui.notify(
-      { "Command " .. cmd .. " is not yet implemented for CLI runner" },
-      { level = ui.ERROR }
-    )
+    ui.notify("Command " .. cmd .. " is not yet implemented for CLI runner", ui.ERROR)
   end
 end
 
