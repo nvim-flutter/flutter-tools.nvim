@@ -28,7 +28,10 @@ local runner = nil
 function M.use_debugger_runner()
   if not config.get("debugger").run_via_dap then return false end
   if dap_ok then return true end
-  ui.notify(utils.join({"debugger runner was request but nvim-dap is not installed!", dap}), ui.ERROR)
+  ui.notify(
+    utils.join({ "debugger runner was request but nvim-dap is not installed!", dap }),
+    ui.ERROR
+  )
   return false
 end
 
@@ -242,7 +245,7 @@ function M.pub_get()
       pub_get_job = Job:new({
         command = cmd,
         args = { "pub", "get" },
-        cwd = lsp.get_lsp_root_dir() --[[@as string]],
+        cwd = lsp.get_lsp_root_dir(),--[[@as string]]
       })
       pub_get_job:after_success(vim.schedule_wrap(function(j)
         on_pub_get(j:result())
