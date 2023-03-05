@@ -13,7 +13,7 @@ function M.setup(config)
   require("flutter-tools.executable").get(function(paths)
     dap.adapters.dart = {
       type = "executable",
-      command = "flutter",
+      command = paths.flutter_bin,
       args = { "debug-adapter" },
       options = { -- Dartls is slow to start so avoid warnings from nvim-dap
         initialize_timeout_sec = 30,
