@@ -364,7 +364,7 @@ local function request_code_actions()
     params,
     utils.lsp_handler(function(_, actions, _)
       code_actions.create_popup(actions, function(buf, win)
-        utils.map(
+        vim.keymap.set(
           "n",
           "<CR>",
           select_code_action(actions, win, code_buf, code_win, outline_win),
@@ -412,9 +412,9 @@ local function setup_outline_window(buf, win, lines, highlights, _)
     ui.add_highlights(state.outline_buf, highlights)
   end
 
-  utils.map("n", "q", "<Cmd>bw!<CR>", { nowait = true, buffer = buf })
-  utils.map("n", "<CR>", select_outline_item, { buffer = buf, nowait = true })
-  utils.map("n", "a", request_code_actions, { buffer = buf, nowait = true })
+  vim.keymap.set("n", "q", "<Cmd>bw!<CR>", { nowait = true, buffer = buf })
+  vim.keymap.set("n", "<CR>", select_outline_item, { buffer = buf, nowait = true })
+  vim.keymap.set("n", "a", request_code_actions, { buffer = buf, nowait = true })
 
   setup_autocommands()
 end
