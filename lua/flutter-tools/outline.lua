@@ -329,7 +329,7 @@ local function select_code_action(actions, action_win, code_buf, code_win, outli
         end, 500)
       end)
     end
-    if api.nvim_win_is_valid(action_win) then vim.api.nvim_win_close(action_win, true) end
+    if api.nvim_win_is_valid(action_win) then api.nvim_win_close(action_win, true) end
   end
 end
 
@@ -371,7 +371,7 @@ local function request_code_actions()
           { buffer = buf }
         )
       end)
-      vim.api.nvim_win_set_cursor(code_win, { item.start_line + 1, item.start_col + 1 })
+      api.nvim_win_set_cursor(code_win, { item.start_line + 1, item.start_col + 1 })
     end)
   )
 end
