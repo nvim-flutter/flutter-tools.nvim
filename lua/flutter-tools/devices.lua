@@ -3,9 +3,6 @@ local ui = require("flutter-tools.ui")
 local utils = require("flutter-tools.utils")
 local executable = require("flutter-tools.executable")
 
-local api = vim.api
-local fn = vim.fn
-
 local M = {
   ---@type Job
   emulator_job = nil,
@@ -23,23 +20,6 @@ local function get_devices(result, type)
     if device then table.insert(devices, device) end
   end
   return devices
-end
-
----Highlight each device/emulator in the popup window
----@param highlights table
----@param line string
----@param device table<string, string>
-local function add_device_highlights(highlights, line, device)
-  return ui.get_line_highlights(line, {
-    {
-      word = device.name,
-      highlight = "Type",
-    },
-    {
-      word = device.platform,
-      highlight = "Comment",
-    },
-  }, highlights)
 end
 
 ---@param line string
@@ -65,55 +45,40 @@ end
 ---@param result string[]
 ---@param device_type integer?
 ---@return string[]
----@return table
----@return table<string, string>
 function M.extract_device_props(result, device_type)
-  device_type = device_type or DEVICE
-  local lines = {}
-  local highlights = {}
-  local devices_by_line = {}
+  if not result or #result < 1 then return {} end
+  if not device_type then device_type = DEVICE end
   local devices = get_devices(result, device_type)
-  if #devices > 0 then
-    for _, device in pairs(devices) do
-      local name = utils.display_name(device.name, device.platform)
-      devices_by_line[name] = device
-      add_device_highlights(highlights, name, device)
-      table.insert(lines, name)
-    end
+  if #devices == 0 then
+    vim.tbl_map(function(item)
+      return { text = item, highlight = "Normal" }
+    end, result)
+  end
+  return vim.tbl_map(function(device)
+    local has_platform = device.platform and device.platform ~= ""
+    return {
+      { text = "• ", highlight = "Comment" },
+      { text = device.name, highlight = "Type" },
+      { text = has_platform and " • " or " ", highlight = "Comment" },
+      { text = device.platform, highlight = "Comment" },
+      data = device,
+    }
+  end, devices)
+end
+
+function M.select_device(device, args)
+  if not device then return ui.notify("Sorry there is no device on this line") end
+  local cmd = require("flutter-tools.commands")
+  if device.type == EMULATOR then
+    M.launch_emulator(device)
   else
-    for _, item in pairs(result) do
-      table.insert(lines, item)
-    end
-  end
-  return lines, devices_by_line, highlights
-end
-
-function M.select_device(args)
-  if not vim.b.devices then return ui.notify("Sorry there is no device on this line") end
-  local lnum = fn.line(".")
-  local line = api.nvim_buf_get_lines(0, lnum - 1, lnum, false)
-  local device = vim.b.devices[fn.trim(line[1])]
-  if device then
-    if device.type == EMULATOR then
-      M.launch_emulator(device)
+    if args then
+      vim.list_extend(args, { "-d", device.id })
+      cmd.run({ cli_args = args })
     else
-      if args then
-        vim.list_extend(args, { "-d", device.id })
-        require("flutter-tools.commands").run({ cli_args = args })
-      else
-        require("flutter-tools.commands").run({ device = device })
-      end
+      cmd.run({ device = device })
     end
-    api.nvim_win_close(0, true)
   end
-end
-
----Run commands and setup options after a popup is opened
----@param devices table[]
----@param buf number
-local function setup_window(devices, buf)
-  if not vim.tbl_isempty(devices) then api.nvim_buf_set_var(buf, "devices", devices) end
-  utils.map("n", "<CR>", M.select_device, { buffer = buf })
 end
 
 -----------------------------------------------------------------------------//
@@ -141,15 +106,12 @@ end
 
 ---@param result string[]
 local function show_emulators(result)
-  local lines, emulators, highlights = M.extract_device_props(result, EMULATOR)
+  local lines = M.extract_device_props(result, EMULATOR)
   if #lines > 0 then
-    ui.popup_create({
+    ui.menu({
       title = "Flutter emulators",
       lines = lines,
-      highlights = highlights,
-      on_create = function(buf, _)
-        setup_window(emulators, buf)
-      end,
+      on_select = M.select_device,
     })
   end
 end
@@ -172,16 +134,12 @@ end
 -----------------------------------------------------------------------------//
 ---@param job Job
 local function show_devices(job)
-  local result = job:result()
-  local lines, devices, highlights = M.extract_device_props(result, DEVICE)
+  local lines = M.extract_device_props(job:result(), DEVICE)
   if #lines > 0 then
-    ui.popup_create({
+    ui.menu({
       title = "Flutter devices",
       lines = lines,
-      highlights = highlights,
-      on_create = function(buf, _)
-        setup_window(devices, buf)
-      end,
+      on_select = M.select_device,
     })
   end
 end

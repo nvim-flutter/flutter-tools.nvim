@@ -2,21 +2,6 @@ local M = {}
 local fn = vim.fn
 local api = vim.api
 
--- FIXME: remove this when lua autocommands are officially supported
--- Global store of callback for autocommand (and eventually mappings)
-_G.__flutter_tools_callbacks = __flutter_tools_callbacks or {}
-
----@param name string
----@return string
-function M.display_name(name, platform)
-  if not name then return "" end
-  local symbol = "•"
-  return symbol
-    .. " "
-    .. name
-    .. (platform and platform ~= "" and (" " .. symbol .. " ") .. platform or "")
-end
-
 --- if every item in a table is an empty value return true
 function M.list_is_empty(tbl)
   if not tbl then return true end

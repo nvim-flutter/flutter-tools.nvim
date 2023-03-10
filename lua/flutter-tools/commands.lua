@@ -84,16 +84,12 @@ end
 local function on_run_exit(result, cli_args)
   local matched_error, msg = has_recoverable_error(result)
   if matched_error then
-    local lines, win_devices, highlights = devices.extract_device_props(result)
-    ui.popup_create({
+    local lines = devices.extract_device_props(result)
+    ui.menu({
       title = "Flutter run (" .. msg .. ") ",
       lines = lines,
-      highlights = highlights,
-      on_create = function(buf, _)
-        vim.b.devices = win_devices
-        utils.map("n", "<CR>", function()
-          devices.select_device(cli_args)
-        end, { buffer = buf })
+      on_select = function(device)
+        devices.select_device(device, cli_args)
       end,
     })
   end
