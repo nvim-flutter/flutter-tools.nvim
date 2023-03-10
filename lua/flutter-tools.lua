@@ -114,6 +114,16 @@ local function setup_autocommands()
     })
   end
 
+  autocmd({ "ColorScheme" }, {
+    group = AUGROUP,
+    callback = function()
+      api.nvim_set_hl(0, "FlutterPopupSelected", { default = true, link = "Visual" })
+      api.nvim_set_hl(0, "FlutterPopupNormal", { default = true, link = "NormalFloat" })
+      api.nvim_set_hl(0, "FlutterPopupBorder", { default = true, link = "FloatBorder" })
+      api.nvim_set_hl(0, "FlutterPopupTitle", { default = true, link = "FloatTitle" })
+    end,
+  })
+
   autocmd({ "BufWritePost" }, {
     group = AUGROUP,
     pattern = { "*.dart" },
