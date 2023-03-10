@@ -20,7 +20,7 @@ local function analysis_server_snapshot_path(sdk_path)
 end
 
 ---Merge a set of default configurations with a user's own settings
----NOTE: a user can specify a function in which case this will be used
+--- NOTE: a user can specify a function in which case this will be used
 ---to determine how to merge the defaults with a user's config
 ---@param default table
 ---@param user table|function
@@ -103,16 +103,10 @@ local function get_defaults(opts)
       -- @see: https://microsoft.github.io/language-server-protocol/specifications/specification-current/#workspaceEdit
       capabilities.workspace.workspaceEdit.documentChanges = true
       capabilities.textDocument.completion.completionItem.snippetSupport = true
-      capabilities.textDocument.documentColor = {
-        dynamicRegistration = true,
-      }
+      capabilities.textDocument.documentColor = { dynamicRegistration = true }
       -- @see: https://github.com/hrsh7th/nvim-compe#how-to-use-lsp-snippet
       capabilities.textDocument.completion.completionItem.resolveSupport = {
-        properties = {
-          "documentation",
-          "detail",
-          "additionalTextEdits",
-        },
+        properties = { "documentation", "detail", "additionalTextEdits" },
       }
       return capabilities
     end)(),
@@ -135,7 +129,7 @@ function M.restart()
 end
 
 ---@param server_name string?
----@return table?
+---@return lsp.Client?
 local function get_dartls_client(server_name)
   server_name = server_name or SERVER_NAME
   return lsp.get_active_clients({ name = server_name })[1]
