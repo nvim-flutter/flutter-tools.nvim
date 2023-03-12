@@ -1,7 +1,8 @@
 local utils = require("flutter-tools.utils")
 local fmt = string.format
 
----@alias SelectionEntry {text: string, data: table}
+---@generic T
+---@alias SelectionEntry {text: string, data: T}
 
 local M = {
   ERROR = vim.log.levels.ERROR,
@@ -66,12 +67,13 @@ M.notify = function(msg, level, opts)
 end
 
 --- @param items SelectionEntry[]
+--- @param title string
 --- @param on_select fun(item: SelectionEntry)
-local function custom_telescope_picker(items, on_select)
-  local ok, themes = pcall(require, "telescope.themes")
+local function get_telescope_picker_config(items, title, on_select)
+  local ok = pcall(require, "telescope")
   if not ok then return end
-  return themes.get_dropdown({
-    finder = require("flutter-tools.menu").telescope_finder(vim.tbl_map(function(item)
+  return require("flutter-tools.menu").get_config(
+    vim.tbl_map(function(item)
       local data = item.data
       return {
         id = data.id,
@@ -81,8 +83,9 @@ local function custom_telescope_picker(items, on_select)
           on_select(data)
         end,
       }
-    end, items)),
-  })
+    end, items),
+    { title = title }
+  )
 end
 
 ---@alias PopupOpts {title:string, lines: SelectionEntry[], on_select: fun(device: table)}
@@ -99,7 +102,7 @@ function M.select(opts)
       return item.text
     end,
     -- custom key for dressing.nvim
-    telescope = custom_telescope_picker(lines, on_select),
+    telescope = get_telescope_picker_config(lines, title, on_select),
   }, function(item)
     if not item then return end
     on_select(item.data)
