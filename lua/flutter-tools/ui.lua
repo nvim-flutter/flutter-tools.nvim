@@ -1,9 +1,5 @@
 if not pcall(require, "nui.menu") then error("nui not found, please install it") end
 
-local Menu = require("nui.menu")
-local Text = require("nui.text")
-local Line = require("nui.line")
-
 local utils = require("flutter-tools.utils")
 local fmt = string.format
 
@@ -17,16 +13,6 @@ local M = {
 
 local api = vim.api
 local namespace_id = api.nvim_create_namespace("flutter_tools_popups")
-
--- ---@param lines string[]
--- local function calculate_width(lines)
---   local max_width = math.ceil(vim.o.columns * 0.8)
---   local max_length = 0
---   for _, line in pairs(lines) do
---     if #line > max_length then max_length = #line end
---   end
---   return max_length <= max_width and max_length or max_width
--- end
 
 function M.clear_highlights(buf_id, ns_id, line_start, line_end)
   line_start = line_start or 0
@@ -81,51 +67,23 @@ end
 
 ---@alias PopupOpts {title:string, lines:{text: string, highlight: string, data: table}[], on_select: fun(device: table)}
 ---@param opts PopupOpts
-function M.menu(opts)
+function M.select(opts)
   assert(opts ~= nil, "An options table must be passed to popup create!")
   local title, lines, on_select = opts.title, opts.lines, opts.on_select
-  local config = require("flutter-tools.config").get("ui")
-
   if not lines or #lines < 1 or invalid_lines(lines) then return end
 
-  local menu = Menu({
-    position = "50%",
-    border = {
-      style = config.border,
-      text = { top = title, top_align = "center" },
-    },
-    win_options = {
-      winhighlight = table.concat({
-        "CursorLine:FlutterPopupSelected",
-        "NormalFloat:FlutterPopupNormal",
-        "Normal:FlutterPopupNormal",
-        "EndOfBuffer:FlutterPopupNormal",
-        "FloatTitle:FlutterPopupTitle",
-        "FloatBorder:FlutterPopupBorder",
-      }, ","),
-    },
-  }, {
-    lines = vim.tbl_map(function(line)
-      local words = vim.tbl_map(function(word)
-        return Text(word.text, word.highlight)
-      end, line)
-      return Menu.item(Line(words), line.data)
-    end, lines),
-    min_height = 10,
-    max_width = 50,
-    keymap = {
-      focus_next = { "j", "<Down>", "<Tab>" },
-      focus_prev = { "k", "<Up>", "<S-Tab>" },
-      close = { "<Esc>", "q" },
-      submit = { "<CR>", "<Space>" },
-    },
-    on_submit = function(item)
-      print("DEBUGPRINT[1]: ui.lua:124: item=" .. vim.inspect(item.data))
-      on_select(item)
+  vim.ui.select(lines, {
+    prompt = title,
+    kind = "flutter-tools",
+    format_item = function(item)
+      return utils.fold("", function(acc, line)
+        return acc .. line.text
+      end, item)
     end,
-  })
-
-  menu:mount()
+  }, function(item)
+    if not item then return end
+    on_select(item.data)
+  end)
 end
 
 ---Create a split window

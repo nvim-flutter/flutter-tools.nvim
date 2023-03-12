@@ -108,7 +108,7 @@ end
 local function show_emulators(result)
   local lines = M.extract_device_props(result, EMULATOR)
   if #lines > 0 then
-    ui.menu({
+    ui.select({
       title = "Flutter emulators",
       lines = lines,
       on_select = M.select_device,
@@ -136,7 +136,7 @@ end
 local function show_devices(job)
   local lines = M.extract_device_props(job:result(), DEVICE)
   if #lines > 0 then
-    ui.menu({
+    ui.select({
       title = "Flutter devices",
       lines = lines,
       on_select = M.select_device,
