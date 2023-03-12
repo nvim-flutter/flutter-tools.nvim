@@ -84,7 +84,7 @@ end
 local function on_run_exit(result, cli_args)
   local matched_error, msg = has_recoverable_error(result)
   if matched_error then
-    local lines = devices.extract_device_props(result)
+    local lines = devices.to_selection_entries(result)
     ui.select({
       title = "Flutter run (" .. msg .. ") ",
       lines = lines,

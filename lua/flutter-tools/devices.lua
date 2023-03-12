@@ -49,7 +49,7 @@ end
 ---@param result string[]
 ---@param device_type integer?
 ---@return SelectionEntry[]
-function M.extract_device_props(result, device_type)
+function M.to_selection_entries(result, device_type)
   if not result or #result < 1 then return {} end
   if not device_type then device_type = DEVICE end
   local devices = get_devices(result, device_type)
@@ -105,7 +105,7 @@ end
 
 ---@param result string[]
 local function show_emulators(result)
-  local lines = M.extract_device_props(result, EMULATOR)
+  local lines = M.to_selection_entries(result, EMULATOR)
   if #lines > 0 then
     ui.select({
       title = "Flutter emulators",
@@ -133,7 +133,7 @@ end
 -----------------------------------------------------------------------------//
 ---@param job Job
 local function show_devices(job)
-  local lines = M.extract_device_props(job:result(), DEVICE)
+  local lines = M.to_selection_entries(job:result(), DEVICE)
   if #lines > 0 then
     ui.select({
       title = "Flutter devices",
