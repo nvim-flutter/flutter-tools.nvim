@@ -3,7 +3,8 @@
     "library": {
       "enabled": true,
       "plugins": [
-        "plenary.nvim"
+        "plenary.nvim",
+        "telescope.nvim"
       ]
     }
   }
