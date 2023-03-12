@@ -43,51 +43,46 @@ some basic setup might look like.
 
 - neovim 0.7.0+
 
-## Notices
-
-- This plugin no longer relies on dart code's debugger as flutter and dart now ship with a native debugger.
-  Versions of flutter before version 2.10.0 will still require the old dart code debugger.
-  Setup instructions for this can be found [here](https://github.com/mfussenegger/nvim-dap/wiki/Debug-Adapter-installation#dart).
-
-  Migration for existing users of the Dart code debugger on older flutter versions:
-
-  ```lua
-    local debugger_dir = path.join(fn.stdpath("cache"), "dart-code")
-    local debugger_path = path.join(debugger_dir, "out", "dist", "debug.js")
-
-    -- In config section for the debugger
-    debugger = {
-      enabled = true,
-      register.configurations = function()
-        local dap = require("dap")
-        dap.adapters.dart = {
-          type = "executable",
-          command = "node",
-          args = { debugger_path, "flutter" },
-        }
-        -- Other configuration herek
-      end,
-    },
-  ```
-
-- The `:FlutterOutline` command has been renamed to `:FlutterOutlineOpen`, and a `:FlutterOutlineToggle` has been added.
-
 ## Installation
 
 using `vim-plug`
 
 ```vim
 Plug 'nvim-lua/plenary.nvim'
+Plug 'stevearc/dressing.nvim' " optional for vim.ui.select
 Plug 'akinsho/flutter-tools.nvim'
 ```
 
-or using `packer.nvim`
+using `packer.nvim`
 
 ```lua
-use {'akinsho/flutter-tools.nvim', requires = 'nvim-lua/plenary.nvim'}
+use {
+    'akinsho/flutter-tools.nvim',
+    requires = {
+        'nvim-lua/plenary.nvim',
+        'stevearc/dressing.nvim', -- optional for vim.ui.select
+    },
+}
+```
+
+using `lazy.nvim`
+
+```lua
+{
+    'akinsho/flutter-tools.nvim',
+    lazy = false,
+    dependencies = {
+        'nvim-lua/plenary.nvim',
+        'stevearc/dressing.nvim', -- optional for vim.ui.select
+    },
+}
 ```
 
 This plugin depends on [plenary.nvim](https://github.com/nvim-lua/plenary.nvim), please make sure it is installed.
+
+This plugin depends on `vim.ui.select` which allows users to control what UI is used for selecting
+from a list of options. If you don't have a UI configured for `vim.ui.select` then I highly recommend
+the excellent [dressing.nvim](https://github.com/stevearc/dressing.nvim).
 
 ## Warning
 
@@ -103,7 +98,7 @@ This plugin depends on [plenary.nvim](https://github.com/nvim-lua/plenary.nvim),
 
 ```vim
 lua << EOF
-  require("flutter-tools").setup{} -- use defaults
+  require("flutter-tools").setup {} -- use defaults
 EOF
 
 ```
@@ -111,7 +106,7 @@ EOF
 ### Lua
 
 ```lua
-require("flutter-tools").setup{} -- use defaults
+require("flutter-tools").setup {} -- use defaults
 ```
 
 ## Features
@@ -316,17 +311,7 @@ which is where this is usually installed by `snap`.
 
 To configure the highlight colour you can override the `FlutterWidgetGuides` highlight group.
 
-#### Notifications
-
-The highlights for flutter-tools notifications and popups can be changed by overriding the default highlight groups
-
-- `FlutterNotificationNormal` - this changes the highlight of the notification content.
-- `FlutterNotificationBorder` - this changes the highlight of the notification border.
-- `FlutterPopupNormal` - this changes the highlight of the popup content.
-- `FlutterPopupBorder` - this changes the highlight of the popup border.
-- `FlutterPopupSelected` - this changes the highlight of the popup's selected line.
-
-### Statusline decorations (Unstable)
+### Statusline decorations
 
 You can add metadata about the flutter application to your statusline using the `g:flutter_tools_decorations`
 dictionary that is created if you have set any of the decorations to `true` in your configuration.
