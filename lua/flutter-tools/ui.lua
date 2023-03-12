@@ -1,7 +1,7 @@
-if not pcall(require, "nui.menu") then error("nui not found, please install it") end
-
 local utils = require("flutter-tools.utils")
 local fmt = string.format
+
+---@alias SelectionEntry {text: string, data: table}
 
 local M = {
   ERROR = vim.log.levels.ERROR,
@@ -65,7 +65,27 @@ M.notify = function(msg, level, opts)
   })
 end
 
----@alias PopupOpts {title:string, lines:{text: string, highlight: string, data: table}[], on_select: fun(device: table)}
+--- @param items SelectionEntry[]
+--- @param on_select fun(item: SelectionEntry)
+local function custom_telescope_picker(items, on_select)
+  local ok, themes = pcall(require, "telescope.themes")
+  if not ok then return end
+  return themes.get_dropdown({
+    finder = require("flutter-tools.menu").telescope_finder(vim.tbl_map(function(item)
+      local data = item.data
+      return {
+        id = data.id,
+        label = data.name,
+        hint = data.platform,
+        command = function()
+          on_select(data)
+        end,
+      }
+    end, items)),
+  })
+end
+
+---@alias PopupOpts {title:string, lines: SelectionEntry[], on_select: fun(device: table)}
 ---@param opts PopupOpts
 function M.select(opts)
   assert(opts ~= nil, "An options table must be passed to popup create!")
@@ -76,10 +96,9 @@ function M.select(opts)
     prompt = title,
     kind = "flutter-tools",
     format_item = function(item)
-      return utils.fold("", function(acc, line)
-        return acc .. line.text
-      end, item)
+      return item.text
     end,
+    telescope = custom_telescope_picker(lines, on_select),
   }, function(item)
     if not item then return end
     on_select(item.data)

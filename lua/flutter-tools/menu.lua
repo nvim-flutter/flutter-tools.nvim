@@ -24,7 +24,7 @@ end
 local function command_entry_maker(max_width)
   local make_display = function(en)
     local displayer = entry_display.create({
-      separator = en.hint ~= "" and " - " or "",
+      separator = en.hint ~= "" and " • " or "",
       items = {
         { width = max_width },
         { remaining = true },
@@ -55,7 +55,16 @@ local function get_max_length(commands)
   return max
 end
 
-function M.commands(opts)
+---@param items {hint: string, label: string, command: fun(), id: integer}[]
+---@return table
+function M.telescope_finder(items)
+  return finders.new_table({
+    results = items,
+    entry_maker = command_entry_maker(get_max_length(items)),
+  })
+end
+
+function M.commands()
   local commands = {}
 
   local commands_module = require("flutter-tools.commands")
@@ -198,10 +207,7 @@ function M.commands(opts)
   pickers
     .new(picker_opts, {
       prompt_title = "Flutter tools commands",
-      finder = finders.new_table({
-        results = commands,
-        entry_maker = command_entry_maker(get_max_length(commands)),
-      }),
+      finder = M.telescope_finder(commands),
       sorter = sorters.get_generic_fuzzy_sorter(),
       attach_mappings = function(_, map)
         map("i", "<CR>", execute_command)

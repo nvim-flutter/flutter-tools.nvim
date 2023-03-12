@@ -2,6 +2,9 @@ local Job = require("plenary.job")
 local ui = require("flutter-tools.ui")
 local utils = require("flutter-tools.utils")
 local executable = require("flutter-tools.executable")
+local fmt = string.format
+
+---@alias Device {name: string, id: string, platform: string, system: string, type: integer}
 
 local M = {
   ---@type Job
@@ -24,6 +27,7 @@ end
 
 ---@param line string
 ---@param device_type number
+---@return Device?
 function M.parse(line, device_type)
   local parts = vim.split(line, "•")
   local is_emulator = device_type == EMULATOR
@@ -44,23 +48,18 @@ end
 --- return the parsed list and the found devices if any
 ---@param result string[]
 ---@param device_type integer?
----@return string[]
+---@return SelectionEntry[]
 function M.extract_device_props(result, device_type)
   if not result or #result < 1 then return {} end
   if not device_type then device_type = DEVICE end
   local devices = get_devices(result, device_type)
-  if #devices == 0 then
-    vim.tbl_map(function(item)
-      return { text = item, highlight = "Normal" }
-    end, result)
-  end
+  if #devices == 0 then vim.tbl_map(function(item)
+    return { text = item }
+  end, result) end
   return vim.tbl_map(function(device)
     local has_platform = device.platform and device.platform ~= ""
     return {
-      { text = "• ", highlight = "Comment" },
-      { text = device.name, highlight = "Type" },
-      { text = has_platform and " • " or " ", highlight = "Comment" },
-      { text = device.platform, highlight = "Comment" },
+      text = fmt(" %s %s ", device.name, has_platform and " • " .. device.platform or " "),
       data = device,
     }
   end, devices)
