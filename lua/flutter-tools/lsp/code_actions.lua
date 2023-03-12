@@ -50,7 +50,7 @@ function M.create_popup(actions, on_create)
     return action.title:gsub("\r\n", "\\r\\n"):gsub("\n", "\\n")
   end, actions)
 
-  require("flutter-tools.ui").popup_create({
+  require("flutter-tools.ui").select({
     title = "Code actions",
     display = { winblend = 0 },
     position = { relative = "cursor", row = 1, col = 0 },

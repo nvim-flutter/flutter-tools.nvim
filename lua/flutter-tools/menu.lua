@@ -6,6 +6,9 @@ local action_state = require("telescope.actions.state")
 local entry_display = require("telescope.pickers.entry_display")
 local themes = require("telescope.themes")
 
+---@alias TelescopeEntry {hint: string, label: string, command: fun(), id: integer}
+---@alias CustomOptions {title: string, callback: fun(bufnr: integer)}
+
 local M = {}
 
 -- Accounts for the vertical padding implicit in the dropdown.
@@ -24,7 +27,7 @@ end
 local function command_entry_maker(max_width)
   local make_display = function(en)
     local displayer = entry_display.create({
-      separator = en.hint ~= "" and " - " or "",
+      separator = en.hint ~= "" and " • " or "",
       items = {
         { width = max_width },
         { remaining = true },
@@ -53,6 +56,42 @@ local function get_max_length(commands)
     max = #value.label > max and #value.label or max
   end
   return max
+end
+
+---@param items TelescopeEntry[]
+---@param opts CustomOptions
+---@return table
+local function picker_opts(items, opts)
+  local callback = opts.callback or execute_command
+  return {
+    prompt_title = opts.title,
+    finder = finders.new_table({
+      results = items,
+      entry_maker = command_entry_maker(get_max_length(items)),
+    }),
+    sorter = sorters.get_generic_fuzzy_sorter(),
+    attach_mappings = function(_, map)
+      map("i", "<CR>", callback)
+      map("n", "<CR>", callback)
+      -- If the return value of `attach_mappings` is true, then the other
+      -- default mappings are still applies.
+      -- Return false if you don't want any other mappings applied.
+      -- A return value _must_ be returned. It is an error to not return anything.
+      return true
+    end,
+  }
+end
+
+---The options use to create the custom telescope picker menu's for flutter-tools
+---@param items TelescopeEntry[]
+---@param user_opts table?
+---@param opts CustomOptions?
+function M.get_config(items, user_opts, opts)
+  opts = vim.tbl_deep_extend("keep", user_opts or {}, opts or {})
+  return themes.get_dropdown(vim.tbl_deep_extend("keep", picker_opts(items, opts), {
+    previewer = false,
+    layout_config = { height = #items + MENU_PADDING },
+  }))
 end
 
 function M.commands(opts)
@@ -188,33 +227,7 @@ function M.commands(opts)
     })
   end
 
-  local picker_opts = themes.get_dropdown({
-    previewer = false,
-    layout_config = {
-      height = #commands + MENU_PADDING,
-    },
-  })
-
-  pickers
-    .new(picker_opts, {
-      prompt_title = "Flutter tools commands",
-      finder = finders.new_table({
-        results = commands,
-        entry_maker = command_entry_maker(get_max_length(commands)),
-      }),
-      sorter = sorters.get_generic_fuzzy_sorter(),
-      attach_mappings = function(_, map)
-        map("i", "<CR>", execute_command)
-        map("n", "<CR>", execute_command)
-
-        -- If the return value of `attach_mappings` is true, then the other
-        -- default mappings are still applies.
-        -- Return false if you don't want any other mappings applied.
-        -- A return value _must_ be returned. It is an error to not return anything.
-        return true
-      end,
-    })
-    :find()
+  pickers.new(M.get_config(commands, opts, { title = "Flutter tools commands" })):find()
 end
 
 local function execute_fvm_use(bufnr)
@@ -249,19 +262,10 @@ function M.fvm(opts)
     end
 
     pickers
-      .new(opts, {
-        prompt_title = "Change Flutter SDK",
-        finder = finders.new_table({
-          results = sdk_entries,
-          entry_maker = command_entry_maker(get_max_length(sdk_entries)),
-        }),
-        sorter = sorters.get_generic_fuzzy_sorter(),
-        attach_mappings = function(_, map)
-          map("i", "<CR>", execute_fvm_use)
-          map("n", "<CR>", execute_fvm_use)
-          return true
-        end,
-      })
+      .new(M.get_config(sdk_entries, opts, {
+        title = "Change Flutter SDK",
+        callback = execute_fvm_use,
+      }))
       :find()
   end)
 end

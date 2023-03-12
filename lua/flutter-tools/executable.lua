@@ -144,7 +144,7 @@ function M.get(callback)
 end
 
 ---Fetch the path to the users flutter installation.
----@param callback fun(paths: table<string, string>)
+---@param callback fun(paths: string)
 ---@return nil
 function M.flutter(callback)
   M.get(function(paths)

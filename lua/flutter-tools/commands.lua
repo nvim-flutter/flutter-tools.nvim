@@ -84,16 +84,12 @@ end
 local function on_run_exit(result, cli_args)
   local matched_error, msg = has_recoverable_error(result)
   if matched_error then
-    local lines, win_devices, highlights = devices.extract_device_props(result)
-    ui.popup_create({
+    local lines = devices.to_selection_entries(result)
+    ui.select({
       title = "Flutter run (" .. msg .. ") ",
       lines = lines,
-      highlights = highlights,
-      on_create = function(buf, _)
-        vim.b.devices = win_devices
-        utils.map("n", "<CR>", function()
-          devices.select_device(cli_args)
-        end, { buffer = buf })
+      on_select = function(device)
+        devices.select_device(device, cli_args)
       end,
     })
   end
@@ -245,7 +241,8 @@ function M.pub_get()
       pub_get_job = Job:new({
         command = cmd,
         args = { "pub", "get" },
-        cwd = lsp.get_lsp_root_dir(),--[[@as string]]
+        -- stylua: ignore
+        cwd = lsp.get_lsp_root_dir() --[[@as string]],
       })
       pub_get_job:after_success(vim.schedule_wrap(function(j)
         on_pub_get(j:result())
@@ -277,7 +274,12 @@ function M.pub_upgrade(cmd_args)
       local notify_timeout = 10000
       local args = { "pub", "upgrade" }
       if cmd_args then vim.list_extend(args, cmd_args) end
-      pub_upgrade_job = Job:new({ command = cmd, args = args, cwd = lsp.get_lsp_root_dir() })
+      pub_upgrade_job = Job:new({
+        command = cmd,
+        args = args,
+        -- stylua: ignore
+        cwd = lsp.get_lsp_root_dir() --[[@as string]],
+      })
       pub_upgrade_job:after_success(vim.schedule_wrap(function(j)
         ui.notify(utils.join(j:result()), nil, { timeout = notify_timeout })
         pub_upgrade_job = nil

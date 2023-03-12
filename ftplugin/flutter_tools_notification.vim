@@ -1,2 +1,0 @@
-highlight default link FlutterNotificationNormal NormalFloat
-highlight default link FlutterNotificationBorder FloatBorder
