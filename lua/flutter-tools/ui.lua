@@ -98,6 +98,7 @@ function M.select(opts)
     format_item = function(item)
       return item.text
     end,
+    -- custom key for dressing.nvim
     telescope = custom_telescope_picker(lines, on_select),
   }, function(item)
     if not item then return end
