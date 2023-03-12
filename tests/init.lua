@@ -27,6 +27,7 @@ function M.setup()
   vim.opt.runtimepath:append(M.root())
   vim.opt.packpath = { M.root(".tests/site") }
   M.load("nvim-lua/plenary.nvim")
+  M.load("MunifTanjim/nui.nvim")
   vim.env.XDG_CONFIG_HOME = M.root(".tests/config")
   vim.env.XDG_DATA_HOME = M.root(".tests/data")
   vim.env.XDG_STATE_HOME = M.root(".tests/state")
@@ -37,4 +38,3 @@ vim.o.swapfile = false
 _G.__TEST = true
 
 M.setup()
-
