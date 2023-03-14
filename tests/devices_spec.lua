@@ -1,3 +1,4 @@
+---@diagnostic disable: need-check-nil
 describe("Devices - ", function()
   describe("parsing tests - ", function()
     local parse = require("flutter-tools.devices").parse
