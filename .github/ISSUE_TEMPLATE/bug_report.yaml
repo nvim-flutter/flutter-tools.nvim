@@ -6,7 +6,11 @@ body:
   - type: checkboxes
     attributes:
       label: Is there an existing issue for this?
-      description: Please search to see if an issue already exists for the bug you encountered.
+      description: |
+        Please search to see if an issue already exists for the bug you encountered.
+        Do not open an issue using just a premade configuration, the most productive
+        way to debug an issue is using a minimal init.lua that does nothing other than
+        load this plugin and do the few other steps required to reproduce the issue.
       options:
         - label: I have searched the existing issues
           required: true
