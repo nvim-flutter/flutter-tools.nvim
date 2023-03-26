@@ -41,7 +41,7 @@ some basic setup might look like.
 
 ## Prerequisites
 
-- neovim 0.7.0+
+- neovim 0.8.0+
 
 ## Installation
 
