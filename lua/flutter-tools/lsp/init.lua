@@ -4,8 +4,8 @@ local color = require("flutter-tools.lsp.color")
 
 local api = vim.api
 local lsp = vim.lsp
-local fn = vim.fn
 local fmt = string.format
+local fs = vim.fs
 
 local FILETYPE = "dart"
 local SERVER_NAME = "dartls"
@@ -202,27 +202,6 @@ local function get_server_config(user_config, callback)
   end)
 end
 
---- TODO: deprecate this once nvim 0.8 is stable
----@param bufnr number
----@param user_config table
-local function legacy_server_init(bufnr, user_config)
-  -- Check to see if dartls is already attached, and if so attach
-  local existing_client = get_dartls_client()
-  if existing_client then lsp.buf_attach_client(bufnr, existing_client.id) end
-
-  get_server_config(user_config, function(c)
-    ---@diagnostic disable-next-line: missing-parameter
-    local current_dir = fn.expand("%:p:h")
-    c.root_dir = path.find_root(ROOT_PATTERNS, current_dir) or current_dir
-    local client_id = M.lsps[c.root_dir]
-    if not client_id then
-      client_id = lsp.start_client(c)
-      M.lsps[c.root_dir] = client_id
-      if client_id then lsp.buf_attach_client(bufnr, client_id) end
-    end
-  end)
-end
-
 --- Checks if buffer path is valid for attaching LSP
 local function is_valid_path(buffer_path)
   local start_index, _, uri_prefix = buffer_path:find("^(%w+://).*")
@@ -239,24 +218,18 @@ function M.attach()
   debug_log("attaching LSP")
 
   local buf = api.nvim_get_current_buf()
-  -- FIXME: When nvim 0.8 is released remove the legacy_server_init
-  if vim.version().minor < 8 then
-    legacy_server_init(buf, user_config)
-  else
-    local fs = vim.fs
-    local buffer_path = api.nvim_buf_get_name(buf)
+  local buffer_path = api.nvim_buf_get_name(buf)
 
-    if not is_valid_path(buffer_path) then return end
+  if not is_valid_path(buffer_path) then return end
 
-    get_server_config(user_config, function(c)
-      c.root_dir = M.get_lsp_root_dir()
-        or fs.dirname(fs.find(ROOT_PATTERNS, {
-          path = buffer_path,
-          upward = true,
-        })[1])
-      vim.lsp.start(c)
-    end)
-  end
+  get_server_config(user_config, function(c)
+    c.root_dir = M.get_lsp_root_dir()
+      or fs.dirname(fs.find(ROOT_PATTERNS, {
+        path = buffer_path,
+        upward = true,
+      })[1])
+    vim.lsp.start(c)
+  end)
 end
 
 return M
