@@ -46,7 +46,8 @@ local icons = setmetatable({
   end,
 })
 
-local hl_prefix = "FlutterToolsOutline"
+local HL_PREFIX = "FlutterToolsOutline"
+local MARKER_HL = "FlutterToolsOutlineIndentGuides"
 
 local icon_highlights = {
   [icons.TOP_LEVEL_VARIABLE] = { name = "TopLevelVar", link = "Identifier" },
@@ -61,6 +62,8 @@ local icon_highlights = {
   [icons.ENUM_CONSTANT] = { name = "EnumConstant", link = "Type" },
   [icons.DEFAULT] = { name = "Default", link = "Comment" },
 }
+
+api.nvim_set_hl(0, MARKER_HL, { default = true, link = "NonText" })
 
 -----------------------------------------------------------------------------//
 -- State
@@ -90,14 +93,14 @@ M.outlines = setmetatable({}, {
 ---@param name string
 ---@param group string
 local function hl_link(name, group)
-  api.nvim_set_hl(0, hl_prefix .. name, { link = group })
+  api.nvim_set_hl(0, HL_PREFIX .. name, { link = group })
 end
 
 ---@param name string
 ---@param value string
 ---@param group string
 local function highlight_item(name, value, group)
-  vim.cmd(fmt("syntax match %s%s /%s/", hl_prefix, name, value))
+  vim.cmd(fmt("syntax match %s%s /%s/", HL_PREFIX, name, value))
   hl_link(name, group)
 end
 
@@ -106,7 +109,7 @@ local function set_outline_highlights()
   highlight_item("String", [[\v(''|""|(['"]).{-}[^\\]\2)]], "String")
 
   for key, value in pairs(markers) do
-    highlight_item(key, value, "Whitespace")
+    highlight_item(key:gsub("^%l", string.upper), value, MARKER_HL)
   end
   for icon, hl in pairs(icon_highlights) do
     highlight_item(hl.name, icon, hl.link)
@@ -121,8 +124,7 @@ end
 ---@param position integer?
 local function add_segment(list, highlights, item, hl, length, position)
   if item and item ~= "" then
-    --- NOTE highlights are byte indexed
-    --- so use "#" operator to get the byte count
+    --- NOTE: highlights are byte indexed so use "#" operator to get the byte count
     local item_length = #item
     local new_length = item_length + length
     table.insert(highlights, {

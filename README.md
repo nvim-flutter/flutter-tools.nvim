@@ -306,6 +306,9 @@ was added, you can set your `flutter_path` to `"<INSERT-HOME-DIRECTORY>/snap/flu
 which is where this is usually installed by `snap`.
 
 ### Highlights
+Highlight groups that are user configurable to change the appearance of certain UI elements.
+
+* `FlutterToolsOutlineIndentGuides` - indent guides for the outline window
 
 #### Widget guides
 
