@@ -26,7 +26,7 @@ local current_device = nil
 local runner = nil
 
 function M.use_debugger_runner()
-  if not config.get("debugger").run_via_dap then return false end
+  if not config.debugger.run_via_dap then return false end
   if dap_ok then return true end
   ui.notify(
     utils.join({ "debugger runner was request but nvim-dap is not installed!", dap }),
@@ -67,9 +67,8 @@ end
 ---Handle output from flutter run command
 ---@param is_err boolean if this is stdout or stderr
 local function on_run_data(is_err, data)
-  local dev_log_conf = config.get("dev_log")
   if is_err then ui.notify(data, ui.ERROR, { timeout = 5000 }) end
-  dev_log.log(data, dev_log_conf)
+  dev_log.log(data, config.dev_log)
 end
 
 local function shutdown()
@@ -86,7 +85,7 @@ local function on_run_exit(result, cli_args)
   if matched_error then
     local lines = devices.to_selection_entries(result)
     ui.select({
-      title = "Flutter run (" .. msg .. ") ",
+      title = ("Flutter run (%s)"):format(msg),
       lines = lines,
       on_select = function(device)
         devices.select_device(device, cli_args)

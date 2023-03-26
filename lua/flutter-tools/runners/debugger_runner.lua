@@ -80,7 +80,7 @@ function DebuggerRunner:run(paths, args, cwd, on_run_data, on_run_exit)
 
   local launch_configurations = {}
   local launch_configuration_count = 0
-  config.get().debugger.register_configurations(paths)
+  config.debugger.register_configurations(paths)
   local all_configurations = require("dap").configurations.dart
   for _, c in ipairs(all_configurations) do
     if c.request == "launch" then

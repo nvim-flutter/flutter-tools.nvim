@@ -146,7 +146,6 @@ end
 
 ---Get the configuration or just a key of the config
 ---@param key string?
----@return any
 function M.get(key)
   if key then return config[key] end
   return config
@@ -162,4 +161,8 @@ function M.set(user_config)
   return config
 end
 
-return M
+return setmetatable(M, {
+  __index = function(_, k)
+    return M.get(k)
+  end,
+})

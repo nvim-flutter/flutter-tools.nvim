@@ -167,7 +167,7 @@ local function is_buf_valid(bufnum)
 end
 
 function M.widget_guides(_, data, _, _)
-  local conf = config.get().widget_guides
+  local conf = config.widget_guides
   if conf.enabled then
     local bufnum = vim.uri_to_bufnr(data.uri)
     if not is_buf_valid(bufnum) then return end

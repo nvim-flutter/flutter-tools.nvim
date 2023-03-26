@@ -443,7 +443,7 @@ function M.open(opts)
     return
   end
   local parent_win = api.nvim_get_current_win()
-  local options = config.get("outline")
+  local options = config.outline
   if not utils.buf_valid(state.outline_buf) and not vim.tbl_isempty(lines) then
     ui.open_win({
       open_cmd = options.open_cmd,
@@ -472,8 +472,7 @@ function M.document_outline(_, data, _, _)
   result.uri = data.uri
   M.outlines[data.uri] = result
   vim.cmd("doautocmd User FlutterOutlineChanged")
-  local conf = config.get("outline")
-  if conf.auto_open and not state.outline_buf then M.open({ go_back = true }) end
+  if config.outline.auto_open and not state.outline_buf then M.open({ go_back = true }) end
 end
 
 return M
