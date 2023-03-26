@@ -1,6 +1,7 @@
 local Job = require("plenary.job")
 local ui = require("flutter-tools.ui")
 local dev_tools = require("flutter-tools.dev_tools")
+local api = vim.api
 
 ---@type FlutterRunner
 local JobRunner = {}
@@ -30,7 +31,7 @@ function JobRunner:run(paths, args, cwd, on_run_data, on_run_exit)
     args = args,
     cwd = cwd,
     on_start = function()
-      vim.cmd("doautocmd User FlutterToolsAppStarted")
+      api.nvim_exec_autocmds("User", { pattern = "FlutterToolsAppStarted" })
     end,
     on_stdout = vim.schedule_wrap(function(_, data, _)
       on_run_data(false, data)

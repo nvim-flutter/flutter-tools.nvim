@@ -471,7 +471,7 @@ function M.document_outline(_, data, _, _)
   end
   result.uri = data.uri
   M.outlines[data.uri] = result
-  vim.cmd("doautocmd User FlutterOutlineChanged")
+  api.nvim_exec_autocmds("User", { pattern = "FlutterOutlineChanged" })
   if config.outline.auto_open and not state.outline_buf then M.open({ go_back = true }) end
 end
 
