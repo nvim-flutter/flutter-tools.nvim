@@ -31,13 +31,13 @@ local markers = {
 local icons = setmetatable({
   TOP_LEVEL_VARIABLE = "",
   CLASS = "",
-  FIELD = "綠",
+  FIELD = "󰐾",
   CONSTRUCTOR = "",
-  CONSTRUCTOR_INVOCATION = "ﰪ",
+  CONSTRUCTOR_INVOCATION = "󰜬",
   FUNCTION = "ƒ",
-  METHOD = "",
+  METHOD = "󰆧",
   GETTER = "ྟ",
-  ENUM = "",
+  ENUM = "󰉺",
   ENUM_CONSTANT = "",
   DEFAULT = "",
 }, {
