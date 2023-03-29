@@ -1,5 +1,6 @@
-local ui = require("flutter-tools.ui")
-local utils = require("flutter-tools.utils")
+local lazy = require("flutter-tools.lazy")
+local ui = lazy.require("flutter-tools.ui") ---@module "flutter-tools.ui"
+local utils = lazy.require("flutter-tools.utils") ---@module "flutter-tools.utils"
 
 local api = vim.api
 local fmt = string.format

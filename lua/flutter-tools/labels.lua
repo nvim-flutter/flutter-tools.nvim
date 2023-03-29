@@ -1,3 +1,7 @@
+local lazy = require("flutter-tools.lazy")
+local ui = lazy.require("flutter-tools.ui") ---@module "flutter-tools.ui"
+local config = lazy.require("flutter-tools.config") ---@module "flutter-tools.labels"
+
 local api = vim.api
 local fmt = string.format
 
@@ -23,7 +27,6 @@ local function render_labels(labels, opts)
     })
     if not ok then
       local name = api.nvim_buf_get_name(0)
-      local ui = require("flutter-tools.ui")
       ui.notify(fmt("error drawing label for %s on line %d.\nbecause: ", name, line, err), ui.ERROR)
     end
   end
@@ -31,8 +34,7 @@ end
 
 --- returns a function which handles rendering floating labels
 function M.closing_tags(err, response, _)
-  local conf = require("flutter-tools.config").get()
-  local opts = conf.closing_tags
+  local opts = config.closing_tags
   if err or not opts.enabled then return end
   local uri = response.uri
   -- This check is meant to prevent stray events from over-writing labels that

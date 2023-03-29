@@ -1,7 +1,9 @@
-local Job = require("plenary.job")
-local ui = require("flutter-tools.ui")
-local utils = require("flutter-tools.utils")
-local executable = require("flutter-tools.executable")
+local lazy = require("flutter-tools.lazy")
+local Job = lazy.require("plenary.job") ---@module "plenary.job"
+local ui = lazy.require("flutter-tools.ui") ---@module "flutter-tools.ui"
+local utils = lazy.require("flutter-tools.utils") ---@module "flutter-tools.utils"
+local commands = lazy.require("flutter-tools.commands") ---@module "flutter-tools.commands"
+local executable = lazy.require("flutter-tools.executable") ---@module "flutter-tools.executable"
 local fmt = string.format
 
 ---@alias Device {name: string, id: string, platform: string, system: string, type: integer}
@@ -66,15 +68,14 @@ end
 
 function M.select_device(device, args)
   if not device then return ui.notify("Sorry there is no device on this line") end
-  local cmd = require("flutter-tools.commands")
   if device.type == EMULATOR then
     M.launch_emulator(device)
   else
     if args then
       vim.list_extend(args, { "-d", device.id })
-      cmd.run({ cli_args = args })
+      commands.run({ cli_args = args })
     else
-      cmd.run({ device = device })
+      commands.run({ device = device })
     end
   end
 end

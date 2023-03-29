@@ -1,3 +1,8 @@
+local lazy = require("flutter-tools.lazy")
+local commands = lazy.require("flutter-tools.commands") ---@module "flutter-tools.commands"
+local path = lazy.require("flutter-tools.utils.path") ---@module "flutter-tools.utils.path"
+local Path = lazy.require("plenary.path") ---@module "plenary.path"
+
 local M = {
   statusline = {},
 }
@@ -7,8 +12,6 @@ local fn, api = vim.fn, vim.api
 ---Asynchronously read the data in the pubspec yaml and pass the results to a callback
 ---@param callback fun(data: string):nil
 local function read_pubspec(callback)
-  local path = require("flutter-tools.utils.path")
-  local Path = require("plenary.path")
   local root_patterns = { ".git", "pubspec.yaml" }
   local current_dir = fn.expand("%:p:h")
   local root_dir = path.find_root(root_patterns, current_dir) or current_dir
@@ -27,7 +30,7 @@ local function set_decoration_item(key, value)
 end
 
 local function device_show()
-  local device = require("flutter-tools.commands").current_device()
+  local device = commands.current_device()
   if device then set_decoration_item("device", device) end
 end
 

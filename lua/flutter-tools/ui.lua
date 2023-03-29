@@ -10,6 +10,7 @@ local entry_type = {
 ---@generic T
 ---@alias SelectionEntry {text: string, type: EntryType, data: T}
 
+---@enum
 local M = {
   ERROR = vim.log.levels.ERROR,
   DEBUG = vim.log.levels.DEBUG,
@@ -104,7 +105,7 @@ local function get_telescope_picker_config(items, title, on_select)
   )
 end
 
----@alias PopupOpts {title:string, lines: SelectionEntry[], on_select: fun(device: table)}
+---@alias PopupOpts {title:string, lines: SelectionEntry[], on_select: fun(item: SelectionEntry)}
 ---@param opts PopupOpts
 function M.select(opts)
   assert(opts ~= nil, "An options table must be passed to popup create!")
@@ -131,11 +132,11 @@ function M.open_win(opts, on_open)
   local open_cmd = opts.open_cmd or "botright 30vnew"
   local name = opts.filename or "__Flutter_Tools_Unknown__"
   open_cmd = fmt("%s %s", open_cmd, name)
-  vim.cmd(open_cmd)
-  vim.cmd(fmt("setfiletype %s", opts.filetype))
 
+  vim.cmd(open_cmd)
   local win = api.nvim_get_current_win()
   local buf = api.nvim_get_current_buf()
+  vim.bo[buf].filetype = opts.filetype
   vim.bo[buf].swapfile = false
   vim.bo[buf].buftype = "nofile"
   if on_open then on_open(buf, win) end

@@ -1,21 +1,28 @@
 local M = {}
 
+local lazy = require("flutter-tools.lazy")
+
+local commands = lazy.require("flutter-tools.commands") ---@module "flutter-tools.commands"
+local config = lazy.require("flutter-tools.config") ---@module "flutter-tools.config"
+local dev_tools = lazy.require("flutter-tools.dev_tools") ---@module "flutter-tools.dev_tools"
+local dap = lazy.require("flutter-tools.dap") ---@module "flutter-tools.dap"
+local decorations = lazy.require("flutter-tools.decorations") ---@module "flutter-tools.decorations"
+local guides = lazy.require("flutter-tools.guides") ---@module "flutter-tools.guides"
+local log = lazy.require("flutter-tools.log") ---@module "flutter-tools.log"
+local lsp = lazy.require("flutter-tools.lsp") ---@module "flutter-tools.lsp"
+
 local api = vim.api
 
 local function setup_commands()
   local cmd = api.nvim_create_user_command
   -- Commands
-  cmd(
-    "FlutterRun",
-    function(data) require("flutter-tools.commands").run_command(data.args) end,
-    { nargs = "*" }
-  )
+  cmd("FlutterRun", function(data) commands.run_command(data.args) end, { nargs = "*" })
   cmd("FlutterLspRestart", function() require("flutter-tools.lsp").restart() end, {})
-  cmd("FlutterDetach", function() require("flutter-tools.commands").detach() end, {})
-  cmd("FlutterReload", function() require("flutter-tools.commands").reload() end, {})
-  cmd("FlutterRestart", function() require("flutter-tools.commands").restart() end, {})
-  cmd("FlutterQuit", function() require("flutter-tools.commands").quit() end, {})
-  cmd("FlutterVisualDebug", function() require("flutter-tools.commands").visual_debug() end, {})
+  cmd("FlutterDetach", function() commands.detach() end, {})
+  cmd("FlutterReload", function() commands.reload() end, {})
+  cmd("FlutterRestart", function() commands.restart() end, {})
+  cmd("FlutterQuit", function() commands.quit() end, {})
+  cmd("FlutterVisualDebug", function() commands.visual_debug() end, {})
   -- Lists
   cmd("FlutterDevices", function() require("flutter-tools.devices").list_devices() end, {})
   cmd("FlutterEmulators", function() require("flutter-tools.devices").list_emulators() end, {})
@@ -25,16 +32,12 @@ local function setup_commands()
   --- Dev tools
   cmd("FlutterDevTools", function() require("flutter-tools.dev_tools").start() end, {})
   cmd("FlutterDevToolsActivate", function() require("flutter-tools.dev_tools").activate() end, {})
-  cmd(
-    "FlutterCopyProfilerUrl",
-    function() require("flutter-tools.commands").copy_profiler_url() end,
-    {}
-  )
-  cmd("FlutterOpenDevTools", function() require("flutter-tools.commands").open_dev_tools() end, {})
-  cmd("FlutterPubGet", function() require("flutter-tools.commands").pub_get() end, {})
+  cmd("FlutterCopyProfilerUrl", function() commands.copy_profiler_url() end, {})
+  cmd("FlutterOpenDevTools", function() commands.open_dev_tools() end, {})
+  cmd("FlutterPubGet", function() commands.pub_get() end, {})
   cmd(
     "FlutterPubUpgrade",
-    function(data) require("flutter-tools.commands").pub_upgrade_command(data.args) end,
+    function(data) commands.pub_upgrade_command(data.args) end,
     { nargs = "*" }
   )
   --- Log
@@ -47,11 +50,9 @@ end
 ---Initialise various plugin modules
 local function start()
   setup_commands()
-
-  local conf = require("flutter-tools.config").get()
-  if conf.debugger.enabled then require("flutter-tools.dap").setup(conf) end
-  if conf.widget_guides.enabled then require("flutter-tools.guides").setup() end
-  if conf.decorations then require("flutter-tools.decorations").apply(conf.decorations) end
+  if config.debugger.enabled then dap.setup(config) end
+  if config.widget_guides.enabled then guides.setup() end
+  if config.decorations then decorations.apply(config.decorations) end
 end
 
 local AUGROUP = api.nvim_create_augroup("FlutterToolsGroup", { clear = true })
@@ -67,47 +68,47 @@ local function setup_autocommands()
     callback = start,
   })
 
-  if require("flutter-tools.config").get("lsp").color.enabled then
+  if config.lsp.color.enabled then
     autocmd({ "BufEnter", "TextChanged", "InsertLeave" }, {
       group = AUGROUP,
       pattern = { "*.dart" },
-      callback = function() require("flutter-tools.lsp").document_color() end,
+      callback = function() lsp.document_color() end,
     })
     -- NOTE: we piggyback of this event to check for when the server is first initialized
     autocmd({ "User" }, {
       group = AUGROUP,
       pattern = "FlutterToolsLspAnalysisComplete",
       once = true,
-      callback = function() require("flutter-tools.lsp").document_color() end,
+      callback = function() lsp.document_color() end,
     })
   end
 
   autocmd({ "BufWritePost" }, {
     group = AUGROUP,
     pattern = { "*.dart" },
-    callback = function() require("flutter-tools.commands").reload(true) end,
+    callback = function() commands.reload(true) end,
   })
   autocmd({ "BufWritePost" }, {
     group = AUGROUP,
     pattern = { "*/pubspec.yaml" },
-    callback = function() require("flutter-tools.commands").pub_get() end,
+    callback = function() commands.pub_get() end,
   })
   autocmd({ "BufEnter" }, {
     group = AUGROUP,
-    pattern = { require("flutter-tools.log").filename },
-    callback = function() require("flutter-tools.log").__resurrect() end,
+    pattern = { log.filename },
+    callback = function() log.__resurrect() end,
   })
   autocmd({ "VimLeavePre" }, {
     group = AUGROUP,
     pattern = { "*" },
-    callback = function() require("flutter-tools.dev_tools").stop() end,
+    callback = function() dev_tools.stop() end,
   })
 end
 
 ---Entry point for this plugin
 ---@param user_config table
 function M.setup(user_config)
-  require("flutter-tools.config").set(user_config)
+  config.set(user_config)
   setup_autocommands()
 end
 

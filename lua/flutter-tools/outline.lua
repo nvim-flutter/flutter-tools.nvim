@@ -341,6 +341,7 @@ local function request_code_actions()
   if not uri then return ui.notify("Sorry! code actions not available") end
   local outline = M.outlines[uri]
   local item = outline[line]
+  if not item then return end
   local params = code_actions.get_action_params(item, uri)
   if not params then return end
 
@@ -355,17 +356,9 @@ local function request_code_actions()
     "textDocument/codeAction",
     params,
     utils.lsp_handler(function(_, actions, _)
-      code_actions.create_popup(
-        actions,
-        function(buf, win)
-          vim.keymap.set(
-            "n",
-            "<CR>",
-            select_code_action(actions, win, code_buf, code_win, outline_win),
-            { buffer = buf }
-          )
-        end
-      )
+      code_actions.open(actions, function(_, win)
+        select_code_action(actions, win, code_buf, code_win, outline_win)
+      end)
       api.nvim_win_set_cursor(code_win, { item.start_line + 1, item.start_col + 1 })
     end)
   )
