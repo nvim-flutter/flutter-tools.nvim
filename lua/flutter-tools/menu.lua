@@ -26,18 +26,18 @@ end
 
 local function command_entry_maker(max_width)
   local make_display = function(en)
+    local has_hint = en.hint and en.hint ~= ""
     local displayer = entry_display.create({
-      separator = en.hint ~= "" and " • " or "",
+      separator = has_hint and " • " or "",
       items = {
         { width = max_width },
         { remaining = true },
       },
     })
 
-    return displayer({
-      { en.label, "Type" },
-      { en.hint, "Comment" },
-    })
+    local items = { { en.label, "Type" } }
+    if has_hint then table.insert(items, { en.hint, "Comment" }) end
+    return displayer(items)
   end
   return function(entry)
     return {
