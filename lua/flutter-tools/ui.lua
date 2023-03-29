@@ -91,7 +91,6 @@ local function get_telescope_picker_config(items, title, on_select)
         return {
           id = data.title,
           label = data.title,
-          hint = "code action",
           command = function()
             on_select(data)
           end,
