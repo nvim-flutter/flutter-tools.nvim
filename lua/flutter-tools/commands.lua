@@ -35,13 +35,9 @@ function M.use_debugger_runner()
   return false
 end
 
-function M.current_device()
-  return current_device
-end
+function M.current_device() return current_device end
 
-function M.is_running()
-  return runner ~= nil and runner:is_running()
-end
+function M.is_running() return runner ~= nil and runner:is_running() end
 
 local function match_error_string(line)
   if not line then return false end
@@ -87,9 +83,7 @@ local function on_run_exit(result, cli_args)
     ui.select({
       title = ("Flutter run (%s)"):format(msg),
       lines = lines,
-      on_select = function(device)
-        devices.select_device(device, cli_args)
-      end,
+      on_select = function(device) devices.select_device(device, cli_args) end,
     })
   end
   shutdown()
@@ -141,9 +135,7 @@ local function send(cmd, quiet, on_send)
 end
 
 ---@param quiet boolean?
-function M.reload(quiet)
-  send("reload", quiet)
-end
+function M.reload(quiet) send("reload", quiet) end
 
 ---@param quiet boolean?
 function M.restart(quiet)
@@ -163,14 +155,10 @@ function M.quit(quiet)
 end
 
 ---@param quiet boolean?
-function M.visual_debug(quiet)
-  send("visual_debug", quiet)
-end
+function M.visual_debug(quiet) send("visual_debug", quiet) end
 
 ---@param quiet boolean?
-function M.detach(quiet)
-  send("detach", quiet)
-end
+function M.detach(quiet) send("detach", quiet) end
 
 function M.copy_profiler_url()
   if not M.is_running() then
@@ -191,24 +179,16 @@ function M.copy_profiler_url()
 end
 
 ---@param quiet boolean?
-function M.open_dev_tools(quiet)
-  send("open_dev_tools", quiet)
-end
+function M.open_dev_tools(quiet) send("open_dev_tools", quiet) end
 
 ---@param quiet boolean
-function M.generate(quiet)
-  send("generate", quiet)
-end
+function M.generate(quiet) send("generate", quiet) end
 
 ---@param quiet boolean
-function M.widget_inspector(quiet)
-  send("inspect", quiet)
-end
+function M.widget_inspector(quiet) send("inspect", quiet) end
 
 ---@param quiet boolean
-function M.construction_lines(quiet)
-  send("construction_lines", quiet)
-end
+function M.construction_lines(quiet) send("construction_lines", quiet) end
 
 -----------------------------------------------------------------------------//
 -- Pub commands

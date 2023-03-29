@@ -115,9 +115,10 @@ local function get_defaults(opts)
 end
 
 function M.restart()
-  local client = utils.find(vim.lsp.get_active_clients(), function(client)
-    return client.name == SERVER_NAME
-  end)
+  local client = utils.find(
+    vim.lsp.get_active_clients(),
+    function(client) return client.name == SERVER_NAME end
+  )
   if client then
     local bufs = lsp.get_buffers_by_client_id(client.id)
     client.stop()
@@ -144,9 +145,7 @@ end
 -- FIXME: I'm not sure how to correctly wait till a server is ready before
 -- sending this request. Ideally we would wait till the server is ready.
 M.document_color = function()
-  local active_clients = vim.tbl_map(function(c)
-    return c.id
-  end, vim.lsp.get_active_clients())
+  local active_clients = vim.tbl_map(function(c) return c.id end, vim.lsp.get_active_clients())
   local dartls = get_dartls_client()
   if
     dartls
@@ -170,9 +169,7 @@ function M.dart_lsp_super()
   client.request("dart/textDocument/super", nil, nil, 0)
 end
 
-function M.dart_reanalyze()
-  lsp.buf_request(0, "dart/reanalyze")
-end
+function M.dart_reanalyze() lsp.buf_request(0, "dart/reanalyze") end
 
 ---@param user_config table
 ---@param callback fun(table)

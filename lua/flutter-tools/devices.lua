@@ -53,9 +53,7 @@ function M.to_selection_entries(result, device_type)
   if not result or #result < 1 then return {} end
   if not device_type then device_type = DEVICE end
   local devices = get_devices(result, device_type)
-  if #devices == 0 then vim.tbl_map(function(item)
-    return { text = item }
-  end, result) end
+  if #devices == 0 then vim.tbl_map(function(item) return { text = item } end, result) end
   return vim.tbl_map(function(device)
     local has_platform = device.platform and device.platform ~= ""
     return {
@@ -86,9 +84,7 @@ end
 -----------------------------------------------------------------------------//
 
 ---@param job Job
-local function handle_launch(job)
-  ui.notify(utils.join(job:result()))
-end
+local function handle_launch(job) ui.notify(utils.join(job:result())) end
 
 function M.close_emulator()
   if M.emulator_job then M.emulator_job:shutdown() end
@@ -119,12 +115,12 @@ end
 function M.list_emulators()
   executable.flutter(function(cmd)
     local job = Job:new({ command = cmd, args = { "emulators" } })
-    job:after_success(vim.schedule_wrap(function(j)
-      show_emulators(j:result())
-    end))
-    job:after_failure(vim.schedule_wrap(function(j)
-      return ui.notify(utils.join(j:stderr_result()), ui.ERROR, { timeout = 5000 })
-    end))
+    job:after_success(vim.schedule_wrap(function(j) show_emulators(j:result()) end))
+    job:after_failure(
+      vim.schedule_wrap(
+        function(j) return ui.notify(utils.join(j:stderr_result()), ui.ERROR, { timeout = 5000 }) end
+      )
+    )
     job:start()
   end)
 end

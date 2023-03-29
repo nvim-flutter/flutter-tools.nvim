@@ -21,28 +21,20 @@ local command_keys = {
   generate = "g",
 }
 
-function JobRunner:is_running()
-  return run_job ~= nil
-end
+function JobRunner:is_running() return run_job ~= nil end
 
 function JobRunner:run(paths, args, cwd, on_run_data, on_run_exit)
   run_job = Job:new({
     command = paths.flutter_bin,
     args = args,
     cwd = cwd,
-    on_start = function()
-      api.nvim_exec_autocmds("User", { pattern = "FlutterToolsAppStarted" })
-    end,
+    on_start = function() api.nvim_exec_autocmds("User", { pattern = "FlutterToolsAppStarted" }) end,
     on_stdout = vim.schedule_wrap(function(_, data, _)
       on_run_data(false, data)
       dev_tools.handle_log(data)
     end),
-    on_stderr = vim.schedule_wrap(function(_, data, _)
-      on_run_data(true, data)
-    end),
-    on_exit = vim.schedule_wrap(function(j, _)
-      on_run_exit(j:result(), args)
-    end),
+    on_stderr = vim.schedule_wrap(function(_, data, _) on_run_data(true, data) end),
+    on_exit = vim.schedule_wrap(function(j, _) on_run_exit(j:result(), args) end),
   })
   run_job:start()
 end
@@ -56,8 +48,6 @@ function JobRunner:send(cmd, quiet)
   end
 end
 
-function JobRunner:cleanup()
-  run_job = nil
-end
+function JobRunner:cleanup() run_job = nil end
 
 return JobRunner

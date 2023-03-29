@@ -52,9 +52,7 @@ end
 ---
 --@param rgba (table) with keys 'r', 'g', 'b' in [0,255] and key 'a' in [0,1]
 --@returns (string) 6 digit hex
-function M.rgba_to_hex(rgba, bg_rgb)
-  return M.rgb_to_hex(M.rgba_to_rgb(rgba, bg_rgb))
-end
+function M.rgba_to_hex(rgba, bg_rgb) return M.rgb_to_hex(M.rgba_to_rgb(rgba, bg_rgb)) end
 
 --- Returns a table containing the RGB values encoded inside 24 least
 --- significant bits of the number @rgb_24bit
@@ -76,9 +74,7 @@ end
 --@param rgb (table) with keys 'r', 'g', 'b' in [0,255]
 --@returns (number) lightness in the range [0,100]
 function M.perceived_lightness(rgb)
-  local function gamma_encode(v)
-    return v / 255
-  end
+  local function gamma_encode(v) return v / 255 end
 
   local function linearize(v)
     return v <= 0.04045 and v / 12.92 or math.pow((v + 0.055) / 1.055, 2.4)

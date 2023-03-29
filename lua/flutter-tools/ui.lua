@@ -80,9 +80,7 @@ local function get_telescope_picker_config(items, title, on_select)
   local ok = pcall(require, "telescope")
   if not ok then return end
 
-  local filtered = vim.tbl_filter(function(value)
-    return value.data ~= nil
-  end, items) --[[@as SelectionEntry[]]
+  local filtered = vim.tbl_filter(function(value) return value.data ~= nil end, items) --[[@as SelectionEntry[]]
 
   return require("flutter-tools.menu").get_config(
     vim.tbl_map(function(item)
@@ -91,18 +89,14 @@ local function get_telescope_picker_config(items, title, on_select)
         return {
           id = data.title,
           label = data.title,
-          command = function()
-            on_select(data)
-          end,
+          command = function() on_select(data) end,
         }
       elseif item.type == entry_type.DEVICE then
         return {
           id = data.id,
           label = data.name,
           hint = data.platform,
-          command = function()
-            on_select(data)
-          end,
+          command = function() on_select(data) end,
         }
       end
     end, filtered),
@@ -120,9 +114,7 @@ function M.select(opts)
   vim.ui.select(lines, {
     prompt = title,
     kind = "flutter-tools",
-    format_item = function(item)
-      return item.text
-    end,
+    format_item = function(item) return item.text end,
     -- custom key for dressing.nvim
     telescope = get_telescope_picker_config(lines, title, on_select),
   }, function(item)

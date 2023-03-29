@@ -5,71 +5,43 @@ local api = vim.api
 local function setup_commands()
   local cmd = api.nvim_create_user_command
   -- Commands
-  cmd("FlutterRun", function(data)
-    require("flutter-tools.commands").run_command(data.args)
-  end, { nargs = "*" })
-  cmd("FlutterLspRestart", function()
-    require("flutter-tools.lsp").restart()
-  end, {})
-  cmd("FlutterDetach", function()
-    require("flutter-tools.commands").detach()
-  end, {})
-  cmd("FlutterReload", function()
-    require("flutter-tools.commands").reload()
-  end, {})
-  cmd("FlutterRestart", function()
-    require("flutter-tools.commands").restart()
-  end, {})
-  cmd("FlutterQuit", function()
-    require("flutter-tools.commands").quit()
-  end, {})
-  cmd("FlutterVisualDebug", function()
-    require("flutter-tools.commands").visual_debug()
-  end, {})
+  cmd(
+    "FlutterRun",
+    function(data) require("flutter-tools.commands").run_command(data.args) end,
+    { nargs = "*" }
+  )
+  cmd("FlutterLspRestart", function() require("flutter-tools.lsp").restart() end, {})
+  cmd("FlutterDetach", function() require("flutter-tools.commands").detach() end, {})
+  cmd("FlutterReload", function() require("flutter-tools.commands").reload() end, {})
+  cmd("FlutterRestart", function() require("flutter-tools.commands").restart() end, {})
+  cmd("FlutterQuit", function() require("flutter-tools.commands").quit() end, {})
+  cmd("FlutterVisualDebug", function() require("flutter-tools.commands").visual_debug() end, {})
   -- Lists
-  cmd("FlutterDevices", function()
-    require("flutter-tools.devices").list_devices()
-  end, {})
-  cmd("FlutterEmulators", function()
-    require("flutter-tools.devices").list_emulators()
-  end, {})
+  cmd("FlutterDevices", function() require("flutter-tools.devices").list_devices() end, {})
+  cmd("FlutterEmulators", function() require("flutter-tools.devices").list_emulators() end, {})
   --- Outline
-  cmd("FlutterOutlineOpen", function()
-    require("flutter-tools.outline").open()
-  end, {})
-  cmd("FlutterOutlineToggle", function()
-    require("flutter-tools.outline").toggle()
-  end, {})
+  cmd("FlutterOutlineOpen", function() require("flutter-tools.outline").open() end, {})
+  cmd("FlutterOutlineToggle", function() require("flutter-tools.outline").toggle() end, {})
   --- Dev tools
-  cmd("FlutterDevTools", function()
-    require("flutter-tools.dev_tools").start()
-  end, {})
-  cmd("FlutterDevToolsActivate", function()
-    require("flutter-tools.dev_tools").activate()
-  end, {})
-  cmd("FlutterCopyProfilerUrl", function()
-    require("flutter-tools.commands").copy_profiler_url()
-  end, {})
-  cmd("FlutterOpenDevTools", function()
-    require("flutter-tools.commands").open_dev_tools()
-  end, {})
-  cmd("FlutterPubGet", function()
-    require("flutter-tools.commands").pub_get()
-  end, {})
-  cmd("FlutterPubUpgrade", function(data)
-    require("flutter-tools.commands").pub_upgrade_command(data.args)
-  end, { nargs = "*" })
+  cmd("FlutterDevTools", function() require("flutter-tools.dev_tools").start() end, {})
+  cmd("FlutterDevToolsActivate", function() require("flutter-tools.dev_tools").activate() end, {})
+  cmd(
+    "FlutterCopyProfilerUrl",
+    function() require("flutter-tools.commands").copy_profiler_url() end,
+    {}
+  )
+  cmd("FlutterOpenDevTools", function() require("flutter-tools.commands").open_dev_tools() end, {})
+  cmd("FlutterPubGet", function() require("flutter-tools.commands").pub_get() end, {})
+  cmd(
+    "FlutterPubUpgrade",
+    function(data) require("flutter-tools.commands").pub_upgrade_command(data.args) end,
+    { nargs = "*" }
+  )
   --- Log
-  cmd("FlutterLogClear", function()
-    require("flutter-tools.log").clear()
-  end, {})
+  cmd("FlutterLogClear", function() require("flutter-tools.log").clear() end, {})
   --- LSP
-  cmd("FlutterSuper", function()
-    require("flutter-tools.lsp").dart_lsp_super()
-  end, {})
-  cmd("FlutterReanalyze", function()
-    require("flutter-tools.lsp").dart_reanalyze()
-  end, {})
+  cmd("FlutterSuper", function() require("flutter-tools.lsp").dart_lsp_super() end, {})
+  cmd("FlutterReanalyze", function() require("flutter-tools.lsp").dart_reanalyze() end, {})
 end
 
 ---Initialise various plugin modules
@@ -99,48 +71,36 @@ local function setup_autocommands()
     autocmd({ "BufEnter", "TextChanged", "InsertLeave" }, {
       group = AUGROUP,
       pattern = { "*.dart" },
-      callback = function()
-        require("flutter-tools.lsp").document_color()
-      end,
+      callback = function() require("flutter-tools.lsp").document_color() end,
     })
     -- NOTE: we piggyback of this event to check for when the server is first initialized
     autocmd({ "User" }, {
       group = AUGROUP,
       pattern = "FlutterToolsLspAnalysisComplete",
       once = true,
-      callback = function()
-        require("flutter-tools.lsp").document_color()
-      end,
+      callback = function() require("flutter-tools.lsp").document_color() end,
     })
   end
 
   autocmd({ "BufWritePost" }, {
     group = AUGROUP,
     pattern = { "*.dart" },
-    callback = function()
-      require("flutter-tools.commands").reload(true)
-    end,
+    callback = function() require("flutter-tools.commands").reload(true) end,
   })
   autocmd({ "BufWritePost" }, {
     group = AUGROUP,
     pattern = { "*/pubspec.yaml" },
-    callback = function()
-      require("flutter-tools.commands").pub_get()
-    end,
+    callback = function() require("flutter-tools.commands").pub_get() end,
   })
   autocmd({ "BufEnter" }, {
     group = AUGROUP,
     pattern = { require("flutter-tools.log").filename },
-    callback = function()
-      require("flutter-tools.log").__resurrect()
-    end,
+    callback = function() require("flutter-tools.log").__resurrect() end,
   })
   autocmd({ "VimLeavePre" }, {
     group = AUGROUP,
     pattern = { "*" },
-    callback = function()
-      require("flutter-tools.dev_tools").stop()
-    end,
+    callback = function() require("flutter-tools.dev_tools").stop() end,
   })
 end
 

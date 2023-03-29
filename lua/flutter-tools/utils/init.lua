@@ -21,9 +21,7 @@ local colorscheme_group = api.nvim_create_augroup("FlutterToolsColorscheme", { c
 ---@param name string
 ---@param opts table
 function M.highlight(name, opts)
-  local function hl()
-    api.nvim_set_hl(0, name, opts)
-  end
+  local function hl() api.nvim_set_hl(0, name, opts) end
   hl()
   api.nvim_create_autocmd("ColorScheme", { callback = hl, group = colorscheme_group })
 end
@@ -71,9 +69,7 @@ function M.remove_newlines(str)
   return str:gsub("[\n\r]", "")
 end
 
-function M.executable(bin)
-  return fn.executable(bin) > 0
-end
+function M.executable(bin) return fn.executable(bin) > 0 end
 
 ---Get the attribute value of a specified highlight
 ---@param name string
@@ -98,9 +94,7 @@ end
 
 ---@param lines string[]
 ---@return string
-function M.join(lines)
-  return table.concat(lines, "\n")
-end
+function M.join(lines) return table.concat(lines, "\n") end
 
 ---Create an lsp handler compatible with the new handler signature
 ---see: https://github.com/neovim/neovim/pull/15504/

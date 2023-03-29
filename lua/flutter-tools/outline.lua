@@ -41,9 +41,7 @@ local icons = setmetatable({
   ENUM_CONSTANT = "",
   DEFAULT = "",
 }, {
-  __index = function(t, _)
-    return t.DEFAULT
-  end,
+  __index = function(t, _) return t.DEFAULT end,
 })
 
 local HL_PREFIX = "FlutterToolsOutline"
@@ -85,16 +83,12 @@ local state = setmetatable({
 })
 
 M.outlines = setmetatable({}, {
-  __index = function()
-    return {}
-  end,
+  __index = function() return {} end,
 })
 -----------------------------------------------------------------------------//
 ---@param name string
 ---@param group string
-local function hl_link(name, group)
-  api.nvim_set_hl(0, HL_PREFIX .. name, { link = group })
-end
+local function hl_link(name, group) api.nvim_set_hl(0, HL_PREFIX .. name, { link = group }) end
 
 ---@param name string
 ---@param value string
@@ -318,17 +312,13 @@ local function select_code_action(actions, action_win, code_buf, code_win, outli
   return function()
     local ln = api.nvim_get_current_line()
     --- TODO: improve this once popup create returns a mapping of data to lines
-    local action = utils.find(actions, function(ca)
-      return ln:match(ca.title)
-    end)
+    local action = utils.find(actions, function(ca) return ln:match(ca.title) end)
     if action then
       code_actions.execute(action, code_buf, function()
         -- HACK: figure out how to automatically refresh the code window so the new widget appears
         -- in the outline window
         api.nvim_set_current_win(code_win)
-        vim.defer_fn(function()
-          api.nvim_set_current_win(outline_win)
-        end, 500)
+        vim.defer_fn(function() api.nvim_set_current_win(outline_win) end, 500)
       end)
     end
     if api.nvim_win_is_valid(action_win) then api.nvim_win_close(action_win, true) end
@@ -365,14 +355,17 @@ local function request_code_actions()
     "textDocument/codeAction",
     params,
     utils.lsp_handler(function(_, actions, _)
-      code_actions.create_popup(actions, function(buf, win)
-        vim.keymap.set(
-          "n",
-          "<CR>",
-          select_code_action(actions, win, code_buf, code_win, outline_win),
-          { buffer = buf }
-        )
-      end)
+      code_actions.create_popup(
+        actions,
+        function(buf, win)
+          vim.keymap.set(
+            "n",
+            "<CR>",
+            select_code_action(actions, win, code_buf, code_win, outline_win),
+            { buffer = buf }
+          )
+        end
+      )
       api.nvim_win_set_cursor(code_win, { item.start_line + 1, item.start_col + 1 })
     end)
   )
@@ -449,9 +442,7 @@ function M.open(opts)
       open_cmd = options.open_cmd,
       filetype = outline_filetype,
       filename = outline_filename,
-    }, function(buf, win)
-      setup_outline_window(buf, win, lines, highlights, opts.go_back)
-    end)
+    }, function(buf, win) setup_outline_window(buf, win, lines, highlights, opts.go_back) end)
   else
     refresh_outline(state.outline_buf, lines, highlights)
   end

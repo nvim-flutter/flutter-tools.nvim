@@ -49,13 +49,16 @@ end
 function M.create_popup(actions, on_create)
   if not actions or vim.tbl_isempty(actions) then return end
 
-  local lines = vim.tbl_map(function(action)
-    return {
-      text = action.title:gsub("\r\n", "\\r\\n"):gsub("\n", "\\n") or "action",
-      type = ui.entry_type.CODE_ACTION,
-      data = action,
-    }
-  end, actions)
+  local lines = vim.tbl_map(
+    function(action)
+      return {
+        text = action.title:gsub("\r\n", "\\r\\n"):gsub("\n", "\\n") or "action",
+        type = ui.entry_type.CODE_ACTION,
+        data = action,
+      }
+    end,
+    actions
+  )
 
   ui.select({
     title = "Code actions",

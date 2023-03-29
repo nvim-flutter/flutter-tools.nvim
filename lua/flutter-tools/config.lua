@@ -7,12 +7,14 @@ local fmt = string.format
 --- @param prefs table user preferences
 local function validate_prefs(prefs)
   if prefs.flutter_path and prefs.flutter_lookup_cmd then
-    vim.schedule(function()
-      vim.notify(
-        'Only one of "flutter_path" and "flutter_lookup_cmd" are required. Please remove one of the keys',
-        vim.log.levels.ERROR
-      )
-    end)
+    vim.schedule(
+      function()
+        vim.notify(
+          'Only one of "flutter_path" and "flutter_lookup_cmd" are required. Please remove one of the keys',
+          vim.log.levels.ERROR
+        )
+      end
+    )
   end
   vim.validate({
     outline = { prefs.outline, "table", true },
@@ -110,16 +112,12 @@ local config = {
   outline = setmetatable({
     auto_open = false,
   }, {
-    __index = function(_, k)
-      return k == "open_cmd" and get_split_cmd(0.3, 40) or nil
-    end,
+    __index = function(_, k) return k == "open_cmd" and get_split_cmd(0.3, 40) or nil end,
   }),
   dev_log = setmetatable({
     enabled = true,
   }, {
-    __index = function(_, k)
-      return k == "open_cmd" and get_split_cmd(0.4, 50) or nil
-    end,
+    __index = function(_, k) return k == "open_cmd" and get_split_cmd(0.4, 50) or nil end,
   }),
   dev_tools = {
     autostart = false,
@@ -162,7 +160,5 @@ function M.set(user_config)
 end
 
 return setmetatable(M, {
-  __index = function(_, k)
-    return M.get(k)
-  end,
+  __index = function(_, k) return M.get(k) end,
 })

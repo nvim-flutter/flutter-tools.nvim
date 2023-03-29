@@ -31,9 +31,7 @@ local activate_cmd = { "pub", "global", "activate", "devtools" }
 -- http://127.0.0.1:9102?uri=http%3A%2F%2F127.0.0.1%3A46051%2FNvCev-HjyX4%3D%2F
 -- NEW: The Flutter DevTools debugger and profiler on sdk gphone x86 arm is available at:
 -- http://127.0.0.1:9100?uri=http%3A%2F%2F127.0.0.1%3A35479%2FgQ0BNyM2xB8%3D%2F
-local function try_get_tools_flutter(data)
-  return data:match("(https?://127%.0%.0%.1:%d+%?uri=.+)$")
-end
+local function try_get_tools_flutter(data) return data:match("(https?://127%.0%.0%.1:%d+%?uri=.+)$") end
 
 --- Debug service listening on ws://127.0.0.1:44293/heXbxLM_lhM=/ws
 --- @param data string
@@ -132,9 +130,7 @@ local function handle_error(_, data, _)
 end
 
 --- @return boolean
-local function can_start()
-  return not job and not devtools_url and not devtools_profiler_url
-end
+local function can_start() return not job and not devtools_url and not devtools_profiler_url end
 
 function M.start()
   if can_start() then
@@ -168,9 +164,9 @@ function M.activate()
     job = Job:new({
       command = cmd,
       args = activate_cmd,
-      on_stderr = vim.schedule_wrap(function(_, data, _)
-        ui.notify({ "Unable to activate devtools!", vim.inspect(data) })
-      end),
+      on_stderr = vim.schedule_wrap(
+        function(_, data, _) ui.notify({ "Unable to activate devtools!", vim.inspect(data) }) end
+      ),
       on_exit = vim.schedule_wrap(function(_, return_value)
         job = nil
         if return_value == 0 then ui.notify({ "Dev tools activated" }) end
@@ -192,14 +188,10 @@ function M.stop()
 end
 
 ---@return string devtools_url @see devtools_url
-function M.get_url()
-  return devtools_url
-end
+function M.get_url() return devtools_url end
 
 ---@return boolean
-function M.is_running()
-  return devtools_profiler_url ~= nil or devtools_url ~= nil
-end
+function M.is_running() return devtools_profiler_url ~= nil or devtools_url ~= nil end
 
 ---@return string? devtools_profiler_url the url including the devtools url and the app url. Follows the format `devtools_url/?uri=app_url`
 ---@return boolean? server_running true if there is a `devtools_url` available but couldn't build the url

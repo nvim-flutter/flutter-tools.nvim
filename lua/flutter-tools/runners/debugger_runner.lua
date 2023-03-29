@@ -25,9 +25,7 @@ local service_activation_requests = {
   visual_debug = "ext.flutter.debugPaint",
 }
 
-function DebuggerRunner:is_running()
-  return dap.session() ~= nil
-end
+function DebuggerRunner:is_running() return dap.session() ~= nil end
 
 function DebuggerRunner:run(paths, args, cwd, on_run_data, on_run_exit)
   local started = false
@@ -46,12 +44,8 @@ function DebuggerRunner:run(paths, args, cwd, on_run_data, on_run_exit)
     if next(before_start_logs) ~= nil then on_run_exit(before_start_logs, args) end
   end
 
-  dap.listeners.before["event_exited"][plugin_identifier] = function(_, _)
-    handle_termination()
-  end
-  dap.listeners.before["event_terminated"][plugin_identifier] = function(_, _)
-    handle_termination()
-  end
+  dap.listeners.before["event_exited"][plugin_identifier] = function(_, _) handle_termination() end
+  dap.listeners.before["event_terminated"][plugin_identifier] = function(_, _) handle_termination() end
 
   dap.listeners.before["event_app.started"][plugin_identifier] = function(_, _)
     started = true
@@ -99,9 +93,7 @@ function DebuggerRunner:run(paths, args, cwd, on_run_data, on_run_exit)
     launch_config = require("dap.ui").pick_one_sync(
       launch_configurations,
       "Select launch configuration",
-      function(item)
-        return fmt("%s : %s", item.name, item.program, vim.inspect(item.args))
-      end
+      function(item) return fmt("%s : %s", item.name, item.program, vim.inspect(item.args)) end
     )
   end
   if not launch_config then return end

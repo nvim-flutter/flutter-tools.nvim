@@ -8,13 +8,9 @@ function M.exists(filename)
   return stat and stat.type or false
 end
 
-function M.is_dir(filename)
-  return M.exists(filename) == "directory"
-end
+function M.is_dir(filename) return M.exists(filename) == "directory" end
 
-function M.is_file(filename)
-  return M.exists(filename) == "file"
-end
+function M.is_file(filename) return M.exists(filename) == "file" end
 
 local uname = luv.os_uname()
 M.is_mac = uname.sysname == "Darwin"
@@ -25,13 +21,9 @@ M.path_sep = M.is_windows and "\\" or "/"
 
 local is_fs_root
 if M.is_windows then
-  is_fs_root = function(path)
-    return path:match("^%a:$")
-  end
+  is_fs_root = function(path) return path:match("^%a:$") end
 else
-  is_fs_root = function(path)
-    return path == "/"
-  end
+  is_fs_root = function(path) return path == "/" end
 end
 
 function M.is_absolute(filename)
@@ -91,9 +83,7 @@ end
 function M.is_descendant(root, path)
   if not path then return false end
 
-  local function cb(dir, _)
-    return dir == root
-  end
+  local function cb(dir, _) return dir == root end
 
   local dir, _ = M.traverse_parents(path, cb)
 
