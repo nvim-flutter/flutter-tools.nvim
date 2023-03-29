@@ -10,41 +10,44 @@ local decorations = lazy.require("flutter-tools.decorations") ---@module "flutte
 local guides = lazy.require("flutter-tools.guides") ---@module "flutter-tools.guides"
 local log = lazy.require("flutter-tools.log") ---@module "flutter-tools.log"
 local lsp = lazy.require("flutter-tools.lsp") ---@module "flutter-tools.lsp"
+local outline = lazy.require("flutter-tools.outline") ---@module "flutter-tools.outline"
+local devices = lazy.require("flutter-tools.devices") ---@module "flutter-tools.devices"
 
 local api = vim.api
 
+local command = function(name, callback, opts)
+  api.nvim_create_user_command(name, callback, opts or {})
+end
+
 local function setup_commands()
-  local cmd = api.nvim_create_user_command
   -- Commands
-  cmd("FlutterRun", function(data) commands.run_command(data.args) end, { nargs = "*" })
-  cmd("FlutterLspRestart", function() require("flutter-tools.lsp").restart() end, {})
-  cmd("FlutterDetach", function() commands.detach() end, {})
-  cmd("FlutterReload", function() commands.reload() end, {})
-  cmd("FlutterRestart", function() commands.restart() end, {})
-  cmd("FlutterQuit", function() commands.quit() end, {})
-  cmd("FlutterVisualDebug", function() commands.visual_debug() end, {})
+  command("FlutterRun", function(data) commands.run_command(data.args) end, { nargs = "*" })
+  command("FlutterLspRestart", lsp.restart)
+  command("FlutterDetach", commands.detach)
+  command("FlutterReload", commands.reload)
+  command("FlutterRestart", commands.restart)
+  command("FlutterQuit", commands.quit)
+  command("FlutterVisualDebug", commands.visual_debug)
   -- Lists
-  cmd("FlutterDevices", function() require("flutter-tools.devices").list_devices() end, {})
-  cmd("FlutterEmulators", function() require("flutter-tools.devices").list_emulators() end, {})
+  command("FlutterDevices", devices.list_devices)
+  command("FlutterEmulators", devices.list_emulators)
   --- Outline
-  cmd("FlutterOutlineOpen", function() require("flutter-tools.outline").open() end, {})
-  cmd("FlutterOutlineToggle", function() require("flutter-tools.outline").toggle() end, {})
+  command("FlutterOutlineOpen", outline.open)
+  command("FlutterOutlineToggle", outline.toggle)
   --- Dev tools
-  cmd("FlutterDevTools", function() require("flutter-tools.dev_tools").start() end, {})
-  cmd("FlutterDevToolsActivate", function() require("flutter-tools.dev_tools").activate() end, {})
-  cmd("FlutterCopyProfilerUrl", function() commands.copy_profiler_url() end, {})
-  cmd("FlutterOpenDevTools", function() commands.open_dev_tools() end, {})
-  cmd("FlutterPubGet", function() commands.pub_get() end, {})
-  cmd(
-    "FlutterPubUpgrade",
-    function(data) commands.pub_upgrade_command(data.args) end,
-    { nargs = "*" }
-  )
+  command("FlutterDevTools", dev_tools.start)
+  command("FlutterDevToolsActivate", dev_tools.activate)
+  command("FlutterCopyProfilerUrl", commands.copy_profiler_url)
+  command("FlutterOpenDevTools", commands.open_dev_tools)
+  command("FlutterPubGet", commands.pub_get)
+  command("FlutterPubUpgrade", function(data) commands.pub_upgrade_command(data.args) end, {
+    nargs = "*",
+  })
   --- Log
-  cmd("FlutterLogClear", function() require("flutter-tools.log").clear() end, {})
+  command("FlutterLogClear", log.clear)
   --- LSP
-  cmd("FlutterSuper", function() require("flutter-tools.lsp").dart_lsp_super() end, {})
-  cmd("FlutterReanalyze", function() require("flutter-tools.lsp").dart_reanalyze() end, {})
+  command("FlutterSuper", lsp.dart_lsp_super)
+  command("FlutterReanalyze", lsp.dart_reanalyze)
 end
 
 ---Initialise various plugin modules
