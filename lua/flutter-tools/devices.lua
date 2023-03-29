@@ -60,6 +60,7 @@ function M.to_selection_entries(result, device_type)
     local has_platform = device.platform and device.platform ~= ""
     return {
       text = fmt(" %s %s ", device.name, has_platform and " • " .. device.platform or " "),
+      type = ui.entry_type.DEVICE,
       data = device,
     }
   end, devices)

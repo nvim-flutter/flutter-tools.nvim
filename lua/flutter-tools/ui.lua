@@ -1,8 +1,14 @@
 local utils = require("flutter-tools.utils")
 local fmt = string.format
 
+---@enum EntryType
+local entry_type = {
+  CODE_ACTION = 1,
+  DEVICE = 2,
+}
+
 ---@generic T
----@alias SelectionEntry {text: string, data: T}
+---@alias SelectionEntry {text: string, type: EntryType, data: T}
 
 local M = {
   ERROR = vim.log.levels.ERROR,
@@ -14,6 +20,7 @@ local M = {
 
 local api = vim.api
 local namespace_id = api.nvim_create_namespace("flutter_tools_popups")
+M.entry_type = entry_type
 
 function M.clear_highlights(buf_id, ns_id, line_start, line_end)
   line_start = line_start or 0
@@ -72,18 +79,34 @@ end
 local function get_telescope_picker_config(items, title, on_select)
   local ok = pcall(require, "telescope")
   if not ok then return end
+
+  local filtered = vim.tbl_filter(function(value)
+    return value.data ~= nil
+  end, items) --[[@as SelectionEntry[]]
+
   return require("flutter-tools.menu").get_config(
     vim.tbl_map(function(item)
       local data = item.data
-      return {
-        id = data.id,
-        label = data.name,
-        hint = data.platform,
-        command = function()
-          on_select(data)
-        end,
-      }
-    end, items),
+      if item.type == entry_type.CODE_ACTION then
+        return {
+          id = data.title,
+          label = data.title,
+          hint = "code action",
+          command = function()
+            on_select(data)
+          end,
+        }
+      elseif item.type == entry_type.DEVICE then
+        return {
+          id = data.id,
+          label = data.name,
+          hint = data.platform,
+          command = function()
+            on_select(data)
+          end,
+        }
+      end
+    end, filtered),
     { title = title }
   )
 end
