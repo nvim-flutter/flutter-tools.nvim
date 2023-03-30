@@ -315,8 +315,7 @@ local function select_code_action(actions, action_win, code_buf, code_win, outli
     local action = utils.find(actions, function(ca) return ln:match(ca.title) end)
     if action then
       code_actions.execute(action, code_buf, function()
-        -- HACK: figure out how to automatically refresh the code window so the new widget appears
-        -- in the outline window
+        -- HACK: figure out how to automatically refresh the code window so the new widget appears in the outline window
         api.nvim_set_current_win(code_win)
         vim.defer_fn(function() api.nvim_set_current_win(outline_win) end, 500)
       end)
@@ -356,9 +355,10 @@ local function request_code_actions()
     "textDocument/codeAction",
     params,
     utils.lsp_handler(function(_, actions, _)
-      code_actions.open(actions, function(_, win)
-        select_code_action(actions, win, code_buf, code_win, outline_win)
-      end)
+      code_actions.open(
+        actions,
+        function(_, win) select_code_action(actions, win, code_buf, code_win, outline_win) end
+      )
       api.nvim_win_set_cursor(code_win, { item.start_line + 1, item.start_col + 1 })
     end)
   )
