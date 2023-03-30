@@ -45,8 +45,8 @@ end
 
 ---Open a code action window to select options from
 ---@param actions table[]
----@param on_create fun(buf: number, win: number)
-function M.create_popup(actions, on_create)
+---@param on_select fun(buf: number, win: number)
+function M.open(actions, on_select)
   if not actions or vim.tbl_isempty(actions) then return end
 
   local lines = vim.tbl_map(
@@ -65,7 +65,7 @@ function M.create_popup(actions, on_create)
     display = { winblend = 0 },
     position = { relative = "cursor", row = 1, col = 0 },
     lines = lines,
-    on_create = on_create,
+    on_select = on_select,
   })
 end
 

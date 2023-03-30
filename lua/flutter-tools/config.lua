@@ -1,4 +1,6 @@
-local path = require("flutter-tools.utils.path")
+local lazy = require("flutter-tools.lazy")
+local path = lazy.require("flutter-tools.utils.path") ---@module "flutter-tools.utils.path"
+
 local M = {}
 
 local fn = vim.fn
@@ -50,16 +52,9 @@ local config = {
     enabled = false,
     debug = false,
   },
-  ui = setmetatable({
+  ui = {
     border = "single",
-  }, {
-    __index = function(_, k)
-      if k == "notification_style" then
-        local ok = pcall(require, "notify")
-        return ok and "native" or "plugin"
-      end
-    end,
-  }),
+  },
   decorations = {
     statusline = {
       app_version = false,

@@ -1,15 +1,15 @@
-local Job = require("plenary.job")
-local ui = require("flutter-tools.ui")
-local utils = require("flutter-tools.utils")
-local devices = require("flutter-tools.devices")
-local config = require("flutter-tools.config")
-local executable = require("flutter-tools.executable")
-local dev_tools = require("flutter-tools.dev_tools")
-local lsp = require("flutter-tools.lsp")
-local job_runner = require("flutter-tools.runners.job_runner")
-local debugger_runner = require("flutter-tools.runners.debugger_runner")
-local dev_log = require("flutter-tools.log")
-local dap_ok, dap = pcall(require, "dap")
+local lazy = require("flutter-tools.lazy")
+local Job = lazy.require("plenary.job") ---@module "plenary.job"
+local ui = lazy.require("flutter-tools.ui") ---@module "flutter-tools.ui"
+local utils = lazy.require("flutter-tools.utils") ---@module "flutter-tools.utils"
+local devices = lazy.require("flutter-tools.devices") ---@module "flutter-tools.devices"
+local config = lazy.require("flutter-tools.config") ---@module "flutter-tools.config"
+local executable = lazy.require("flutter-tools.executable") ---@module "flutter-tools.executable"
+local dev_tools = lazy.require("flutter-tools.dev_tools") ---@module   "flutter-tools.dev_tools"
+local lsp = lazy.require("flutter-tools.lsp") ---@module "flutter-tools.lsp"
+local job_runner = lazy.require("flutter-tools.runners.job_runner") ---@module "flutter-tools.runners.job_runner"
+local debugger_runner = lazy.require("flutter-tools.runners.debugger_runner") ---@module "flutter-tools.runners.debugger_runner"
+local dev_log = lazy.require("flutter-tools.log") ---@module "flutter-tools.log"
 
 local M = {}
 
@@ -26,6 +26,7 @@ local current_device = nil
 local runner = nil
 
 function M.use_debugger_runner()
+  local dap_ok, dap = pcall(require, "dap")
   if not config.debugger.run_via_dap then return false end
   if dap_ok then return true end
   ui.notify(
@@ -316,7 +317,7 @@ function M.fvm_use(sdk_name)
       ui.notify(utils.join(j:result()))
       shutdown()
       executable.reset_paths()
-      require("flutter-tools.lsp").restart()
+      lsp.restart()
 
       fvm_use_job = nil
     end))

@@ -1,6 +1,7 @@
-local utils = require("flutter-tools.utils")
-local path = require("flutter-tools.utils.path")
-local color = require("flutter-tools.lsp.color")
+local lazy = require("flutter-tools.lazy")
+local utils = lazy.require("flutter-tools.utils") ---@module "flutter-tools.utils"
+local path = lazy.require("flutter-tools.utils.path") ---@module "flutter-tools.utils.path"
+local color = lazy.require("flutter-tools.lsp.color") ---@module "flutter-tools.lsp.color"
 
 local api = vim.api
 local lsp = vim.lsp
@@ -158,7 +159,7 @@ end
 M.on_document_color = color.on_document_color
 
 function M.dart_lsp_super()
-  local conf = require("flutter-tools.config").get()
+  local conf = require("flutter-tools.config")
   local user_config = conf.lsp
   local debug_log = create_debug_log(user_config.debug)
   local client = get_dartls_client()
@@ -209,7 +210,7 @@ end
 
 ---This was heavily inspired by nvim-metals implementation of the attach functionality
 function M.attach()
-  local conf = require("flutter-tools.config").get()
+  local conf = require("flutter-tools.config")
   local user_config = conf.lsp
   local debug_log = create_debug_log(user_config.debug)
   debug_log("attaching LSP")

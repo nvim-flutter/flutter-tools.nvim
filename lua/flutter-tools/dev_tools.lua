@@ -1,8 +1,10 @@
-local utils = require("flutter-tools.utils")
-local ui = require("flutter-tools.ui")
-local executable = require("flutter-tools.executable")
+local lazy = require("flutter-tools.lazy")
+local ui = lazy.require("flutter-tools.ui") ---@module "flutter-tools.ui"
+local config = lazy.require("flutter-tools.config") ---@module "flutter-tools.config"
+local utils = lazy.require("flutter-tools.utils") ---@module "flutter-tools.utils"
+local executable = lazy.require("flutter-tools.executable") ---@module "flutter-tools.executable"
 ---@type Job
-local Job = require("plenary.job")
+local Job = lazy.require("plenary.job")
 
 local M = {}
 local fn = vim.fn
@@ -41,7 +43,7 @@ local function try_get_profiler_url_chrome(data)
 end
 
 local function start_browser()
-  local auto_open_browser = require("flutter-tools.config").get("dev_tools").auto_open_browser
+  local auto_open_browser = config.dev_tools.auto_open_browser
   if not auto_open_browser then return end
   local url = M.get_profiler_url()
   local open_command = utils.open_command()
@@ -74,7 +76,7 @@ end
 function M.register_profiler_url(url)
   if url then
     profiler_url = url
-    local autostart = require("flutter-tools.config").get("dev_tools").autostart
+    local autostart = config.dev_tools.autostart
     if autostart then
       M.start()
       M.handle_devtools_available()
@@ -187,7 +189,7 @@ function M.stop()
   end
 end
 
----@return string devtools_url @see devtools_url
+---@return string? devtools_url @see devtools_url
 function M.get_url() return devtools_url end
 
 ---@return boolean

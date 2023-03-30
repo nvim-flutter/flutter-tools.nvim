@@ -15,9 +15,6 @@ function M.setup(config)
       type = "executable",
       command = paths.flutter_bin,
       args = { "debug-adapter" },
-      options = { -- Dartls is slow to start so avoid warnings from nvim-dap
-        initialize_timeout_sec = 30,
-      },
     }
     opts.register_configurations(paths)
     if opts.exception_breakpoints and type(opts.exception_breakpoints) == "table" then

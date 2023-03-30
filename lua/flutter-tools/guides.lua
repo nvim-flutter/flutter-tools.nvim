@@ -1,5 +1,7 @@
-local utils = require("flutter-tools.utils")
-local config = require("flutter-tools.config")
+local lazy = require("flutter-tools.lazy")
+local ui = lazy.require("flutter-tools.ui") ---@module "flutter-tools.ui"
+local utils = lazy.require("flutter-tools.utils") ---@module "flutter-tools.utils"
+local config = lazy.require("flutter-tools.config") ---@module "flutter-tools.config"
 
 local M = {}
 
@@ -138,7 +140,6 @@ local function render_guides(bufnum, guides, conf)
         })
       if not success and conf.debug then
         local name = api.nvim_buf_get_name(bufnum)
-        local ui = require("flutter-tools.ui")
         ui.notify(
           fmt(
             "error drawing widget guide for %s at line %d, col %d.\nbecause: %s",

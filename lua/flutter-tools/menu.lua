@@ -1,10 +1,12 @@
-local pickers = require("telescope.pickers")
-local finders = require("telescope.finders")
-local sorters = require("telescope.sorters")
-local actions = require("telescope.actions")
-local action_state = require("telescope.actions.state")
-local entry_display = require("telescope.pickers.entry_display")
-local themes = require("telescope.themes")
+local lazy = require("flutter-tools.lazy")
+local pickers = lazy.require("telescope.pickers") ---@module "telescope.pickers"
+local finders = lazy.require("telescope.finders") ---@module "telescope.finders"
+local sorters = lazy.require("telescope.sorters") ---@module "telescope.sorters"
+local actions = lazy.require("telescope.actions") ---@module "telescope.actions"
+local themes = lazy.require("telescope.themes") ---@module "telescope.themes"
+local action_state = lazy.require("telescope.actions.state") ---@module "telescope.actions.state"
+local entry_display = lazy.require("telescope.pickers.entry_display") ---@module "telescope.pickers.entry_display"
+local commands = lazy.require("flutter-tools.commands") ---@module "flutter-tools.commands"
 
 ---@alias TelescopeEntry {hint: string, label: string, command: fun(), id: integer}
 ---@alias CustomOptions {title: string, callback: fun(bufnr: integer)}
@@ -50,9 +52,9 @@ local function command_entry_maker(max_width)
   end
 end
 
-local function get_max_length(commands)
+local function get_max_length(cmds)
   local max = 0
-  for _, value in ipairs(commands) do
+  for _, value in ipairs(cmds) do
     max = #value.label > max and #value.label or max
   end
   return max
@@ -95,77 +97,76 @@ function M.get_config(items, user_opts, opts)
 end
 
 function M.commands(opts)
-  local commands = {}
+  local cmds = {}
 
-  local commands_module = require("flutter-tools.commands")
-  if commands_module.is_running() then
-    commands = {
+  if commands.is_running() then
+    cmds = {
       {
         id = "flutter-tools-hot-reload",
         label = "Flutter tools: Hot reload",
         hint = "Reload a running flutter project",
-        command = require("flutter-tools.commands").reload,
+        command = commands.reload,
       },
       {
         id = "flutter-tools-hot-restart",
         label = "Flutter tools: Hot restart",
         hint = "Restart a running flutter project",
-        command = require("flutter-tools.commands").restart,
+        command = commands.restart,
       },
       {
         id = "flutter-tools-visual-debug",
         label = "Flutter tools: Visual Debug",
         hint = "Add the visual debugging overlay",
-        command = require("flutter-tools.commands").visual_debug,
+        command = commands.visual_debug,
       },
       {
         id = "flutter-tools-quit",
         label = "Flutter tools: Quit",
         hint = "Quit running flutter project",
-        command = require("flutter-tools.commands").quit,
+        command = commands.quit,
       },
       {
         id = "flutter-tools-detach",
         label = "Flutter tools: Detach",
         hint = "Quit running flutter project but leave the process running",
-        command = require("flutter-tools.commands").detach,
+        command = commands.detach,
       },
       {
         id = "flutter-tools-widget-inspector",
         label = "Flutter tools: Widget Inspector",
         hint = "Toggle the widget inspector",
-        command = require("flutter-tools.commands").widget_inspector,
+        command = commands.widget_inspector,
       },
       {
         id = "flutter-tools-construction-lines",
         label = "Flutter tools: Construction Lines",
         hint = "Display construction lines",
-        command = require("flutter-tools.commands").construction_lines,
+        command = commands.construction_lines,
       },
     }
   else
-    commands = {
+    cmds = {
       {
         id = "flutter-tools-run",
         label = "Flutter tools: Run",
         hint = "Start a flutter project",
-        command = require("flutter-tools.commands").run,
+        command = commands.run,
       },
     }
   end
 
-  vim.list_extend(commands, {
+  vim.list_extend(cmds, {
     {
       id = "flutter-tools-pub-get",
       label = "Flutter tools: Pub get",
       hint = "Run pub get in the project directory",
-      command = require("flutter-tools.commands").pub_get,
+      command = commands.pub_get,
     },
     {
       id = "flutter-tools-pub-upgrade",
       label = "Flutter tools: Pub upgrade",
       hint = "Run pub upgrade in the project directory",
-      command = require("flutter-tools.commands").pub_upgrade,
+      command = commands.pub_upgrade,
     },
     {
       id = "flutter-tools-list-devices",
@@ -189,7 +190,7 @@ function M.commands(opts)
       id = "flutter-tools-generate",
       label = "Flutter tools: Generate ",
       hint = "Generate code",
-      command = require("flutter-tools.commands").generate,
+      command = commands.generate,
     },
     {
       id = "flutter-tools-clear-dev-log",
@@ -202,22 +203,22 @@ function M.commands(opts)
   local dev_tools = require("flutter-tools.dev_tools")
 
   if dev_tools.is_running() then
-    vim.list_extend(commands, {
+    vim.list_extend(cmds, {
       {
         id = "flutter-tools-copy-profiler-url",
         label = "Flutter tools: Copy Profiler Url",
         hint = "Run the app and the DevTools first",
-        command = require("flutter-tools.commands").copy_profiler_url,
+        command = commands.copy_profiler_url,
       },
       {
         id = "flutter-tools-open-dev-tools",
         label = "Flutter tools: Open Dev Tools",
         hint = "Run the app and the Dev Tools first",
-        command = require("flutter-tools.commands").open_dev_tools,
+        command = commands.open_dev_tools,
       },
     })
   else
-    vim.list_extend(commands, {
+    vim.list_extend(cmds, {
       {
         id = "flutter-tools-start-dev-tools",
         label = "Flutter tools: Start Dev Tools",
@@ -227,7 +228,7 @@ function M.commands(opts)
     })
   end
 
-  pickers.new(M.get_config(commands, opts, { title = "Flutter tools commands" })):find()
+  pickers.new(M.get_config(cmds, opts, { title = "Flutter tools commands" })):find()
 end
 
 local function execute_fvm_use(bufnr)
@@ -241,7 +242,6 @@ local function execute_fvm_use(bufnr)
 end
 
 function M.fvm(opts)
-  local commands = require("flutter-tools.commands")
   commands.fvm_list(function(sdks)
     opts = opts and not vim.tbl_isempty(opts) and opts
       or themes.get_dropdown({

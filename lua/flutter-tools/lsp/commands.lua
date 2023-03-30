@@ -26,19 +26,14 @@ function M.refactor_perform(command, ctx)
   }
 
   local on_confirm = function(name)
-    if name == nil then return end
-
+    if not name then return end
     -- The 6th argument is the additional options of the refactor command.
     -- For the extract method/local variable/widget commands, we can specify an optional `name` option.
     -- see more: https://github.com/dart-lang/sdk/blob/e995cb5f7cd67d39c1ee4bdbe95c8241db36725f/pkg/analysis_server/lib/src/lsp/handlers/commands/perform_refactor.dart#L53
     local optionsIndex = 6
-    command.arguments[optionsIndex] = {
-      name = name,
-    }
-
+    command.arguments[optionsIndex] = { name = name }
     client.request("workspace/executeCommand", command)
   end
-
   if vim.ui and vim.ui.input then
     vim.ui.input(opts, on_confirm)
   else

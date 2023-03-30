@@ -1,8 +1,9 @@
-local utils = require("flutter-tools.utils")
-local path = require("flutter-tools.utils.path")
-local ui = require("flutter-tools.ui")
----@type Job
-local Job = require("plenary.job")
+local lazy = require("flutter-tools.lazy")
+local utils = lazy.require("flutter-tools.utils") ---@module "flutter-tools.utils"
+local path = lazy.require("flutter-tools.utils.path") ---@module "flutter-tools.utils.path"
+local ui = lazy.require("flutter-tools.ui") ---@module "flutter-tools.ui"
+local config = lazy.require("flutter-tools.config") ---@module "flutter-tools.config"
+local Job = lazy.require("plenary.job") ---@module "plenary.job"
 
 local fn = vim.fn
 local luv = vim.loop
@@ -42,7 +43,7 @@ end
 
 local function _flutter_sdk_dart_bin(flutter_sdk)
   -- retrieve the Dart binary from the Flutter SDK
-  local binary_name = require("flutter-tools.utils.path").is_windows and "dart.bat" or "dart"
+  local binary_name = path.is_windows and "dart.bat" or "dart"
   return path.join(flutter_sdk, "bin", binary_name)
 end
 
@@ -101,11 +102,8 @@ end
 ---@param callback fun(paths: table<string, string>)
 ---@return nil
 function M.get(callback)
-  local conf = require("flutter-tools.config").get()
-
   if _paths then return callback(_paths) end
-
-  if conf.fvm then
+  if config.fvm then
     local flutter_bin_symlink = path.join(luv.cwd(), ".fvm", "flutter_sdk", "bin", "flutter")
     local flutter_bin = luv.fs_realpath(flutter_bin_symlink)
     if path.exists(flutter_bin_symlink) and path.exists(flutter_bin) then
@@ -120,16 +118,16 @@ function M.get(callback)
     end
   end
 
-  if conf.flutter_path then
-    local flutter_path = fn.resolve(conf.flutter_path)
+  if config.flutter_path then
+    local flutter_path = fn.resolve(config.flutter_path)
     _paths = { flutter_bin = flutter_path, flutter_sdk = _flutter_sdk_root(flutter_path) }
     _paths.dart_sdk = _dart_sdk_root(_paths)
     _paths.dart_bin = _flutter_sdk_dart_bin(_paths.flutter_sdk)
     return callback(_paths)
   end
 
-  if conf.flutter_lookup_cmd then
-    return path_from_lookup_cmd(conf.flutter_lookup_cmd, function(paths)
+  if config.flutter_lookup_cmd then
+    return path_from_lookup_cmd(config.flutter_lookup_cmd, function(paths)
       _paths = paths
       _paths.dart_sdk = _dart_sdk_root(_paths)
       callback(_paths)
