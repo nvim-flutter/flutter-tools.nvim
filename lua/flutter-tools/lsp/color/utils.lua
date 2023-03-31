@@ -19,7 +19,7 @@ local CLIENT_NS = api.nvim_create_namespace("flutter_tools_lsp_document_color")
 local function create_set_hl(prefix, opts)
   local hlname = prefix .. (opts.background or "") .. (opts.foreground or "")
   api.nvim_set_hl(0, hlname, {
-    background =  opts.background and "#" .. opts.background or nil,
+    background = opts.background and "#" .. opts.background or nil,
     foreground = opts.foreground and "#" .. opts.foreground or nil,
   })
   return hlname
