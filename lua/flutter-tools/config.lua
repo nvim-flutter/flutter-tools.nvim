@@ -131,9 +131,10 @@ local deprecations = {
 local function handle_deprecation(key, value, conf)
   local deprecation = deprecations[key]
   if not deprecation then return end
-  vim.defer_fn(function()
-    ui.notify(fmt("%s is deprecated: %s", key, deprecation.message), ui.WARN)
-  end, 1000)
+  vim.defer_fn(
+    function() ui.notify(fmt("%s is deprecated: %s", key, deprecation.message), ui.WARN) end,
+    1000
+  )
   if deprecation.fallback then conf[deprecation.fallback] = value end
 end
 
