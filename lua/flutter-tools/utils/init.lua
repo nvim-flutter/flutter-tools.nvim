@@ -2,6 +2,9 @@ local M = {}
 local fn = vim.fn
 local api = vim.api
 
+local lazy = require("flutter-tools.lazy")
+local path = lazy.require("flutter-tools.utils.path") ---@module "flutter-tools.utils.path"
+
 --- if every item in a table is an empty value return true
 function M.list_is_empty(tbl)
   if not tbl then return true end
@@ -85,7 +88,6 @@ function M.get_hl(name, attribute)
 end
 
 function M.open_command()
-  local path = require("flutter-tools.utils.path")
   if path.is_mac then return "open" end
   if path.is_linux then return "xdg-open" end
   if path.is_windows then return "explorer" end
