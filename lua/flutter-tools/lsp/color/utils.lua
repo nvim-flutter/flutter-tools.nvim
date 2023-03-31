@@ -1,16 +1,35 @@
 local tohex, bor, lshift, rshift, band = bit.tohex, bit.bor, bit.lshift, bit.rshift, bit.band
 local validate, api = vim.validate, vim.api
 
+local lazy = require("flutter-tools.lazy")
+local ui = lazy.require("flutter-tools.utils.ui") ---@module "flutter-tools.utils.ui"
+local config = lazy.require("flutter-tools.config") ---@module "flutter-tools.config"
+
 local M = {}
 
---- Returns a table containing the RGB values produced by applying the alpha in
---- @rgba with the background in @bg_rgb.
---- FIXME: this currently does not support transparent backgrounds.
---- need a replacement for bg_rgb
---@param rgba (table) with keys 'r', 'g', 'b' in [0,255] and key 'a' in [0,1]
---@param bg_rgb (table) with keys 'r', 'g', 'b' in in [0,255] to use as the
---       background color when applying the alpha
---@returns (table) with keys 'r', 'g', 'b' in [0,255]
+local CLIENT_NS = api.nvim_create_namespace("flutter_tools_lsp_document_color")
+
+---@alias RGBA {r: integer, g: integer, b:integer, a: number}  with keys 'r', 'g', 'b' in [0,255] and key 'a' in [0,1]
+---@alias RGB {r: integer, g: integer, b:integer} with keys 'r', 'g', 'b' in in [0,255] to use as the background color when applying the alpha
+---@alias RangePos {line: number, character: number}
+
+---@param prefix string
+---@param opts {foreground: number | string, background: number | string}
+---@return string
+local function create_set_hl(prefix, opts)
+  local hlname = prefix .. (opts.background or "") .. (opts.foreground or "")
+  api.nvim_set_hl(0, hlname, {
+    background = "#" .. opts.background,
+    foreground = "#" .. opts.foreground,
+  })
+  return hlname
+end
+
+--- Returns a table containing the RGB values produced by applying the alpha in rgba with the background in bg_rgb.
+---@param rgba RGBA
+---@param bg_rgb RGB
+---@return RGB rgb_table
+--- FIXME: this currently does not support transparent backgrounds. Need a replacement for bg_rgb
 function M.rgba_to_rgb(rgba, bg_rgb)
   validate({
     rgba = { rgba, "t", true },
@@ -35,10 +54,9 @@ function M.rgba_to_rgb(rgba, bg_rgb)
 end
 
 --- Returns a string containing the 6 digit hex value for a given RGB.
----
---@param rgb (table) with keys 'r', 'g', 'b' in [0,255]
---@returns (string) 6 digit hex representing the rgb params
-function M.rgb_to_hex(rgb)
+---@param rgb RGB with keys 'r', 'g', 'b' in [0,255]
+---@return number 6 digit hex representing the rgb params
+local function rgb_to_hex(rgb)
   validate({
     r = { rgb.r, "n", false },
     g = { rgb.g, "n", false },
@@ -50,15 +68,14 @@ end
 --- Returns a string containing the 6 digit hex value produced by applying the alpha in
 --- the @rgba with the background @bg_rgb.
 ---
---@param rgba (table) with keys 'r', 'g', 'b' in [0,255] and key 'a' in [0,1]
---@returns (string) 6 digit hex
-function M.rgba_to_hex(rgba, bg_rgb) return M.rgb_to_hex(M.rgba_to_rgb(rgba, bg_rgb)) end
+---@param rgba RGBA
+---@return number 6 digit hex
+function M.rgba_to_hex(rgba, bg_rgb) return rgb_to_hex(M.rgba_to_rgb(rgba, bg_rgb)) end
 
 --- Returns a table containing the RGB values encoded inside 24 least
---- significant bits of the number @rgb_24bit
----
---@param rgb_24bit (number) 24-bit RGB value
---@returns (table) with keys 'r', 'g', 'b' in [0,255]
+--- significant bits of the number rgb_24bit
+---@param rgb_24bit number 24-bit RGB value
+---@return RGB
 function M.decode_24bit_rgb(rgb_24bit)
   validate({ rgb_24bit = { rgb_24bit, "n", true } })
   local r = band(rshift(rgb_24bit, 16), 255)
@@ -70,9 +87,8 @@ end
 --- Returns the perceived lightness of the rgb value. Calculated using
 --- the formula from https://stackoverflow.com/a/56678483. Can be used to
 --- determine which colors have similar lightness.
----
---@param rgb (table) with keys 'r', 'g', 'b' in [0,255]
---@returns (number) lightness in the range [0,100]
+---@param rgb RGB
+---@return number lightness in the range [0,100]
 function M.perceived_lightness(rgb)
   local function gamma_encode(v) return v / 255 end
 
@@ -92,34 +108,31 @@ function M.perceived_lightness(rgb)
   return L <= (216 / 24389) and L * (24389 / 27) or math.pow(L, 1 / 3) * 116 - 16
 end
 
-local CLIENT_NS = api.nvim_create_namespace("flutter_tools_lsp_document_color")
-
+---@param bufnr number
+---@param namespace number
+---@param hlname string
+---@param start_pos number
+---@param end_pos number
 local function hl_range(bufnr, namespace, hlname, start_pos, end_pos)
   local hl = vim.highlight
-  if vim.fn.has("nvim-0.7") > 1 then
-    hl.range(bufnr, namespace, hlname, start_pos, end_pos, { priority = hl.priorities.user })
-  else -- TODO: delete this clause once nvim 0.7 is stable
-    ---@diagnostic disable-next-line: redundant-parameter
-    hl.range(bufnr, namespace, hlname, start_pos, end_pos, nil, nil, 150)
-  end
+  hl.range(bufnr, namespace, hlname, start_pos, end_pos, { priority = hl.priorities.user })
 end
 
 --- Changes the guibg to @rgb for the text in @range. Also changes the guifg to
 --- either #ffffff or #000000 based on which makes the text easier to read for
 --- the given guibg
----
---@param client_id number client id
---@param bufnr (number) buffer handle
---@param range (table) with the structure:
---       {start={line=<number>,character=<number>}, end={line=<number>,character=<number>}}
---@param rgb (table) with keys 'r', 'g', 'b' in [0,255]
+---@param _ number client id
+---@param bufnr number buffer handle
+---@param range {start: RangePos, end: {line: number, character: number}}
+---@param rgb RGB
 local function color_background(_, bufnr, range, rgb)
-  local hex = M.rgb_to_hex(rgb)
+  local hex = rgb_to_hex(rgb)
   local fghex = M.perceived_lightness(rgb) < 50 and "ffffff" or "000000"
 
-  local hlname = string.format("LspDocumentColorBackground%s", hex)
-  vim.cmd(string.format("highlight %s guibg=#%s guifg=#%s", hlname, hex, fghex))
-
+  local hlname = create_set_hl("LspDocumentColorBackground", {
+    background = hex,
+    foreground = fghex,
+  })
   local start_pos = { range["start"]["line"], range["start"]["character"] }
   local end_pos = { range["end"]["line"], range["end"]["character"] }
   hl_range(bufnr, CLIENT_NS, hlname, start_pos, end_pos)
@@ -127,75 +140,71 @@ end
 
 --- Changes the guifg to @rgb for the text in @range.
 ---
---@param client_id number client id
---@param bufnr (number) buffer handle
---@param range (table) with the structure:
---       {start={line=<number>,character=<number>}, end={line=<number>,character=<number>}}
---@param rgb (table) with keys 'r', 'g', 'b' in [0,255]
+---@param _ number client id
+---@param bufnr number buffer handle
+---@param range table with the structure: {start={line=<number>,character=<number>}, end={line=<number>,character=<number>}}
+---@param rgb RGB
 local function color_foreground(_, bufnr, range, rgb)
-  local hex = M.rgb_to_hex(rgb)
-
-  local hlname = string.format("LspDocumentColorForeground%s", hex)
-  vim.cmd(string.format("highlight %s guifg=#%s", hlname, hex))
-
+  local hex = rgb_to_hex(rgb)
+  local hlname = create_set_hl("LspDocumentColorForeground", { foreground = hex })
   local start_pos = { range["start"]["line"], range["start"]["character"] }
   local end_pos = { range["end"]["line"], range["end"]["character"] }
   hl_range(bufnr, CLIENT_NS, hlname, start_pos, end_pos)
 end
 
---- Adds virtual text with the color @rgb and the text @virtual_text_str on
---- the last line of the @range.
----
---@param client_id number client id
---@param bufnr (number) buffer handle
---@param range (table) with the structure:
---       {start={line=<number>,character=<number>}, end={line=<number>,character=<number>}}
---@param rgb (table) with keys 'r', 'g', 'b' in [0,255]
---@param virtual_text_str (string) to display as virtual text and color
+--- Adds virtual text with the color @rgb and the text virtual_text_str on  the last line of the @range.
+---@param _ number client id
+---@param bufnr number buffer handle
+---@param range {start: RangePos, end: RangePos}
+---@param rgb RGB
+---@param virtual_text_str string to display as virtual text and color
 local function color_virtual_text(_, bufnr, range, rgb, virtual_text_str)
-  local hex = M.rgb_to_hex(rgb)
-
-  local hlname = string.format("LspDocumentColorVirtualText%s", hex)
-  vim.cmd(string.format("highlight %s guifg=#%s", hlname, hex))
-
+  local hex = rgb_to_hex(rgb)
+  local hlname = create_set_hl("LspDocumentColorVirtualText", { foreground = hex })
   local line = range["end"]["line"]
-  api.nvim_buf_set_virtual_text(bufnr, CLIENT_NS, line, { { virtual_text_str, hlname } }, {})
+  api.nvim_buf_set_extmark(bufnr, CLIENT_NS, line, -1, {
+    virt_text = { { virtual_text_str, hlname } },
+  })
 end
 
 --- Clears the previous document colors and adds the new document colors from @result.
 --- Follows the same signature as :h lsp-handler
-function M.on_document_color(err, result, ctx, config)
+function M.on_document_color(err, result, ctx, conf)
   local client_id = ctx.client_id
   local bufnr = ctx.bufnr
-  if err then return require("flutter-tools.ui").notify(err) end
+  if err then return ui.notify(err, ui.ERROR) end
   if not bufnr or not client_id then return end
   M.buf_clear_color(client_id, bufnr)
   if not result then return end
-  M.buf_color(client_id, bufnr, result, config)
+  M.buf_color(client_id, bufnr, result, conf)
 end
 
 local function get_background_color()
-  local normal_hl = api.nvim_get_hl_by_name("Normal", true)
-  if not normal_hl or not normal_hl.background then return nil end
-  return M.decode_24bit_rgb(normal_hl.background)
+  local normal_bg --- @type string?
+  if api.nvim_get_hl then
+    local hl = api.nvim_get_hl(0, { name = "Normal" })
+    normal_bg = hl.bg
+  else
+    ---@diagnostic disable-next-line: undefined-field
+    local hl = api.nvim_get_hl_by_name("Normal", true)
+    normal_bg = hl.background
+  end
+  if not normal_bg then return end
+  return M.decode_24bit_rgb(normal_bg)
 end
 
 --- Shows a list of document colors for a certain buffer.
 ---
---@param client_id number client id
---@param bufnr buffer id
---@param color_infos Table of `ColorInformation` objects to highlight.
---       See https://microsoft.github.io/language-server-protocol/specification#textDocument_documentColor
+---@param client_id number client id
+---@param bufnr buffer id
+---@param color_infos table of `ColorInformation` objects to highlight.
+-- See https://microsoft.github.io/language-server-protocol/specification#textDocument_documentColor
 function M.buf_color(client_id, bufnr, color_infos, _)
-  validate({
-    bufnr = { bufnr, "n", false },
-    color_infos = { color_infos, "t", false },
-  })
+  validate({ bufnr = { bufnr, "n", false }, color_infos = { color_infos, "t", false } })
   if not color_infos or not bufnr then return end
+  local c = config.lsp.color
 
-  local config = require("flutter-tools.config").get("lsp").color
-
-  local background_color = config.background_color or get_background_color()
+  local background_color = c.background_color or get_background_color()
   -- FIXME: currently background_color is required to derive the rgb values for the colors
   -- till there is a good solution for this transparent backgrounds won't work with lsp colors
   if not background_color then return end
@@ -204,26 +213,17 @@ function M.buf_color(client_id, bufnr, color_infos, _)
     local rgba, range = color_info.color, color_info.range
     local r, g, b, a = rgba.red * 255, rgba.green * 255, rgba.blue * 255, rgba.alpha
     local rgb = M.rgba_to_rgb({ r = r, g = g, b = b, a = a }, background_color)
-
-    if config.background then color_background(client_id, bufnr, range, rgb) end
-
-    if config.foreground then color_foreground(client_id, bufnr, range, rgb) end
-
-    if config.virtual_text then
-      color_virtual_text(client_id, bufnr, range, rgb, config.virtual_text_str)
-    end
+    if c.background then color_background(client_id, bufnr, range, rgb) end
+    if c.foreground then color_foreground(client_id, bufnr, range, rgb) end
+    if c.virtual_text then color_virtual_text(client_id, bufnr, range, rgb, c.virtual_text_str) end
   end
 end
 
---- Removes document color highlights from a buffer.
----
---@param client_id number client id
---@param bufnr buffer id
+---Removes document color highlights from a buffer.
+---@param client_id number client id
+---@param bufnr buffer id
 function M.buf_clear_color(client_id, bufnr)
-  validate({
-    client_id = { client_id, "n", true },
-    bufnr = { bufnr, "n", true },
-  })
+  validate({ client_id = { client_id, "n", true }, bufnr = { bufnr, "n", true } })
   if api.nvim_buf_is_valid(bufnr) then api.nvim_buf_clear_namespace(bufnr, CLIENT_NS, 0, -1) end
 end
 
