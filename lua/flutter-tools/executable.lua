@@ -3,7 +3,7 @@ local utils = lazy.require("flutter-tools.utils") ---@module "flutter-tools.util
 local path = lazy.require("flutter-tools.utils.path") ---@module "flutter-tools.utils.path"
 local ui = lazy.require("flutter-tools.ui") ---@module "flutter-tools.ui"
 local config = lazy.require("flutter-tools.config") ---@module "flutter-tools.config"
-local Job = lazy.require("plenary.job") ---@module "plenary.job"
+local Job = require("plenary.job")
 
 local fn = vim.fn
 local luv = vim.loop

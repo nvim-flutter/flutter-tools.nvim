@@ -1,5 +1,5 @@
 local lazy = require("flutter-tools.lazy")
-local Job = lazy.require("plenary.job") ---@module "plenary.job"
+local Job = require("plenary.job") ---@module "plenary.job"
 local ui = lazy.require("flutter-tools.ui") ---@module "flutter-tools.ui"
 local utils = lazy.require("flutter-tools.utils") ---@module "flutter-tools.utils"
 local commands = lazy.require("flutter-tools.commands") ---@module "flutter-tools.commands"

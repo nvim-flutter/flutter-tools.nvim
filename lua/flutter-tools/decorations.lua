@@ -1,7 +1,7 @@
 local lazy = require("flutter-tools.lazy")
 local commands = lazy.require("flutter-tools.commands") ---@module "flutter-tools.commands"
 local path = lazy.require("flutter-tools.utils.path") ---@module "flutter-tools.utils.path"
-local Path = lazy.require("plenary.path") ---@module "plenary.path"
+local Path = require("plenary.path")
 
 local M = {
   statusline = {},
