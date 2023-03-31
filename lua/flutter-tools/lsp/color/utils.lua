@@ -2,7 +2,7 @@ local tohex, bor, lshift, rshift, band = bit.tohex, bit.bor, bit.lshift, bit.rsh
 local validate, api = vim.validate, vim.api
 
 local lazy = require("flutter-tools.lazy")
-local ui = lazy.require("flutter-tools.utils.ui") ---@module "flutter-tools.utils.ui"
+local ui = lazy.require("flutter-tools.ui") ---@module "flutter-tools.ui"
 local config = lazy.require("flutter-tools.config") ---@module "flutter-tools.config"
 
 local M = {}
