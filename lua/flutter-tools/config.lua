@@ -1,5 +1,6 @@
 local lazy = require("flutter-tools.lazy")
 local path = lazy.require("flutter-tools.utils.path") ---@module "flutter-tools.utils.path"
+local ui = lazy.require("flutter-tools.utils.ui") ---@module "flutter-tools.utils.ui"
 
 local M = {}
 
@@ -11,9 +12,9 @@ local function validate_prefs(prefs)
   if prefs.flutter_path and prefs.flutter_lookup_cmd then
     vim.schedule(
       function()
-        vim.notify(
+        ui.notify(
           'Only one of "flutter_path" and "flutter_lookup_cmd" are required. Please remove one of the keys',
-          vim.log.levels.ERROR
+          ui.ERROR
         )
       end
     )
@@ -30,7 +31,7 @@ end
 ---@param fallback number
 ---@return string
 local function get_split_cmd(percentage, fallback)
-  return string.format("botright %dvnew", math.max(vim.o.columns * percentage, fallback))
+  return ("botright %dvnew"):format(math.max(vim.o.columns * percentage, fallback))
 end
 
 local function get_default_lookup()

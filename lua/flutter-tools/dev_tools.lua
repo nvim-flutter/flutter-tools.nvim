@@ -48,9 +48,9 @@ local function start_browser()
   local url = M.get_profiler_url()
   local open_command = utils.open_command()
   if not open_command then
-    return vim.notify(
+    return ui.notify(
       "Sorry your Operating System is not supported, please raise an issue",
-      vim.log.levels.ERROR
+      ui.ERROR
     )
   end
   if url and open_command then vim.fn.jobstart({ open_command, url }, { detach = true }) end

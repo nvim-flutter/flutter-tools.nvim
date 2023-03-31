@@ -7,6 +7,7 @@ local themes = lazy.require("telescope.themes") ---@module "telescope.themes"
 local action_state = lazy.require("telescope.actions.state") ---@module "telescope.actions.state"
 local entry_display = lazy.require("telescope.pickers.entry_display") ---@module "telescope.pickers.entry_display"
 local commands = lazy.require("flutter-tools.commands") ---@module "flutter-tools.commands"
+local ui = lazy.require("flutter-tools.ui") ---@module "flutter-tools.ui"
 
 ---@alias TelescopeEntry {hint: string, label: string, command: fun(), id: integer}
 ---@alias CustomOptions {title: string, callback: fun(bufnr: integer)}
@@ -22,7 +23,7 @@ local function execute_command(bufnr)
   local cmd = selection.command
   if cmd then
     local success, msg = pcall(cmd)
-    if not success then vim.notify(msg, vim.log.levels.ERROR) end
+    if not success then ui.notify(msg, ui.ERROR) end
   end
 end
 
@@ -237,7 +238,7 @@ local function execute_fvm_use(bufnr)
   local cmd = selection.command
   if cmd then
     local success, msg = pcall(cmd, selection.ordinal)
-    if not success then vim.notify(msg, vim.log.levels.ERROR) end
+    if not success then ui.notify(msg, ui.ERROR) end
   end
 end
 
