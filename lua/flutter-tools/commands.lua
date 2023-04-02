@@ -99,18 +99,19 @@ function M.run_command(args)
 end
 
 ---Run the flutter application
----@param opts table
+---@param opts {cli_args: string[]?, args: string[]?, device: Device?}
 function M.run(opts)
   if M.is_running() then return ui.notify("Flutter is already running!") end
   opts = opts or {}
-  local device = opts.device
+  local project_config = config.project
+  local device = project_config.device or (opts.device and opts.device.id)
   local cmd_args = opts.args
   local cli_args = opts.cli_args
   executable.get(function(paths)
     local args = cli_args or {}
     if not cli_args then
       if not M.use_debugger_runner() then vim.list_extend(args, { "run" }) end
-      if not cmd_args and device and device.id then vim.list_extend(args, { "-d", device.id }) end
+      if not cmd_args and device then vim.list_extend(args, { "-d", device }) end
 
       if cmd_args then vim.list_extend(args, cmd_args) end
 
