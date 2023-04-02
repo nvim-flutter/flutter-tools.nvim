@@ -16,13 +16,13 @@ local M = {}
 ---@type table?
 local current_device = nil
 
----@class FlutterRunner
----@field is_running fun(runner: FlutterRunner):boolean
----@field run fun(runner: FlutterRunner, paths:table, args:table, cwd:string, on_run_data:fun(is_err:boolean, data:string), on_run_exit:fun(data:string[], args: table))
----@field cleanup fun(funner: FlutterRunner)
----@field send fun(runner: FlutterRunner, cmd:string, quiet: boolean?)
+---@class flutter.Runner
+---@field is_running fun(runner: flutter.Runner):boolean
+---@field run fun(runner: flutter.Runner, paths:table, args:table, cwd:string, on_run_data:fun(is_err:boolean, data:string), on_run_exit:fun(data:string[], args: table))
+---@field cleanup fun(funner: flutter.Runner)
+---@field send fun(runner: flutter.Runner, cmd:string, quiet: boolean?)
 
----@type FlutterRunner?
+---@type flutter.Runner?
 local runner = nil
 
 function M.use_debugger_runner()
@@ -98,7 +98,7 @@ function M.run_command(args)
   M.run({ args = args })
 end
 
----@param callback fun(project_config: config.ProjectConfig)
+---@param callback fun(project_config: flutter.ProjectConfig?)
 local function select_project_config(callback)
   local project_config = config.project
   if #project_config < 2 then return callback(project_config[1]) end
@@ -113,7 +113,7 @@ end
 ---@alias RunOpts {cli_args: string[]?, args: string[]?, device: Device?}
 
 ---@param opts RunOpts
----@param project_conf config.ProjectConfig?
+---@param project_conf flutter.ProjectConfig?
 local function run(opts, project_conf)
   if M.is_running() then return ui.notify("Flutter is already running!") end
   opts = opts or {}

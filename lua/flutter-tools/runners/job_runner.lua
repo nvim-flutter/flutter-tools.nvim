@@ -3,7 +3,7 @@ local ui = require("flutter-tools.ui")
 local dev_tools = require("flutter-tools.dev_tools")
 local api = vim.api
 
----@type FlutterRunner
+---@type flutter.Runner
 local JobRunner = {}
 
 ---@type Job
