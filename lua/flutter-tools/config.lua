@@ -2,14 +2,14 @@ local lazy = require("flutter-tools.lazy")
 local path = lazy.require("flutter-tools.utils.path") ---@module "flutter-tools.utils.path"
 local ui = lazy.require("flutter-tools.ui") ---@module "flutter-tools.ui"
 
----@class FlutterToolsProjectConfig
+---@class config.ProjectConfig
 ---@field device string
 ---@field flavours string[]
 ---@field dart_define table<string, string>>
 
 local M = {}
 
----@type FlutterToolsProjectConfig[]
+---@type config.ProjectConfig[]
 local project_config = {}
 
 local fn = vim.fn
@@ -146,26 +146,10 @@ local function handle_deprecation(key, value, conf)
   if deprecation.fallback then conf[deprecation.fallback] = value end
 end
 
----@param project FlutterToolsProjectConfig
+---@param project config.ProjectConfig | config.ProjectConfig[]
 M.setup_project = function(project)
-  vim.defer_fn(function()
-    if not vim.tbl_islist(project) then
-      project_config = project
-      return
-    end
-
-    if #project == 1 then
-      project_config = project[1]
-      return
-    end
-
-    vim.ui.select(project, {
-      prompt = "select a project configuration",
-      format_item = function(item) return vim.inspect(item) end,
-    }, function(selected)
-      if selected then project_config = selected end
-    end)
-  end, 1000)
+  if not vim.tbl_islist(project) then project = { project } end
+  project_config = project
 end
 
 function M.set(user_config)

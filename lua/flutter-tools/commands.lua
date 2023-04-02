@@ -98,13 +98,26 @@ function M.run_command(args)
   M.run({ args = args })
 end
 
----Run the flutter application
----@param opts {cli_args: string[]?, args: string[]?, device: Device?}
-function M.run(opts)
+---@param callback fun(project_config: config.ProjectConfig)
+local function select_project_config(callback)
+  local project_config = config.project
+  if #project_config < 2 then return callback(project_config[1]) end
+  vim.ui.select(project_config, {
+    prompt = "select a project configuration",
+    format_item = function(item) return vim.inspect(item) end,
+  }, function(selected)
+    if selected then callback(selected) end
+  end)
+end
+
+---@alias RunOpts {cli_args: string[]?, args: string[]?, device: Device?}
+
+---@param opts RunOpts
+---@param project_conf config.ProjectConfig?
+local function run(opts, project_conf)
   if M.is_running() then return ui.notify("Flutter is already running!") end
   opts = opts or {}
-  local project_config = config.project
-  local device = project_config.device or (opts.device and opts.device.id)
+  local device = project_conf and project_conf.device or (opts.device and opts.device.id)
   local cmd_args = opts.args
   local cli_args = opts.cli_args
   executable.get(function(paths)
@@ -122,6 +135,12 @@ function M.run(opts)
     runner = M.use_debugger_runner() and debugger_runner or job_runner
     runner:run(paths, args, lsp.get_lsp_root_dir(), on_run_data, on_run_exit)
   end)
+end
+
+---Run the flutter application
+---@param opts RunOpts
+function M.run(opts)
+  select_project_config(function(project_conf) run(opts, project_conf) end)
 end
 
 ---@param cmd string
