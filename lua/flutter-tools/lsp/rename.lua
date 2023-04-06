@@ -1,11 +1,14 @@
 local M = {}
 
 local lazy = require("flutter-tools.lazy")
-local path = lazy.require("flutter-tools.utils.path") ---@module "flutter-tools.utils.path"
 local lsp_utils = lazy.require("flutter-tools.lsp.utils") ---@module "flutter-tools.lsp.utils"
+local path = lazy.require("flutter-tools.utils.path") ---@module "flutter-tools.utils.path"
+local ui = lazy.require("flutter-tools.ui") ---@module "flutter-tools.ui"
 
 local api = vim.api
 local util = vim.lsp.util
+local lsp = vim.lsp
+local fn = vim.fn
 
 --- Computes a filename for a given class name (convert from PascalCase to  snake_case).
 local function file_name_for_class_name(class_name)
@@ -18,16 +21,16 @@ local function file_name_for_class_name(class_name)
 end
 
 local function will_rename_files(old_name, new_name, callback)
-  local params = vim.lsp.util.make_position_params()
+  local params = lsp.util.make_position_params()
   if not new_name then return end
   local file_change = {
     newUri = vim.uri_from_fname(new_name),
     oldUri = vim.uri_from_fname(old_name),
   }
   params.files = { file_change }
-  vim.lsp.buf_request(0, "workspace/willRenameFiles", params, function(err, result)
+  lsp.buf_request(0, "workspace/willRenameFiles", params, function(err, result)
     if err then
-      vim.notify(err.message or "Error on getting lsp rename results!")
+      ui.notify(err.message or "Error on getting lsp rename results!", ui.ERROR)
       return
     end
     callback(result)
@@ -43,15 +46,14 @@ function M.rename(new_name, options)
   local client = lsp_utils.get_dartls_client(bufnr)
   if not client then
     -- Fallback to default rename function if language server is not dartls
-    vim.lsp.buf.rename(new_name, options)
-    return
+    return lsp.buf.rename(new_name, options)
   end
 
   local win = api.nvim_get_current_win()
 
   -- Compute early to account for cursor movements after going async
-  local cword = vim.fn.expand("<cword>")
-  local actual_file_name = vim.fn.expand("%:t")
+  local cword = fn.expand("<cword>")
+  local actual_file_name = fn.expand("%:t")
   local old_computed_filename = file_name_for_class_name(cword)
   local is_file_rename = old_computed_filename == actual_file_name
 
@@ -69,23 +71,22 @@ function M.rename(new_name, options)
   local function rename(name, will_rename_files_result)
     local params = util.make_position_params(win, client.offset_encoding)
     params.newName = name
-    local handler = client.handlers["textDocument/rename"]
-      or vim.lsp.handlers["textDocument/rename"]
+    local handler = client.handlers["textDocument/rename"] or lsp.handlers["textDocument/rename"]
     client.request("textDocument/rename", params, function(...)
       handler(...)
       if will_rename_files_result then
         -- the `will_rename_files_result` contains all the places we need to update imports
         -- so we apply those edits.
-        vim.lsp.util.apply_workspace_edit(will_rename_files_result, client.offset_encoding)
+        lsp.util.apply_workspace_edit(will_rename_files_result, client.offset_encoding)
       end
     end, bufnr)
   end
 
   local function rename_fix_imports(name)
     if is_file_rename then
-      local old_file_path = vim.fn.expand("%:p")
+      local old_file_path = fn.expand("%:p")
       local new_filename = file_name_for_class_name(name)
-      local actual_file_head = vim.fn.expand("%:p:h")
+      local actual_file_head = fn.expand("%:p:h")
       local new_file_path = path.join(actual_file_head, new_filename)
       will_rename_files(old_file_path, new_file_path, function(result) rename(name, result) end)
     else
@@ -99,7 +100,7 @@ function M.rename(new_name, options)
       if err or result == nil then
         local msg = err and ("Error on prepareRename: " .. (err.message or ""))
           or "Nothing to rename"
-        vim.notify(msg, vim.log.levels.INFO)
+        ui.notify(msg, ui.INFO)
         return
       end
 
