@@ -72,7 +72,7 @@ function M.rename(new_name, options)
     local params = util.make_position_params(win, client.offset_encoding)
     params.newName = name
     local handler = client.handlers["textDocument/rename"]
-        or vim.lsp.handlers["textDocument/rename"]
+      or vim.lsp.handlers["textDocument/rename"]
     client.request("textDocument/rename", params, function(...)
       handler(...)
       if will_rename_files_result then
@@ -100,7 +100,7 @@ function M.rename(new_name, options)
     client.request("textDocument/prepareRename", params, function(err, result)
       if err or result == nil then
         local msg = err and ("Error on prepareRename: " .. (err.message or ""))
-            or "Nothing to rename"
+          or "Nothing to rename"
         vim.notify(msg, vim.log.levels.INFO)
         return
       end
