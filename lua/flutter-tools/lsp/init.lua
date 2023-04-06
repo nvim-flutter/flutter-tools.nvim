@@ -2,6 +2,7 @@ local lazy = require("flutter-tools.lazy")
 local utils = lazy.require("flutter-tools.utils") ---@module "flutter-tools.utils"
 local path = lazy.require("flutter-tools.utils.path") ---@module "flutter-tools.utils.path"
 local color = lazy.require("flutter-tools.lsp.color") ---@module "flutter-tools.lsp.color"
+local lsp_utils = lazy.require("flutter-tools.lsp.utils") ---@module "flutter-tools.lsp.utils"
 
 local api = vim.api
 local lsp = vim.lsp
@@ -9,7 +10,6 @@ local fmt = string.format
 local fs = vim.fs
 
 local FILETYPE = "dart"
-local SERVER_NAME = "dartls"
 local ROOT_PATTERNS = { ".git", "pubspec.yaml" }
 
 local M = {
@@ -117,10 +117,7 @@ local function get_defaults(opts)
 end
 
 function M.restart()
-  local client = utils.find(
-    vim.lsp.get_active_clients(),
-    function(client) return client.name == SERVER_NAME end
-  )
+  local client = lsp_utils.get_dartls_client()
   if client then
     local bufs = lsp.get_buffers_by_client_id(client.id)
     client.stop()
@@ -131,31 +128,17 @@ function M.restart()
   end
 end
 
----@param server_name string?
----@return lsp.Client?
-local function get_dartls_client(server_name)
-  server_name = server_name or SERVER_NAME
-  return lsp.get_active_clients({ name = server_name })[1]
-end
-
 ---@return string?
 function M.get_lsp_root_dir()
-  local client = get_dartls_client()
+  local client = lsp_utils.get_dartls_client()
   return client and client.config.root_dir or nil
 end
 
 -- FIXME: I'm not sure how to correctly wait till a server is ready before
 -- sending this request. Ideally we would wait till the server is ready.
 M.document_color = function()
-  local active_clients = vim.tbl_map(function(c) return c.id end, vim.lsp.get_active_clients())
-  local dartls = get_dartls_client()
-  if
-    dartls
-    and vim.tbl_contains(active_clients, dartls.id)
-    and dartls.server_capabilities.colorProvider
-  then
-    color.document_color()
-  end
+  local client = lsp_utils.get_dartls_client()
+  if client and client.server_capabilities.colorProvider then color.document_color() end
 end
 M.on_document_color = color.on_document_color
 
@@ -163,7 +146,7 @@ function M.dart_lsp_super()
   local conf = require("flutter-tools.config")
   local user_config = conf.lsp
   local debug_log = create_debug_log(user_config.debug)
-  local client = get_dartls_client()
+  local client = lsp_utils.get_dartls_client()
   if client == nil then
     debug_log("No active dartls server found")
     return
@@ -176,7 +159,7 @@ function M.dart_reanalyze() lsp.buf_request(0, "dart/reanalyze") end
 ---@param user_config table
 ---@param callback fun(table)
 local function get_server_config(user_config, callback)
-  local config = utils.merge({ name = SERVER_NAME }, user_config, { "color" })
+  local config = utils.merge({ name = lsp_utils.SERVER_NAME }, user_config, { "color" })
   local executable = require("flutter-tools.executable")
   --- TODO: if a user specifies a command we do not need to call executable.get
   executable.get(function(paths)
