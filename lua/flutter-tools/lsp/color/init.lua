@@ -1,15 +1,16 @@
 local M = {}
 
+local lazy = require("flutter-tools.lazy")
+local lsp_utils = lazy.require("flutter-tools.lsp.utils") ---@module "flutter-tools.lsp.utils"
+
 function M.document_color()
   local params = {
     textDocument = vim.lsp.util.make_text_document_params(),
   }
 
-  local clients = vim.lsp.get_active_clients({ name = "dartls" })
-  for _, client in ipairs(clients) do
-    if client.server_capabilities.colorProvider then
-      client.request("textDocument/documentColor", params, nil, 0)
-    end
+  local client = lsp_utils.get_dartls_client()
+  if client and client.server_capabilities.colorProvider then
+    client.request("textDocument/documentColor", params, nil, 0)
   end
 end
 

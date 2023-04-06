@@ -1,9 +1,11 @@
 local M = {}
 
-local api = vim.api
-local util = vim.lsp.util
 local lazy = require("flutter-tools.lazy")
 local path = lazy.require("flutter-tools.utils.path") ---@module "flutter-tools.utils.path"
+local lsp_utils = lazy.require("flutter-tools.lsp.utils") ---@module "flutter-tools.lsp.utils"
+
+local api = vim.api
+local util = vim.lsp.util
 
 --- Computes a filename for a given class name (convert from PascalCase to  snake_case).
 local function file_name_for_class_name(class_name)
@@ -38,11 +40,7 @@ end
 function M.rename(new_name, options)
   options = options or {}
   local bufnr = options.bufnr or api.nvim_get_current_buf()
-  local clients = vim.lsp.get_active_clients({
-    bufnr = bufnr,
-    name = "dartls",
-  })
-  local client = clients[1]
+  local client = lsp_utils.get_dartls_client(bufnr)
   if not client then
     -- Fallback to default rename function if language server is not dartls
     vim.lsp.buf.rename(new_name, options)
