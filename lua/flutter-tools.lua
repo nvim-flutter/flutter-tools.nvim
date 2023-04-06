@@ -48,6 +48,7 @@ local function setup_commands()
   --- LSP
   command("FlutterSuper", lsp.dart_lsp_super)
   command("FlutterReanalyze", lsp.dart_reanalyze)
+  command("FlutterRename", function() require("flutter-tools.lsp.rename").rename() end)
 end
 
 ---Initialise various plugin modules

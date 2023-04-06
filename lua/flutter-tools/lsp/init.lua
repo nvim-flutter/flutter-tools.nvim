@@ -75,6 +75,7 @@ local function get_defaults(opts)
           path.join(flutter_sdk_path, "packages"),
           path.join(flutter_sdk_path, ".pub-cache"),
         },
+        updateImportsOnRename = true,
       },
     },
     handlers = {
@@ -149,9 +150,9 @@ M.document_color = function()
   local active_clients = vim.tbl_map(function(c) return c.id end, vim.lsp.get_active_clients())
   local dartls = get_dartls_client()
   if
-    dartls
-    and vim.tbl_contains(active_clients, dartls.id)
-    and dartls.server_capabilities.colorProvider
+      dartls
+      and vim.tbl_contains(active_clients, dartls.id)
+      and dartls.server_capabilities.colorProvider
   then
     color.document_color()
   end
@@ -222,10 +223,10 @@ function M.attach()
 
   get_server_config(user_config, function(c)
     c.root_dir = M.get_lsp_root_dir()
-      or fs.dirname(fs.find(ROOT_PATTERNS, {
-        path = buffer_path,
-        upward = true,
-      })[1])
+        or fs.dirname(fs.find(ROOT_PATTERNS, {
+          path = buffer_path,
+          upward = true,
+        })[1])
     vim.lsp.start(c)
   end)
 end
