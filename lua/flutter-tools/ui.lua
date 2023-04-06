@@ -74,6 +74,10 @@ M.notify = function(msg, level, opts)
   })
 end
 
+---@param opts table
+---@param on_confirm function
+M.input = function(opts, on_confirm) vim.ui.input(opts, on_confirm) end
+
 --- @param items SelectionEntry[]
 --- @param title string
 --- @param on_select fun(item: SelectionEntry)

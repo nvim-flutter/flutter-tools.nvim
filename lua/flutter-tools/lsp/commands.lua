@@ -1,5 +1,8 @@
 local M = {}
 
+local lazy = require("flutter-tools.lazy")
+local ui = lazy.require("flutter-tools.ui") ---@module "flutter-tools.ui"
+
 function M.refactor_perform(command, ctx)
   local client = vim.lsp.get_client_by_id(ctx.client_id)
 
@@ -24,8 +27,7 @@ function M.refactor_perform(command, ctx)
     prompt = prompt,
     default = default,
   }
-
-  local on_confirm = function(name)
+  ui.input(opts, function(name)
     if not name then return end
     -- The 6th argument is the additional options of the refactor command.
     -- For the extract method/local variable/widget commands, we can specify an optional `name` option.
@@ -33,13 +35,7 @@ function M.refactor_perform(command, ctx)
     local optionsIndex = 6
     command.arguments[optionsIndex] = { name = name }
     client.request("workspace/executeCommand", command)
-  end
-  if vim.ui and vim.ui.input then
-    vim.ui.input(opts, on_confirm)
-  else
-    local input = vim.fn.input(opts)
-    if #input > 0 then on_confirm(input) end
-  end
+  end)
 end
 
 return M

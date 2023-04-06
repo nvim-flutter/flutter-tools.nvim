@@ -75,8 +75,7 @@ function M.rename(new_name, options)
     client.request("textDocument/rename", params, function(...)
       handler(...)
       if will_rename_files_result then
-        -- the `will_rename_files_result` contains all the places we need to update imports
-        -- so we apply those edits.
+        -- `will_rename_files_result` contains all the places we need to update imports, so we apply those edits.
         lsp.util.apply_workspace_edit(will_rename_files_result, client.offset_encoding)
       end
     end, bufnr)
@@ -104,14 +103,9 @@ function M.rename(new_name, options)
         return
       end
 
-      if new_name then
-        rename_fix_imports(new_name)
-        return
-      end
+      if new_name then return rename_fix_imports(new_name) end
 
-      local prompt_opts = {
-        prompt = "New Name: ",
-      }
+      local prompt_opts = { prompt = "New Name: " }
       -- result: Range | { range: Range, placeholder: string }
       if result.placeholder then
         prompt_opts.default = result.placeholder
@@ -122,7 +116,7 @@ function M.rename(new_name, options)
       else
         prompt_opts.default = cword
       end
-      vim.ui.input(prompt_opts, function(input)
+      ui.input(prompt_opts, function(input)
         if not input or #input == 0 then return end
         rename_fix_imports(input)
       end)
@@ -138,7 +132,7 @@ function M.rename(new_name, options)
       prompt = "New Name: ",
       default = cword,
     }
-    vim.ui.input(prompt_opts, function(input)
+    ui.input(prompt_opts, function(input)
       if not input or #input == 0 then return end
       rename_fix_imports(input)
     end)
