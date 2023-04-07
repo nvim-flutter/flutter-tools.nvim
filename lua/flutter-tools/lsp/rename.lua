@@ -9,17 +9,23 @@ local api = vim.api
 local util = vim.lsp.util
 local lsp = vim.lsp
 local fn = vim.fn
+local fs = vim.fs
 
 --- Computes a filename for a given class name (convert from PascalCase to  snake_case).
-local function file_name_for_class_name(class_name)
+---@param class_name string
+---@return string?
+local function convert_to_file_name(class_name)
   local starts_uppercase = class_name:find("^%u")
-  if not starts_uppercase then return nil end
+  if not starts_uppercase then return end
   local file_name = class_name:gsub("(%u)", "_%1"):lower()
   -- Removes first underscore
   file_name = file_name:sub(2)
   return file_name .. ".dart"
 end
 
+---@param old_name string
+---@param new_name string
+---@param callback function
 local function will_rename_files(old_name, new_name, callback)
   local params = lsp.util.make_position_params()
   if not new_name then return end
@@ -30,8 +36,7 @@ local function will_rename_files(old_name, new_name, callback)
   params.files = { file_change }
   lsp.buf_request(0, "workspace/willRenameFiles", params, function(err, result)
     if err then
-      ui.notify(err.message or "Error on getting lsp rename results!", ui.ERROR)
-      return
+      return ui.notify(err.message or "Error on getting lsp rename results!", ui.ERROR)
     end
     callback(result)
   end)
@@ -39,7 +44,8 @@ end
 
 --- Call this function when you want rename class or anything else.
 --- If file will be renamed too, this function will update imports.
---- Function has same signature as `vim.lsp.buf.rename()` function and can be used instead of it.
+--- This is a modificated version of `vim.lsp.buf.rename()` function and can be used instead of it.
+--- Original version: https://github.com/neovim/neovim/blob/0bc323850410df4c3c1dd8fabded9d2000189270/runtime/lua/vim/lsp/buf.lua#L271
 function M.rename(new_name, options)
   options = options or {}
   local bufnr = options.bufnr or api.nvim_get_current_buf()
@@ -52,15 +58,20 @@ function M.rename(new_name, options)
   local win = api.nvim_get_current_win()
 
   -- Compute early to account for cursor movements after going async
-  local cword = fn.expand("<cword>")
-  local actual_file_name = fn.expand("%:t")
-  local old_computed_filename = file_name_for_class_name(cword)
-  local is_file_rename = old_computed_filename == actual_file_name
+  local word_under_cursor = fn.expand("<cword>")
+  local current_file_path = api.nvim_buf_get_name(bufnr)
+  local current_file_name = fs.basename(current_file_path)
+  local filename_from_class_name = convert_to_file_name(word_under_cursor)
+  local is_file_rename = filename_from_class_name == current_file_name
 
+  ---@param range table
+  ---@param offset_encoding string
   local function get_text_at_range(range, offset_encoding)
     return api.nvim_buf_get_text(
       bufnr,
       range.start.line,
+      -- Private method that may be not stable.
+      -- Source in case of changes: https://github.com/neovim/neovim/blob/0bc323850410df4c3c1dd8fabded9d2000189270/runtime/lua/vim/lsp/util.lua#L2152
       util._get_line_byte_from_position(bufnr, range.start, offset_encoding),
       range["end"].line,
       util._get_line_byte_from_position(bufnr, range["end"], offset_encoding),
@@ -68,26 +79,25 @@ function M.rename(new_name, options)
     )[1]
   end
 
-  local function rename(name, will_rename_files_result)
+  ---@param name string the name of the thing
+  ---@param result table | nil the result from the call to will rename
+  local function rename(name, result)
     local params = util.make_position_params(win, client.offset_encoding)
     params.newName = name
     local handler = client.handlers["textDocument/rename"] or lsp.handlers["textDocument/rename"]
     client.request("textDocument/rename", params, function(...)
       handler(...)
-      if will_rename_files_result then
-        -- `will_rename_files_result` contains all the places we need to update imports, so we apply those edits.
-        lsp.util.apply_workspace_edit(will_rename_files_result, client.offset_encoding)
-      end
+      if result then lsp.util.apply_workspace_edit(result, client.offset_encoding) end
     end, bufnr)
   end
 
+  ---@param name string
   local function rename_fix_imports(name)
     if is_file_rename then
-      local old_file_path = fn.expand("%:p")
-      local new_filename = file_name_for_class_name(name)
-      local actual_file_head = fn.expand("%:p:h")
-      local new_file_path = path.join(actual_file_head, new_filename)
-      will_rename_files(old_file_path, new_file_path, function(result) rename(name, result) end)
+      local new_filename = convert_to_file_name(name)
+      local new_file_path = path.join(fs.dirname(current_file_path), new_filename)
+
+      will_rename_files(current_file_path, new_file_path, function(result) rename(name, result) end)
     else
       rename(name)
     end
@@ -96,11 +106,10 @@ function M.rename(new_name, options)
   if client.supports_method("textDocument/prepareRename") then
     local params = util.make_position_params(win, client.offset_encoding)
     client.request("textDocument/prepareRename", params, function(err, result)
-      if err or result == nil then
-        local msg = err and ("Error on prepareRename: " .. (err.message or ""))
+      if err or not result then
+        local msg = err and ("Error on prepareRename: %s"):format(err.message)
           or "Nothing to rename"
-        ui.notify(msg, ui.INFO)
-        return
+        return ui.notify(msg, ui.INFO)
       end
 
       if new_name then return rename_fix_imports(new_name) end
@@ -114,7 +123,7 @@ function M.rename(new_name, options)
       elseif result.range then
         prompt_opts.default = get_text_at_range(result.range, client.offset_encoding)
       else
-        prompt_opts.default = cword
+        prompt_opts.default = word_under_cursor
       end
       ui.input(prompt_opts, function(input)
         if not input or #input == 0 then return end
@@ -123,14 +132,11 @@ function M.rename(new_name, options)
     end, bufnr)
   else
     assert(client.supports_method("textDocument/rename"), "Client must support textDocument/rename")
-    if new_name then
-      rename_fix_imports(new_name)
-      return
-    end
+    if new_name then return rename_fix_imports(new_name) end
 
     local prompt_opts = {
       prompt = "New Name: ",
-      default = cword,
+      default = word_under_cursor,
     }
     ui.input(prompt_opts, function(input)
       if not input or #input == 0 then return end
