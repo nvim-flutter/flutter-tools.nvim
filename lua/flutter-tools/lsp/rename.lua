@@ -1,6 +1,7 @@
 local M = {}
 
 local lazy = require("flutter-tools.lazy")
+local config = lazy.require("flutter-tools.config") ---@module "flutter-tools.config"
 local lsp_utils = lazy.require("flutter-tools.lsp.utils") ---@module "flutter-tools.lsp.utils"
 local path = lazy.require("flutter-tools.utils.path") ---@module "flutter-tools.utils.path"
 local ui = lazy.require("flutter-tools.ui") ---@module "flutter-tools.ui"
@@ -50,8 +51,9 @@ function M.rename(new_name, options)
   options = options or {}
   local bufnr = options.bufnr or api.nvim_get_current_buf()
   local client = lsp_utils.get_dartls_client(bufnr)
-  if not client then
+  if not client or config.lsp.settings.renameFilesWithClasses ~= "always" then
     -- Fallback to default rename function if language server is not dartls
+    -- or if user doesn't want to rename files on class rename.
     return lsp.buf.rename(new_name, options)
   end
 
