@@ -163,6 +163,7 @@ require("flutter-tools").setup {} -- use defaults
 - `FlutterLspRestart` - This command restarts the dart language server, and is intended for situations where it begins to work incorrectly.
 - `FlutterSuper` - Go to super class, method using custom LSP method `dart/textDocument/super`.
 - `FlutterReanalyze` - Forces LSP server reanalyze using custom LSP method `dart/reanalyze`.
+- `FlutterRename` - Renames and updates imports if `lsp.settings.renameFilesWithClasses == "always"`
 
 <hr/>
 
@@ -273,6 +274,7 @@ require("flutter-tools").setup {
       analysisExcludedFolders = {"<path-to-flutter-sdk-packages>"},
       renameFilesWithClasses = "prompt", -- "always"
       enableSnippets = true,
+      updateImportsOnRename = true, -- Whether to update imports and other directives when files are renamed. Required for `FlutterRename` command.
     }
   }
 }
