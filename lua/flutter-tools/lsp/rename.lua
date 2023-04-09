@@ -1,3 +1,4 @@
+---@diagnostic disable: invisible
 local M = {}
 
 local lazy = require("flutter-tools.lazy")
@@ -45,7 +46,7 @@ end
 
 --- Call this function when you want rename class or anything else.
 --- If file will be renamed too, this function will update imports.
---- This is a modificated version of `vim.lsp.buf.rename()` function and can be used instead of it.
+--- This is a modified version of `vim.lsp.buf.rename()` function and can be used instead of it.
 --- Original version: https://github.com/neovim/neovim/blob/0bc323850410df4c3c1dd8fabded9d2000189270/runtime/lua/vim/lsp/buf.lua#L271
 function M.rename(new_name, options)
   options = options or {}
@@ -82,7 +83,7 @@ function M.rename(new_name, options)
   end
 
   ---@param name string the name of the thing
-  ---@param result table | nil the result from the call to will rename
+  ---@param result lsp.Range | { range: lsp.Range, placeholder: string } | nil the result from the call to will rename
   local function rename(name, result)
     local params = util.make_position_params(win, client.offset_encoding)
     params.newName = name
@@ -108,16 +109,12 @@ function M.rename(new_name, options)
   if client.supports_method("textDocument/prepareRename") then
     local params = util.make_position_params(win, client.offset_encoding)
     client.request("textDocument/prepareRename", params, function(err, result)
-      if err or not result then
-        local msg = err and ("Error on prepareRename: %s"):format(err.message)
-          or "Nothing to rename"
-        return ui.notify(msg, ui.INFO)
-      end
+      if err then return ui.notify(("Error on prepareRename: %s"):format(err.message), ui.ERROR) end
+      if not result then return ui.notify("Nothing to rename", ui.INFO) end
 
       if new_name then return rename_fix_imports(new_name) end
 
       local prompt_opts = { prompt = "New Name: " }
-      -- result: Range | { range: Range, placeholder: string }
       if result.placeholder then
         prompt_opts.default = result.placeholder
       elseif result.start then
