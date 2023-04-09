@@ -1,4 +1,4 @@
-*flutter-tools.txt*       For Neovim >= 0.8.0       Last change: 2023 April 02
+*flutter-tools.txt*       For Neovim >= 0.8.0       Last change: 2023 April 09
 
 ==============================================================================
 Table of Contents                            *flutter-tools-table-of-contents*
@@ -198,6 +198,7 @@ APP VERSION
 - `FlutterLspRestart` - This command restarts the dart language server, and is intended for situations where it begins to work incorrectly.
 - `FlutterSuper` - Go to super class, method using custom LSP method `dart/textDocument/super`.
 - `FlutterReanalyze` - Forces LSP server reanalyze using custom LSP method `dart/reanalyze`.
+- `FlutterRename` - Renames and updates imports if `lsp.settings.renameFilesWithClasses == "always"`
 
 
 FLUTTERRUN ~
@@ -308,6 +309,7 @@ both are set.
           analysisExcludedFolders = {"<path-to-flutter-sdk-packages>"},
           renameFilesWithClasses = "prompt", -- "always"
           enableSnippets = true,
+          updateImportsOnRename = true, -- Whether to update imports and other directives when files are renamed. Required for `FlutterRename` command.
         }
       }
     }
