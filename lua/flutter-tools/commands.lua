@@ -13,6 +13,8 @@ local dev_log = lazy.require("flutter-tools.log") ---@module "flutter-tools.log"
 
 local M = {}
 
+---@alias RunOpts {cli_args: string[]?, args: string[]?, device: Device?}
+
 ---@type table?
 local current_device = nil
 
@@ -25,7 +27,7 @@ local current_device = nil
 ---@type flutter.Runner?
 local runner = nil
 
-function M.use_debugger_runner()
+local function use_debugger_runner()
   local dap_ok, dap = pcall(require, "dap")
   if not config.debugger.run_via_dap then return false end
   if dap_ok then return true end
@@ -110,35 +112,39 @@ local function select_project_config(callback)
   end)
 end
 
----@alias RunOpts {cli_args: string[]?, args: string[]?, device: Device?}
+---@param opts RunOpts
+---@param conf flutter.ProjectConfig?
+---@return string[]
+local function get_run_args(opts, conf)
+  local args = {}
+  local cmd_args = opts.args
+  local device = conf and conf.device or (opts.device and opts.device.id)
+  local flavor = conf and conf.flavor
+  local dart_defines = conf and conf.dart_define
+
+  if not use_debugger_runner() then vim.list_extend(args, { "run" }) end
+  if not cmd_args and device then vim.list_extend(args, { "-d", device }) end
+  if cmd_args then vim.list_extend(args, cmd_args) end
+  if flavor then vim.list_extend(args, { "--flavor", flavor }) end
+  if dart_defines then
+    for key, value in pairs(dart_defines) do
+      vim.list_extend(args, { "--dart-define", ("%s=%s"):format(key, value) })
+    end
+  end
+  local dev_url = dev_tools.get_url()
+  if dev_url then vim.list_extend(args, { "--devtools-server-address", dev_url }) end
+  return args
+end
 
 ---@param opts RunOpts
 ---@param project_conf flutter.ProjectConfig?
 local function run(opts, project_conf)
   if M.is_running() then return ui.notify("Flutter is already running!") end
   opts = opts or {}
-  local device = project_conf and project_conf.device or (opts.device and opts.device.id)
-  local flavor = project_conf and project_conf.flavor
-  local dart_defines = project_conf and project_conf.dart_define
-  local cmd_args = opts.args
-  local cli_args = opts.cli_args
   executable.get(function(paths)
-    local args = cli_args or {}
-    if not cli_args then
-      if not M.use_debugger_runner() then vim.list_extend(args, { "run" }) end
-      if not cmd_args and device then vim.list_extend(args, { "-d", device }) end
-      if cmd_args then vim.list_extend(args, cmd_args) end
-      if flavor then vim.list_extend(args, { "--flavor", flavor }) end
-      if dart_defines then
-        for key, value in pairs(dart_defines) do
-          vim.list_extend(args, { "--dart-define", ("%s=%s"):format(key, value) })
-        end
-      end
-      local dev_url = dev_tools.get_url()
-      if dev_url then vim.list_extend(args, { "--devtools-server-address", dev_url }) end
-    end
+    local args = opts.cli_args or get_run_args(opts, project_conf)
     ui.notify("Starting flutter project...")
-    runner = M.use_debugger_runner() and debugger_runner or job_runner
+    runner = use_debugger_runner() and debugger_runner or job_runner
     runner:run(paths, args, lsp.get_lsp_root_dir(), on_run_data, on_run_exit)
   end)
 end
@@ -355,6 +361,11 @@ function M.fvm_use(sdk_name)
 
     fvm_use_job:start()
   end
+end
+
+if __TEST then
+  M.__run = run
+  M.__get_run_args = get_run_args
 end
 
 return M
