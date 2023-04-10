@@ -29,9 +29,14 @@ function M.highlight(name, opts)
   api.nvim_create_autocmd("ColorScheme", { callback = hl, group = colorscheme_group })
 end
 
-function M.fold(accumulator, callback, list)
-  for _, v in ipairs(list) do
-    accumulator = callback(accumulator, v)
+---@generic T, S
+---@param accumulator S
+---@param callback fun(accumulator: S, item: T, index: number|string): S
+---@param list T[]
+---@return S
+function M.fold(callback, list, accumulator)
+  for k, v in ipairs(list) do
+    accumulator = callback(accumulator, v, k)
   end
   return accumulator
 end

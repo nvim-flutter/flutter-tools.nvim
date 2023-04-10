@@ -4,8 +4,8 @@ local ui = lazy.require("flutter-tools.ui") ---@module "flutter-tools.ui"
 
 ---@class flutter.ProjectConfig
 ---@field device string
----@field flavours string[]
----@field dart_define table<string, string>>
+---@field flavor string
+---@field dart_define {[string]: string}
 
 local M = {}
 

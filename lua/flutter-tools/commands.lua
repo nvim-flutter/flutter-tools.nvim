@@ -101,7 +101,7 @@ end
 ---@param callback fun(project_config: flutter.ProjectConfig?)
 local function select_project_config(callback)
   local project_config = config.project
-  if #project_config < 2 then return callback(project_config[1]) end
+  if #project_config <= 1 then return callback(project_config[1]) end
   vim.ui.select(project_config, {
     prompt = "select a project configuration",
     format_item = function(item) return vim.inspect(item) end,
@@ -118,6 +118,8 @@ local function run(opts, project_conf)
   if M.is_running() then return ui.notify("Flutter is already running!") end
   opts = opts or {}
   local device = project_conf and project_conf.device or (opts.device and opts.device.id)
+  local flavor = project_conf and project_conf.flavor
+  local dart_defines = project_conf and project_conf.dart_define
   local cmd_args = opts.args
   local cli_args = opts.cli_args
   executable.get(function(paths)
@@ -125,9 +127,13 @@ local function run(opts, project_conf)
     if not cli_args then
       if not M.use_debugger_runner() then vim.list_extend(args, { "run" }) end
       if not cmd_args and device then vim.list_extend(args, { "-d", device }) end
-
       if cmd_args then vim.list_extend(args, cmd_args) end
-
+      if flavor then vim.list_extend(args, { "--flavor", flavor }) end
+      if dart_defines then
+        for key, value in pairs(dart_defines) do
+          vim.list_extend(args, { "--dart-define", ("%s=%s"):format(key, value) })
+        end
+      end
       local dev_url = dev_tools.get_url()
       if dev_url then vim.list_extend(args, { "--devtools-server-address", dev_url }) end
     end
