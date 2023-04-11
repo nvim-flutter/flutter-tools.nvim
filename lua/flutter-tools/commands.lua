@@ -13,19 +13,21 @@ local dev_log = lazy.require("flutter-tools.log") ---@module "flutter-tools.log"
 
 local M = {}
 
+---@alias RunOpts {cli_args: string[]?, args: string[]?, device: Device?}
+
 ---@type table?
 local current_device = nil
 
----@class FlutterRunner
----@field is_running fun(runner: FlutterRunner):boolean
----@field run fun(runner: FlutterRunner, paths:table, args:table, cwd:string, on_run_data:fun(is_err:boolean, data:string), on_run_exit:fun(data:string[], args: table))
----@field cleanup fun(funner: FlutterRunner)
----@field send fun(runner: FlutterRunner, cmd:string, quiet: boolean?)
+---@class flutter.Runner
+---@field is_running fun(runner: flutter.Runner):boolean
+---@field run fun(runner: flutter.Runner, paths:table, args:table, cwd:string, on_run_data:fun(is_err:boolean, data:string), on_run_exit:fun(data:string[], args: table))
+---@field cleanup fun(funner: flutter.Runner)
+---@field send fun(runner: flutter.Runner, cmd:string, quiet: boolean?)
 
----@type FlutterRunner?
+---@type flutter.Runner?
 local runner = nil
 
-function M.use_debugger_runner()
+local function use_debugger_runner()
   local dap_ok, dap = pcall(require, "dap")
   if not config.debugger.run_via_dap then return false end
   if dap_ok then return true end
@@ -98,29 +100,62 @@ function M.run_command(args)
   M.run({ args = args })
 end
 
----Run the flutter application
----@param opts table
-function M.run(opts)
-  if M.is_running() then return ui.notify("Flutter is already running!") end
-  opts = opts or {}
-  local device = opts.device
+---@param callback fun(project_config: flutter.ProjectConfig?)
+local function select_project_config(callback)
+  local project_config = config.project --[=[@as flutter.ProjectConfig[]]=]
+  if #project_config <= 1 then return callback(project_config[1]) end
+  vim.ui.select(project_config, {
+    prompt = "Select a project configuration",
+    format_item = function(item)
+      if item.name then return item.name end
+      return vim.inspect(item)
+    end,
+  }, function(selected)
+    if selected then callback(selected) end
+  end)
+end
+
+---@param opts RunOpts
+---@param conf flutter.ProjectConfig?
+---@return string[]
+local function get_run_args(opts, conf)
+  local args = {}
   local cmd_args = opts.args
-  local cli_args = opts.cli_args
-  executable.get(function(paths)
-    local args = cli_args or {}
-    if not cli_args then
-      if not M.use_debugger_runner() then vim.list_extend(args, { "run" }) end
-      if not cmd_args and device and device.id then vim.list_extend(args, { "-d", device.id }) end
+  local device = conf and conf.device or (opts.device and opts.device.id)
+  local flavor = conf and conf.flavor
+  local dart_defines = conf and conf.dart_define
+  local dev_url = dev_tools.get_url()
 
-      if cmd_args then vim.list_extend(args, cmd_args) end
-
-      local dev_url = dev_tools.get_url()
-      if dev_url then vim.list_extend(args, { "--devtools-server-address", dev_url }) end
+  if not use_debugger_runner() then vim.list_extend(args, { "run" }) end
+  if not cmd_args and device then vim.list_extend(args, { "-d", device }) end
+  if cmd_args then vim.list_extend(args, cmd_args) end
+  if flavor then vim.list_extend(args, { "--flavor", flavor }) end
+  if dart_defines then
+    for key, value in pairs(dart_defines) do
+      vim.list_extend(args, { "--dart-define", ("%s=%s"):format(key, value) })
     end
+  end
+  if dev_url then vim.list_extend(args, { "--devtools-server-address", dev_url }) end
+  return args
+end
+
+---@param opts RunOpts
+---@param project_conf flutter.ProjectConfig?
+local function run(opts, project_conf)
+  opts = opts or {}
+  executable.get(function(paths)
+    local args = opts.cli_args or get_run_args(opts, project_conf)
     ui.notify("Starting flutter project...")
-    runner = M.use_debugger_runner() and debugger_runner or job_runner
+    runner = use_debugger_runner() and debugger_runner or job_runner
     runner:run(paths, args, lsp.get_lsp_root_dir(), on_run_data, on_run_exit)
   end)
+end
+
+---Run the flutter application
+---@param opts RunOpts
+function M.run(opts)
+  if M.is_running() then return ui.notify("Flutter is already running!") end
+  select_project_config(function(project_conf) run(opts, project_conf) end)
 end
 
 ---@param cmd string
@@ -329,6 +364,11 @@ function M.fvm_use(sdk_name)
 
     fvm_use_job:start()
   end
+end
+
+if __TEST then
+  M.__run = run
+  M.__get_run_args = get_run_args
 end
 
 return M

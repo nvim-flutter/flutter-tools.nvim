@@ -2,7 +2,16 @@ local lazy = require("flutter-tools.lazy")
 local path = lazy.require("flutter-tools.utils.path") ---@module "flutter-tools.utils.path"
 local ui = lazy.require("flutter-tools.ui") ---@module "flutter-tools.ui"
 
+---@class flutter.ProjectConfig
+---@field name string?
+---@field device string
+---@field flavor string
+---@field dart_define {[string]: string}
+
 local M = {}
+
+---@type flutter.ProjectConfig[]
+local project_config = {}
 
 local fn = vim.fn
 local fmt = string.format
@@ -138,11 +147,10 @@ local function handle_deprecation(key, value, conf)
   if deprecation.fallback then conf[deprecation.fallback] = value end
 end
 
----Get the configuration or just a key of the config
----@param key string?
-function M.get(key)
-  if key then return config[key] end
-  return config
+---@param project flutter.ProjectConfig | flutter.ProjectConfig[]
+M.setup_project = function(project)
+  if not vim.tbl_islist(project) then project = { project } end
+  project_config = project
 end
 
 function M.set(user_config)
@@ -155,6 +163,10 @@ function M.set(user_config)
   return config
 end
 
+---@module "flutter-tools.config"
 return setmetatable(M, {
-  __index = function(_, k) return M.get(k) end,
+  __index = function(_, k)
+    if k == "project" then return project_config end
+    return config[k]
+  end,
 })

@@ -7,7 +7,7 @@ local api = vim.api
 
 local fmt = string.format
 
----@type FlutterRunner
+---@type flutter.Runner
 local DebuggerRunner = {}
 
 local service_extensions_isolateid = {}

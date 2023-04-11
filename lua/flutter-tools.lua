@@ -19,6 +19,9 @@ local command = function(name, callback, opts)
   api.nvim_create_user_command(name, callback, opts or {})
 end
 
+---@param opts flutter.ProjectConfig
+function M.setup_project(opts) config.setup_project(opts) end
+
 local function setup_commands()
   -- Commands
   command("FlutterRun", function(data) commands.run_command(data.args) end, { nargs = "*" })
