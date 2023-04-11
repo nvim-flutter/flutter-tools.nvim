@@ -11,12 +11,17 @@ local job_runner = lazy.require("flutter-tools.runners.job_runner") ---@module "
 local debugger_runner = lazy.require("flutter-tools.runners.debugger_runner") ---@module "flutter-tools.runners.debugger_runner"
 local dev_log = lazy.require("flutter-tools.log") ---@module "flutter-tools.log"
 
+local api = vim.api
+
 local M = {}
 
 ---@alias RunOpts {cli_args: string[]?, args: string[]?, device: Device?}
 
 ---@type table?
 local current_device = nil
+
+---@type table?
+local current_project_config = nil
 
 ---@class flutter.Runner
 ---@field is_running fun(runner: flutter.Runner):boolean
@@ -39,6 +44,8 @@ local function use_debugger_runner()
 end
 
 function M.current_device() return current_device end
+
+function M.current_project_config() return current_project_config end
 
 function M.is_running() return runner ~= nil and runner:is_running() end
 
@@ -74,6 +81,8 @@ local function shutdown()
   if runner ~= nil then runner:cleanup() end
   runner = nil
   current_device = nil
+  current_project_config = nil
+  api.nvim_exec_autocmds("User", { pattern = "FlutterToolsProjectConfigChanged" })
   dev_tools.on_flutter_shutdown()
 end
 
@@ -103,7 +112,11 @@ end
 ---@param callback fun(project_config: flutter.ProjectConfig?)
 local function select_project_config(callback)
   local project_config = config.project --[=[@as flutter.ProjectConfig[]]=]
-  if #project_config <= 1 then return callback(project_config[1]) end
+  if #project_config <= 1 then
+    current_project_config = project_config[1]
+    api.nvim_exec_autocmds("User", { pattern = "FlutterToolsProjectConfigChanged" })
+    return callback(project_config[1])
+  end
   vim.ui.select(project_config, {
     prompt = "Select a project configuration",
     format_item = function(item)
@@ -111,7 +124,11 @@ local function select_project_config(callback)
       return vim.inspect(item)
     end,
   }, function(selected)
-    if selected then callback(selected) end
+    if selected then
+      current_project_config = selected
+      api.nvim_exec_autocmds("User", { pattern = "FlutterToolsProjectConfigChanged" })
+      callback(selected)
+    end
   end)
 end
 

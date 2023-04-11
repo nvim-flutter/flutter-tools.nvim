@@ -62,6 +62,18 @@ function M.statusline.app_version()
   })
 end
 
+local function project_config_show()
+  local project_config = commands.current_project_config()
+  if project_config then set_decoration_item("project_config", project_config) end
+end
+
+function M.statusline.project_config()
+  api.nvim_create_autocmd("User", {
+    pattern = "FlutterToolsProjectConfigChanged",
+    callback = project_config_show,
+  })
+end
+
 ---@param config table<string, table<string, boolean>>
 function M.apply(config)
   if not config or vim.tbl_isempty(config) then return end
