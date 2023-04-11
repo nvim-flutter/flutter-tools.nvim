@@ -124,6 +124,7 @@ local function get_run_args(opts, conf)
   local device = conf and conf.device or (opts.device and opts.device.id)
   local flavor = conf and conf.flavor
   local dart_defines = conf and conf.dart_define
+  local dev_url = dev_tools.get_url()
 
   if not use_debugger_runner() then vim.list_extend(args, { "run" }) end
   if not cmd_args and device then vim.list_extend(args, { "-d", device }) end
@@ -134,7 +135,6 @@ local function get_run_args(opts, conf)
       vim.list_extend(args, { "--dart-define", ("%s=%s"):format(key, value) })
     end
   end
-  local dev_url = dev_tools.get_url()
   if dev_url then vim.list_extend(args, { "--devtools-server-address", dev_url }) end
   return args
 end
@@ -142,7 +142,6 @@ end
 ---@param opts RunOpts
 ---@param project_conf flutter.ProjectConfig?
 local function run(opts, project_conf)
-  if M.is_running() then return ui.notify("Flutter is already running!") end
   opts = opts or {}
   executable.get(function(paths)
     local args = opts.cli_args or get_run_args(opts, project_conf)
@@ -155,6 +154,7 @@ end
 ---Run the flutter application
 ---@param opts RunOpts
 function M.run(opts)
+  if M.is_running() then return ui.notify("Flutter is already running!") end
   select_project_config(function(project_conf) run(opts, project_conf) end)
 end
 
