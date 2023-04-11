@@ -1,4 +1,4 @@
-*flutter-tools.txt*       For Neovim >= 0.8.0       Last change: 2023 April 09
+*flutter-tools.txt*       For Neovim >= 0.8.0       Last change: 2023 April 11
 
 ==============================================================================
 Table of Contents                            *flutter-tools-table-of-contents*
@@ -329,6 +329,47 @@ directly so diagnostic analysis of these file is pointless.
 **Exclude Note for Windows:** To ignore packages installed with pub, consider
 adding `vim.fn.expand("$HOME/AppData/Local/Pub/Cache")` to
 `analysisExcludedFolders` if you are using PowerShell.
+
+
+PROJECT CONFIGURATION
+
+It is possible to configure how each project is run using neovim’s `exrc`
+functionality (see `:help exrc`). This allows you to create an exrc file
+e.g. `.nvim.lua` and put the project configurations inside it. This is similar
+_conceptually_ to vscode’s `launch.json` file.
+
+>lua
+    -- .nvim.lua
+    -- If you have more than one setup configured you will be prompted when you run
+    -- your app to select which one you want to use
+    require('flutter-tools').setup_project({
+      {
+        name = 'Development', -- an arbitrary name that you provide so you can recognise this config
+        flavor = 'DevFlavor', -- your flavour
+        device = 'pixel6pro', -- the device ID, which you can get by running `flutter devices`
+        dart_defines = {
+          API_URL = 'https://dev.example.com/api',
+          IS_DEV = true,
+        }
+      },
+      {
+        name = 'Web',
+        device = 'chrome',
+        flavor = 'WebApp'
+      }
+    })
+<
+
+you can also specify the configuration as an object if there is only one
+
+>lua
+    require('flutter-tools').setup_project({
+      name = 'Development',
+      flavor = 'DevFlavor',
+      device = 'pixel6pro',
+      dart_defines = { ... }
+    })
+<
 
 
 FLUTTER BINARY
