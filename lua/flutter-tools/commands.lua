@@ -102,11 +102,14 @@ end
 
 ---@param callback fun(project_config: flutter.ProjectConfig?)
 local function select_project_config(callback)
-  local project_config = config.project
+  local project_config = config.project --[=[@as flutter.ProjectConfig[]]=]
   if #project_config <= 1 then return callback(project_config[1]) end
   vim.ui.select(project_config, {
-    prompt = "select a project configuration",
-    format_item = function(item) return vim.inspect(item) end,
+    prompt = "Select a project configuration",
+    format_item = function(item)
+      if item.name then return item.name end
+      return vim.inspect(item)
+    end,
   }, function(selected)
     if selected then callback(selected) end
   end)

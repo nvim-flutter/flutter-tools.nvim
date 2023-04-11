@@ -3,6 +3,7 @@ local path = lazy.require("flutter-tools.utils.path") ---@module "flutter-tools.
 local ui = lazy.require("flutter-tools.ui") ---@module "flutter-tools.ui"
 
 ---@class flutter.ProjectConfig
+---@field name string?
 ---@field device string
 ---@field flavor string
 ---@field dart_define {[string]: string}
