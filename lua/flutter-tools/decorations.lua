@@ -64,7 +64,7 @@ end
 
 local function project_config_show()
   local project_config = commands.current_project_config()
-  if project_config then set_decoration_item("project_config", project_config) end
+  set_decoration_item("project_config", project_config)
 end
 
 function M.statusline.project_config()
