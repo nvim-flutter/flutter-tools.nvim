@@ -125,4 +125,20 @@ function M.lsp_handler(func)
   end
 end
 
+---@enum
+M.events = {
+  PROJECT_CONFIG_CHANGED = "FlutterToolsProjectConfigChanged",
+  APP_STARTED = "FlutterToolsAppStarted",
+  OUTLINE_CHANGED = "FlutterToolsOutlineChanged",
+  LSP_ANALYSIS_COMPLETED = "FlutterToolsLspAnalysisCompleted",
+}
+
+---@generic T:table
+---@param event string
+---@param opts {data: T} | nil
+function M.emit_event(event, opts)
+  local data = opts and opts.data
+  api.nvim_exec_autocmds("User", { pattern = event, data = data })
+end
+
 return M

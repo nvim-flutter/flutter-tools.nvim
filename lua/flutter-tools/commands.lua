@@ -74,6 +74,7 @@ local function shutdown()
   if runner ~= nil then runner:cleanup() end
   runner = nil
   current_device = nil
+  utils.emit_event(utils.events.PROJECT_CONFIG_CHANGED)
   dev_tools.on_flutter_shutdown()
 end
 
@@ -103,7 +104,10 @@ end
 ---@param callback fun(project_config: flutter.ProjectConfig?)
 local function select_project_config(callback)
   local project_config = config.project --[=[@as flutter.ProjectConfig[]]=]
-  if #project_config <= 1 then return callback(project_config[1]) end
+  if #project_config <= 1 then
+    utils.emit_event(utils.events.PROJECT_CONFIG_CHANGED, { data = project_config[1] })
+    return callback(project_config[1])
+  end
   vim.ui.select(project_config, {
     prompt = "Select a project configuration",
     format_item = function(item)
@@ -111,7 +115,10 @@ local function select_project_config(callback)
       return vim.inspect(item)
     end,
   }, function(selected)
-    if selected then callback(selected) end
+    if selected then
+      utils.emit_event(utils.events.PROJECT_CONFIG_CHANGED, { data = selected })
+      callback(selected)
+    end
   end)
 end
 

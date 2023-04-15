@@ -50,7 +50,7 @@ local function handle_progress(err, result, ctx)
   -- NOTE: this event gets called whenever the analysis server has completed some work
   -- rather than just when the server has started.
   if result and result.value and result.value.kind == "end" then
-    api.nvim_exec_autocmds("User", { pattern = "FlutterToolsLspAnalysisComplete" })
+    utils.emit_event(utils.events.LSP_ANALYSIS_COMPLETED)
   end
 end
 

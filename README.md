@@ -213,6 +213,10 @@ require("flutter-tools").setup {
       -- this will show the currently running device if an application was started with a specific
       -- device
       device = false,
+      -- set to true to be able use the 'flutter_tools_decorations.project_config' in your statusline
+      -- this will show the currently selected project configuration
+      project_config = false,
+     }
     }
   },
   debugger = { -- integrate with nvim dap + install dart code debugger
