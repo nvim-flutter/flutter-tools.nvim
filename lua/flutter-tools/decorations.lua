@@ -62,15 +62,10 @@ function M.statusline.app_version()
   })
 end
 
-local function project_config_show()
-  local project_config = commands.current_project_config()
-  set_decoration_item("project_config", project_config)
-end
-
 function M.statusline.project_config()
   api.nvim_create_autocmd("User", {
     pattern = "FlutterToolsProjectConfigChanged",
-    callback = project_config_show,
+    callback = function(args) set_decoration_item("project_config", args.data) end,
   })
 end
 

@@ -20,9 +20,6 @@ local M = {}
 ---@type table?
 local current_device = nil
 
----@type table?
-local current_project_config = nil
-
 ---@class flutter.Runner
 ---@field is_running fun(runner: flutter.Runner):boolean
 ---@field run fun(runner: flutter.Runner, paths:table, args:table, cwd:string, on_run_data:fun(is_err:boolean, data:string), on_run_exit:fun(data:string[], args: table))
@@ -44,8 +41,6 @@ local function use_debugger_runner()
 end
 
 function M.current_device() return current_device end
-
-function M.current_project_config() return current_project_config end
 
 function M.is_running() return runner ~= nil and runner:is_running() end
 
@@ -81,8 +76,7 @@ local function shutdown()
   if runner ~= nil then runner:cleanup() end
   runner = nil
   current_device = nil
-  current_project_config = nil
-  api.nvim_exec_autocmds("User", { pattern = "FlutterToolsProjectConfigChanged" })
+  api.nvim_exec_autocmds("User", { pattern = "FlutterToolsProjectConfigChanged", data = nil })
   dev_tools.on_flutter_shutdown()
 end
 
@@ -113,8 +107,10 @@ end
 local function select_project_config(callback)
   local project_config = config.project --[=[@as flutter.ProjectConfig[]]=]
   if #project_config <= 1 then
-    current_project_config = project_config[1]
-    api.nvim_exec_autocmds("User", { pattern = "FlutterToolsProjectConfigChanged" })
+    api.nvim_exec_autocmds(
+      "User",
+      { pattern = "FlutterToolsProjectConfigChanged", data = project_config[1] }
+    )
     return callback(project_config[1])
   end
   vim.ui.select(project_config, {
@@ -125,8 +121,10 @@ local function select_project_config(callback)
     end,
   }, function(selected)
     if selected then
-      current_project_config = selected
-      api.nvim_exec_autocmds("User", { pattern = "FlutterToolsProjectConfigChanged" })
+      api.nvim_exec_autocmds(
+        "User",
+        { pattern = "FlutterToolsProjectConfigChanged", data = selected }
+      )
       callback(selected)
     end
   end)
