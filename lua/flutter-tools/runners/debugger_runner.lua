@@ -2,8 +2,8 @@ local lazy = require("flutter-tools.lazy")
 local ui = lazy.require("flutter-tools.ui") ---@module "flutter-tools.ui"
 local dev_tools = lazy.require("flutter-tools.dev_tools") ---@module "flutter-tools.dev_tools"
 local config = lazy.require("flutter-tools.config") ---@module "flutter-tools.config"
+local utils = lazy.require("flutter-tools.utils") ---@module "flutter-tools.utils"
 local _, dap = pcall(require, "dap")
-local api = vim.api
 
 local fmt = string.format
 
@@ -52,7 +52,7 @@ function DebuggerRunner:run(paths, args, cwd, on_run_data, on_run_exit)
   dap.listeners.before["event_app.started"][plugin_identifier] = function(_, _)
     started = true
     before_start_logs = {}
-    api.nvim_exec_autocmds("User", { pattern = "FlutterToolsAppStarted" })
+    utils.emit_event(utils.events.APP_STARTED)
   end
 
   dap.listeners.before["event_dart.debuggerUris"][plugin_identifier] = function(_, body)

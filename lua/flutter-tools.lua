@@ -12,6 +12,7 @@ local log = lazy.require("flutter-tools.log") ---@module "flutter-tools.log"
 local lsp = lazy.require("flutter-tools.lsp") ---@module "flutter-tools.lsp"
 local outline = lazy.require("flutter-tools.outline") ---@module "flutter-tools.outline"
 local devices = lazy.require("flutter-tools.devices") ---@module "flutter-tools.devices"
+local utils = lazy.require("flutter-tools.utils") ---@module "flutter-tools.utils"
 
 local api = vim.api
 
@@ -84,7 +85,7 @@ local function setup_autocommands()
     -- NOTE: we piggyback of this event to check for when the server is first initialized
     autocmd({ "User" }, {
       group = AUGROUP,
-      pattern = "FlutterToolsLspAnalysisComplete",
+      pattern = utils.events.LSP_ANALYSIS_COMPLETED,
       once = true,
       callback = function() lsp.document_color() end,
     })

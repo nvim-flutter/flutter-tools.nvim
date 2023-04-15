@@ -1,6 +1,7 @@
 local lazy = require("flutter-tools.lazy")
 local commands = lazy.require("flutter-tools.commands") ---@module "flutter-tools.commands"
 local path = lazy.require("flutter-tools.utils.path") ---@module "flutter-tools.utils.path"
+local utils = lazy.require("flutter-tools.utils") ---@module "flutter-tools.utils"
 local Path = require("plenary.path")
 
 local M = {
@@ -36,7 +37,7 @@ end
 
 function M.statusline.device()
   api.nvim_create_autocmd("User", {
-    pattern = "FlutterToolsAppStarted",
+    pattern = utils.events.APP_STARTED,
     callback = device_show,
   })
 end
@@ -64,7 +65,7 @@ end
 
 function M.statusline.project_config()
   api.nvim_create_autocmd("User", {
-    pattern = "FlutterToolsProjectConfigChanged",
+    pattern = utils.events.PROJECT_CONFIG_CHANGED,
     callback = function(args) set_decoration_item("project_config", args.data) end,
   })
 end

@@ -281,7 +281,7 @@ local function setup_autocommands()
   local autocmd = api.nvim_create_autocmd
   autocmd({ "User" }, {
     group = AUGROUP,
-    pattern = "FlutterOutlineChanged",
+    pattern = utils.events.OUTLINE_CHANGED,
     callback = function()
       if not utils.buf_valid(state.outline_buf) then return end
       local ok, lines, highlights = get_outline_content()
@@ -297,7 +297,7 @@ local function setup_autocommands()
   autocmd({ "BufEnter" }, {
     group = AUGROUP,
     pattern = { "*.dart" },
-    command = "doautocmd User FlutterOutlineChanged",
+    command = "doautocmd User " .. utils.events.OUTLINE_CHANGED,
   })
 end
 
@@ -455,7 +455,7 @@ function M.document_outline(_, data, _, _)
   end
   result.uri = data.uri
   M.outlines[data.uri] = result
-  api.nvim_exec_autocmds("User", { pattern = "FlutterOutlineChanged" })
+  utils.emit_event(utils.events.OUTLINE_CHANGED)
   if config.outline.auto_open and not state.outline_buf then M.open({ go_back = true }) end
 end
 

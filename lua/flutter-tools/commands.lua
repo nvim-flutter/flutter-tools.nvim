@@ -11,8 +11,6 @@ local job_runner = lazy.require("flutter-tools.runners.job_runner") ---@module "
 local debugger_runner = lazy.require("flutter-tools.runners.debugger_runner") ---@module "flutter-tools.runners.debugger_runner"
 local dev_log = lazy.require("flutter-tools.log") ---@module "flutter-tools.log"
 
-local api = vim.api
-
 local M = {}
 
 ---@alias RunOpts {cli_args: string[]?, args: string[]?, device: Device?}
@@ -72,19 +70,11 @@ local function on_run_data(is_err, data)
   dev_log.log(data, config.dev_log)
 end
 
----@param project_config table | nil
-local function on_project_config_changed(project_config)
-  api.nvim_exec_autocmds(
-    "User",
-    { pattern = "FlutterToolsProjectConfigChanged", data = project_config }
-  )
-end
-
 local function shutdown()
   if runner ~= nil then runner:cleanup() end
   runner = nil
   current_device = nil
-  on_project_config_changed(nil)
+  utils.emit_event(utils.events.PROJECT_CONFIG_CHANGED)
   dev_tools.on_flutter_shutdown()
 end
 
@@ -115,7 +105,7 @@ end
 local function select_project_config(callback)
   local project_config = config.project --[=[@as flutter.ProjectConfig[]]=]
   if #project_config <= 1 then
-    on_project_config_changed(project_config[1])
+    utils.emit_event(utils.events.PROJECT_CONFIG_CHANGED, { data = project_config[1] })
     return callback(project_config[1])
   end
   vim.ui.select(project_config, {
@@ -126,7 +116,7 @@ local function select_project_config(callback)
     end,
   }, function(selected)
     if selected then
-      on_project_config_changed(selected)
+      utils.emit_event(utils.events.PROJECT_CONFIG_CHANGED, { data = selected })
       callback(selected)
     end
   end)
