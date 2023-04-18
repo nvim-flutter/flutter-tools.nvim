@@ -125,7 +125,7 @@ function M.lsp_handler(func)
   end
 end
 
----@enum
+---@enum Events
 M.events = {
   PROJECT_CONFIG_CHANGED = "FlutterToolsProjectConfigChanged",
   APP_STARTED = "FlutterToolsAppStarted",
@@ -134,7 +134,7 @@ M.events = {
 }
 
 ---@generic T:table
----@param event string
+---@param event Events
 ---@param opts {data: T} | nil
 function M.emit_event(event, opts)
   local data = opts and opts.data
