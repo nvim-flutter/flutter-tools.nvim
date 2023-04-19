@@ -121,6 +121,7 @@ local config = {
   }),
   dev_log = setmetatable({
     enabled = true,
+    notify_errors = false,
   }, {
     __index = function(_, k) return k == "open_cmd" and get_split_cmd(0.4, 50) or nil end,
   }),
@@ -159,7 +160,7 @@ function M.set(user_config)
   for key, value in pairs(user_config) do
     handle_deprecation(key, value, user_config)
   end
-  config = require("flutter-tools.utils").merge(config, user_config)
+  config = vim.tbl_deep_extend("force", config, user_config)
   return config
 end
 
