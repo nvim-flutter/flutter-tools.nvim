@@ -1,4 +1,4 @@
-*flutter-tools.txt*       For Neovim >= 0.8.0       Last change: 2023 April 18
+*flutter-tools.txt*       For Neovim >= 0.8.0       Last change: 2023 April 20
 
 ==============================================================================
 Table of Contents                            *flutter-tools-table-of-contents*
@@ -279,6 +279,7 @@ both are set.
       },
       dev_log = {
         enabled = true,
+        notify_errors = false, -- if there is an error whilst running then notify the user
         open_cmd = "tabedit", -- command to use to open the log buffer
       },
       dev_tools = {
