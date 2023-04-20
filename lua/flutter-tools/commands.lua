@@ -66,12 +66,12 @@ end
 ---Handle output from flutter run command
 ---@param is_err boolean if this is stdout or stderr
 local function on_run_data(is_err, data)
-  if is_err then ui.notify(data, ui.ERROR, { timeout = 5000 }) end
+  if is_err and config.dev_log.notify_errors then ui.notify(data, ui.ERROR, { timeout = 5000 }) end
   dev_log.log(data, config.dev_log)
 end
 
 local function shutdown()
-  if runner ~= nil then runner:cleanup() end
+  if runner then runner:cleanup() end
   runner = nil
   current_device = nil
   utils.emit_event(utils.events.PROJECT_CONFIG_CHANGED)
