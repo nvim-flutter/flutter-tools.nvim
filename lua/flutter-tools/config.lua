@@ -149,7 +149,7 @@ local function handle_deprecation(key, value, conf)
 end
 
 ---@param project flutter.ProjectConfig | flutter.ProjectConfig[]
-M.setup_project = function(project)
+function M.setup_project(project)
   if not vim.tbl_islist(project) then project = { project } end
   project_config = project
 end
