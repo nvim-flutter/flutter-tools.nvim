@@ -216,7 +216,6 @@ require("flutter-tools").setup {
       -- set to true to be able use the 'flutter_tools_decorations.project_config' in your statusline
       -- this will show the currently selected project configuration
       project_config = false,
-     }
     }
   },
   debugger = { -- integrate with nvim dap + install dart code debugger
