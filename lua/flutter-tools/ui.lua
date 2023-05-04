@@ -61,17 +61,17 @@ end
 ---Post a message to UI so the user knows something has occurred.
 ---@param msg string | string[]
 ---@param level integer
----@param opts {timeout: number}?
+---@param opts {timeout: number, once: boolean}?
 M.notify = function(msg, level, opts)
-  opts = opts or {}
-  level = level or M.INFO
+  opts, level = opts or {}, level or M.INFO
   msg = type(msg) == "table" and utils.join(msg) or msg
   if msg == "" then return end
-  vim.notify(msg, level, {
-    title = "Flutter tools",
-    timeout = opts.timeout,
-    icon = "",
-  })
+  local args = { title = "Flutter tools", timeout = opts.timeout, icon = "" }
+  if opts.once then
+    vim.notify_once(msg, level, args)
+  else
+    vim.notify(msg, level, args)
+  end
 end
 
 ---@param opts table
