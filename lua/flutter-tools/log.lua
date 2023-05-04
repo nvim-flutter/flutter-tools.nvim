@@ -62,7 +62,7 @@ local function autoscroll(buf, target_win)
   local buf_length = api.nvim_buf_line_count(buf)
   local success, err = pcall(api.nvim_win_set_cursor, win, { buf_length, 0 })
   if not success then
-    ui.notify(fmt("Failed to set cursor for log window %s: %s", win, err), ui.ERROR)
+    vim.notify_once(fmt("Failed to set cursor for log window %s: %s", win, err), ui.ERROR)
   end
 end
 
