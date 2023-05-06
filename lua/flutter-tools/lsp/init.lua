@@ -120,7 +120,7 @@ function M.restart()
   local client = lsp_utils.get_dartls_client()
   if client then
     local bufs = lsp.get_buffers_by_client_id(client.id)
-    client.stop()
+    lsp.stop_client(client.id)
     local client_id = lsp.start_client(client.config)
     for _, buf in pairs(bufs) do
       if client_id then lsp.buf_attach_client(buf, client_id) end
