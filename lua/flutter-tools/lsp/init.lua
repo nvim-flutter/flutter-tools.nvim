@@ -16,10 +16,6 @@ local M = {
   lsps = {},
 }
 
-local function analysis_server_snapshot_path(sdk_path)
-  return path.join(sdk_path, "bin", "snapshots", "analysis_server.dart.snapshot")
-end
-
 ---Merge a set of default configurations with a user's own settings
 --- NOTE: a user can specify a function in which case this will be used
 ---to determine how to merge the defaults with a user's config
@@ -168,7 +164,7 @@ local function get_server_config(user_config, callback)
     local debug_log = create_debug_log(user_config.debug)
     debug_log(fmt("dart_sdk_path: %s", root_path))
 
-    config.cmd = config.cmd or { paths.dart_bin, analysis_server_snapshot_path(root_path), "--lsp" }
+    config.cmd = config.cmd or { paths.dart_bin, "language-server", "--protocol=lsp" }
 
     config.filetypes = { FILETYPE }
     config.capabilities = merge_config(defaults.capabilities, config.capabilities)
