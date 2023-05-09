@@ -350,6 +350,7 @@ _conceptually_ to vscode’s `launch.json` file.
       {
         name = 'Development', -- an arbitrary name that you provide so you can recognise this config
         flavor = 'DevFlavor', -- your flavour
+      	target = 'lib/main_dev.dart', -- your target
         device = 'pixel6pro', -- the device ID, which you can get by running `flutter devices`
         dart_defines = {
           API_URL = 'https://dev.example.com/api',
@@ -370,6 +371,7 @@ you can also specify the configuration as an object if there is only one
     require('flutter-tools').setup_project({
       name = 'Development',
       flavor = 'DevFlavor',
+      target = 'lib/main_dev.dart',
       device = 'pixel6pro',
       dart_defines = { ... }
     })
