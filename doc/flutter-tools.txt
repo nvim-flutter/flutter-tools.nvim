@@ -1,4 +1,4 @@
-*flutter-tools.txt*        For Neovim >= 0.8.0        Last change: 2023 May 06
+*flutter-tools.txt*        For Neovim >= 0.8.0        Last change: 2023 May 10
 
 ==============================================================================
 Table of Contents                            *flutter-tools-table-of-contents*
@@ -350,13 +350,13 @@ _conceptually_ to vscode’s `launch.json` file.
       {
         name = 'Development', -- an arbitrary name that you provide so you can recognise this config
         flavor = 'DevFlavor', -- your flavour
-      	target = 'lib/main_dev.dart', -- your target
+        target = 'lib/main_dev.dart', -- your target
         device = 'pixel6pro', -- the device ID, which you can get by running `flutter devices`
         dart_define = {
           API_URL = 'https://dev.example.com/api',
           IS_DEV = true,
         },
-      	dart_define_from_file = 'config.json' -- the path to a JSON configuration file
+        dart_define_from_file = 'config.json' -- the path to a JSON configuration file
       },
       {
         name = 'Web',
@@ -372,8 +372,8 @@ you can also specify the configuration as an object if there is only one
     require('flutter-tools').setup_project({
       name = 'Development',
       flavor = 'DevFlavor',
-      target = 'lib/main_dev.dart',
       device = 'pixel6pro',
+      target = 'lib/main_dev.dart',
       dart_define = { ... },
       dart_define_from_file = 'config.json'
     })
