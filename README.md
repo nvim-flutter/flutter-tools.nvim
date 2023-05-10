@@ -313,7 +313,7 @@ require('flutter-tools').setup_project({
     flavor = 'DevFlavor', -- your flavour
     target = 'lib/main_dev.dart', -- your target
     device = 'pixel6pro', -- the device ID, which you can get by running `flutter devices`
-    dart_defines = {
+    dart_define = {
       API_URL = 'https://dev.example.com/api',
       IS_DEV = true,
     }
@@ -334,7 +334,7 @@ require('flutter-tools').setup_project({
   flavor = 'DevFlavor',
   device = 'pixel6pro',
   target = 'lib/main_dev.dart',
-  dart_defines = { ... }
+  dart_define = { ... }
 })
 ```
 
