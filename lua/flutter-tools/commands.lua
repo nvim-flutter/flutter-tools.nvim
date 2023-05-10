@@ -145,7 +145,7 @@ local function get_run_args(opts, conf)
   end
   if dart_defines then
     for key, value in pairs(dart_defines) do
-      vim.list_extend(args, { "c-dart-define", ("%s=%s"):format(key, value) })
+      vim.list_extend(args, { "--dart-define", ("%s=%s"):format(key, value) })
     end
   end
   if dev_url then vim.list_extend(args, { "--devtools-server-address", dev_url }) end
