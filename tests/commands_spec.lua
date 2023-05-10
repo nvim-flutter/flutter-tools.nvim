@@ -27,6 +27,26 @@ describe("commands", function()
     end
   )
 
+  it(
+    "should add 'target' config option correctly",
+    function()
+      assert.are.same(
+        { "run", "--target", "lib/main_dev.dart" },
+        commands.__get_run_args({}, { target = "lib/main_dev.dart" })
+      )
+    end
+  )
+
+  it(
+    "should add 'dart-define-from-file' config option correctly",
+    function()
+      assert.are.same(
+        { "run", "--dart-define-from-file", "config.json" },
+        commands.__get_run_args({}, { dart_define_from_file = "config.json" })
+      )
+    end
+  )
+
   it("should add multiple dart_defines", function()
     local args = commands.__get_run_args({}, {
       flavor = "Production",

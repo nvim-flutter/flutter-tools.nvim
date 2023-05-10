@@ -130,13 +130,19 @@ local function get_run_args(opts, conf)
   local cmd_args = opts.args
   local device = conf and conf.device or (opts.device and opts.device.id)
   local flavor = conf and conf.flavor
+  local target = conf and conf.target
   local dart_defines = conf and conf.dart_define
+  local dart_define_from_file = conf and conf.dart_define_from_file
   local dev_url = dev_tools.get_url()
 
   if not use_debugger_runner() then vim.list_extend(args, { "run" }) end
   if not cmd_args and device then vim.list_extend(args, { "-d", device }) end
   if cmd_args then vim.list_extend(args, cmd_args) end
   if flavor then vim.list_extend(args, { "--flavor", flavor }) end
+  if target then vim.list_extend(args, { "--target", target }) end
+  if dart_define_from_file then
+    vim.list_extend(args, { "--dart-define-from-file", dart_define_from_file })
+  end
   if dart_defines then
     for key, value in pairs(dart_defines) do
       vim.list_extend(args, { "--dart-define", ("%s=%s"):format(key, value) })
