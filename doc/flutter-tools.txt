@@ -1,4 +1,4 @@
-*flutter-tools.txt*        For Neovim >= 0.8.0        Last change: 2023 May 10
+*flutter-tools.txt*        For Neovim >= 0.8.0        Last change: 2023 May 14
 
 ==============================================================================
 Table of Contents                            *flutter-tools-table-of-contents*
@@ -71,7 +71,6 @@ only to show new users what some basic setup might look like.
 
 PREREQUISITES                 *flutter-tools-flutter-tools.nvim-prerequisites*
 
-
 - neovim 0.8.0+
 
 
@@ -120,7 +119,6 @@ for `vim.ui.select` then I highly recommend the excellent dressing.nvim
 
 
 WARNING                             *flutter-tools-flutter-tools.nvim-warning*
-
 
 - flutter tools does not depend on `nvim-lspconfig`. The two can co-exist but
     please ensure you do **NOT** configure `dartls` using `lspconfig`. It will be
@@ -180,7 +178,6 @@ APP VERSION
 
 ==============================================================================
 2. Usage                                                 *flutter-tools-usage*
-
 
 - `FlutterRun` - Run the current project. This needs to be run from within a flutter project.
 - `FlutterDevices` - Brings up a list of connected devices to select from.
@@ -406,7 +403,6 @@ HIGHLIGHTS ~
 Highlight groups that are user configurable to change the appearance of certain
 UI elements.
 
-
 - `FlutterToolsOutlineIndentGuides` - indent guides for the outline window
 
 
@@ -423,7 +419,6 @@ You can add metadata about the flutter application to your statusline using the
 the decorations to `true` in your configuration.
 
 The currently supported decorations are:
-
 
 - App version - The current version of the app from the `pubspec.yaml`.
 - Device - the device passed to the flutter run command
@@ -512,7 +507,6 @@ when running via dap, you may use the `dev_log.enabled` configuration option if
 you want.
 
 Also see:
-
 
 - nvim-dap-ui <https://github.com/rcarriga/nvim-dap-ui> - a plugin which provides a nice UI for `nvim-dap`.
 
