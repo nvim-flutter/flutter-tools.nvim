@@ -106,6 +106,7 @@ using `lazy.nvim`
             'nvim-lua/plenary.nvim',
             'stevearc/dressing.nvim', -- optional for vim.ui.select
         },
+        opts = {}   -- same as calling `require('flutter-tools').setup({})`
     }
 <
 
