@@ -1,4 +1,4 @@
-*flutter-tools.txt*        For Neovim >= 0.8.0        Last change: 2023 May 14
+*flutter-tools.txt*        For Neovim >= 0.8.0       Last change: 2023 June 17
 
 ==============================================================================
 Table of Contents                            *flutter-tools-table-of-contents*
@@ -106,6 +106,7 @@ using `lazy.nvim`
             'nvim-lua/plenary.nvim',
             'stevearc/dressing.nvim', -- optional for vim.ui.select
         },
+        config = true,
     }
 <
 
