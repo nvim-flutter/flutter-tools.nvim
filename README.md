@@ -75,7 +75,7 @@ using `lazy.nvim`
         'nvim-lua/plenary.nvim',
         'stevearc/dressing.nvim', -- optional for vim.ui.select
     },
-    opts = true,
+    config = true,
 }
 ```
 
