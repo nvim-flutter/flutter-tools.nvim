@@ -1,3 +1,6 @@
+local lazy = require("flutter-tools.lazy")
+local path = lazy.require("flutter-tools.utils.path") ---@module "flutter-tools.utils.path"
+
 local ui = require("flutter-tools.ui")
 
 local success, dap = pcall(require, "dap")
@@ -11,12 +14,35 @@ local M = {}
 function M.setup(config)
   local opts = config.debugger
   require("flutter-tools.executable").get(function(paths)
-    dap.adapters.dart = {
-      type = "executable",
-      command = paths.flutter_bin,
-      args = { "debug-adapter" },
-    }
-    opts.register_configurations(paths)
+    local root_patterns = { ".git", "pubspec.yaml" }
+    local current_dir = vim.fn.expand("%:p:h")
+    local root_dir = path.find_root(root_patterns, current_dir) or current_dir
+    local is_flutter_project = vim.loop.fs_stat(path.join(root_dir, ".metadata"))
+
+    if is_flutter_project then
+      dap.adapters.dart = {
+        type = "executable",
+        command = paths.flutter_bin,
+        args = { "debug-adapter" },
+      }
+      opts.register_configurations(paths)
+    else
+      dap.adapters.dart = {
+        type = "executable",
+        command = paths.dart_bin,
+        args = { "debug_adapter" },
+      }
+      dap.configurations.dart = {
+        {
+          type = "dart",
+          request = "launch",
+          name = "Launch Dart",
+          dartSdkPath = paths.dart_sdk,
+          program = "${workspaceFolder}/bin/main.dart",
+          cwd = "${workspaceFolder}",
+        },
+      }
+    end
     if opts.exception_breakpoints and type(opts.exception_breakpoints) == "table" then
       dap.defaults.dart.exception_breakpoints = opts.exception_breakpoints
     end
