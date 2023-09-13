@@ -199,6 +199,18 @@ function M.commands(opts)
       hint = "Clear previous logs in the output buffer",
       command = require("flutter-tools.log").clear,
     },
+    {
+      id = "flutter-tools-install-app",
+      label = "Flutter tools: Install app",
+      hint = "Install a Flutter app on an attached device.",
+      command = require("flutter-tools.commands").install,
+    },
+    {
+      id = "flutter-tools-uninstall-app",
+      label = "Flutter tools: Uninstall app",
+      hint = "Uninstall the app if already on the device.",
+      command = require("flutter-tools.commands").uninstall,
+    },
   })
 
   local dev_tools = require("flutter-tools.dev_tools")

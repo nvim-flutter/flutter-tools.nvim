@@ -379,6 +379,58 @@ function M.fvm_use(sdk_name)
   end
 end
 
+---@type Job?
+local install_job = nil
+
+function M.install()
+  if not install_job then
+    executable.flutter(function(cmd)
+      local notify_timeout = 10000
+      install_job = Job:new({
+        command = cmd,
+        args = { "install" },
+        -- stylua: ignore
+        cwd = lsp.get_lsp_root_dir() --[[@as string]],
+      })
+      install_job:after_success(vim.schedule_wrap(function(j)
+        ui.notify(utils.join(j:result()), nil, { timeout = notify_timeout })
+        install_job = nil
+      end))
+      install_job:after_failure(vim.schedule_wrap(function(j)
+        ui.notify(utils.join(j:result()), nil, { timeout = notify_timeout })
+        install_job = nil
+      end))
+      install_job:start()
+    end)
+  end
+end
+
+---@type Job?
+local uninstall_job = nil
+
+function M.uninstall()
+  if not uninstall_job then
+    executable.flutter(function(cmd)
+      local notify_timeout = 10000
+      uninstall_job = Job:new({
+        command = cmd,
+        args = { "install", "--uninstall-only" },
+        -- stylua: ignore
+        cwd = lsp.get_lsp_root_dir() --[[@as string]],
+      })
+      uninstall_job:after_success(vim.schedule_wrap(function(j)
+        ui.notify(utils.join(j:result()), nil, { timeout = notify_timeout })
+        uninstall_job = nil
+      end))
+      uninstall_job:after_failure(vim.schedule_wrap(function(j)
+        ui.notify(utils.join(j:result()), nil, { timeout = notify_timeout })
+        uninstall_job = nil
+      end))
+      uninstall_job:start()
+    end)
+  end
+end
+
 if __TEST then
   M.__run = run
   M.__get_run_args = get_run_args
