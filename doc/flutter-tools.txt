@@ -1,4 +1,4 @@
-*flutter-tools.txt*        For Neovim >= 0.8.0       Last change: 2023 July 24
+*flutter-tools.txt*     For Neovim >= 0.8.0     Last change: 2023 September 13
 
 ==============================================================================
 Table of Contents                            *flutter-tools-table-of-contents*
@@ -47,7 +47,7 @@ devices/emulators to run as well as niceties like an outline window, widget
 guides etc. Other core lsp functionality has to be configured via nvim lsp.
 
 To set up the lsp client please read the lsp documentation this can be found in
-`:h lsp` as well `nvim-lspconfig`’s README
+|lsp| as well `nvim-lspconfig`’s README
 <https://github.com/neovim/nvim-lspconfig#lsp-overview> which provides
 information on how to setup _autocompletion_ and _code-actions_, those are not
 configured via this plugin.
@@ -302,7 +302,7 @@ both are set.
           return config
         end,
         -- see the link below for details on each option:
-        -- https://github.com/dart-lang/sdk/blob/master/pkg/analysis_server/tool/lsp_spec/README.mdclient-workspace-configuration
+        -- https://github.com/dart-lang/sdk/blob/master/pkg/analysis_server/tool/lsp_spec/README.md#client-workspace-configuration
         settings = {
           showTodos = true,
           completeFunctionCalls = true,
@@ -431,7 +431,7 @@ To add them to your config you can do something like
     vim.opt.statusline ='%!v:statusLine()'
 <
 
-see `:h statusline` for more information on how to create a statusline.
+see |statusline| for more information on how to create a statusline.
 
 
 TELESCOPE INTEGRATION ~
@@ -478,7 +478,7 @@ this plugin will use `flutter` or `dart` native debugger to debug your project.
 To use the debugger you need to run `:lua require('dap').continue()<CR>`. This
 will start your app. You should then be able to use `dap` commands to begin to
 debug it. For more information on how to use `nvim-dap` please read the
-project’s README or see `:h dap`. Note that running the app this way will
+project’s README or see |dap|. Note that running the app this way will
 prevent commands such as `:FlutterRestart`, `:FlutterReload` from working.
 
 Alternatively, if you prefer always running your app via dap, you can set
