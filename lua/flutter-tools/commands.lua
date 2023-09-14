@@ -152,12 +152,22 @@ local function get_run_args(opts, conf)
   return args
 end
 
+--- @param args string[]
+--- @return Device?
+local function get_device_from_args(args)
+  for i = 1, #args - 1 do
+    if args[i] == "-d" then return { id = args[i + 1] } end
+  end
+end
+
 ---@param opts RunOpts
 ---@param project_conf flutter.ProjectConfig?
 local function run(opts, project_conf)
   opts = opts or {}
   executable.get(function(paths)
     local args = opts.cli_args or get_run_args(opts, project_conf)
+
+    current_device = opts.device or get_device_from_args(args)
     ui.notify("Starting flutter project...")
     runner = use_debugger_runner() and debugger_runner or job_runner
     runner:run(paths, args, lsp.get_lsp_root_dir(), on_run_data, on_run_exit)
