@@ -59,6 +59,7 @@ M.debug_levels = {
 local config = {
   flutter_path = nil,
   flutter_lookup_cmd = get_default_lookup(),
+  root_patterns = { ".git", "pubspec.yaml" },
   fvm = false,
   widget_guides = {
     enabled = false,

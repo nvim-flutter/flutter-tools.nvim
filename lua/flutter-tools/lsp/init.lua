@@ -10,7 +10,6 @@ local fmt = string.format
 local fs = vim.fs
 
 local FILETYPE = "dart"
-local ROOT_PATTERNS = { ".git", "pubspec.yaml" }
 
 local M = {
   lsps = {},
@@ -202,7 +201,7 @@ function M.attach()
 
   get_server_config(user_config, function(c)
     c.root_dir = M.get_lsp_root_dir()
-      or fs.dirname(fs.find(ROOT_PATTERNS, {
+      or fs.dirname(fs.find(conf.root_patterns, {
         path = buffer_path,
         upward = true,
       })[1])
