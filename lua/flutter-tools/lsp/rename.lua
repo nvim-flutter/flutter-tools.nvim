@@ -89,8 +89,8 @@ function M.rename(new_name, options)
     params.newName = name
     local handler = client.handlers["textDocument/rename"] or lsp.handlers["textDocument/rename"]
     client.request("textDocument/rename", params, function(...)
-      handler(...)
       if result then lsp.util.apply_workspace_edit(result, client.offset_encoding) end
+      handler(...)
     end, bufnr)
   end
 
