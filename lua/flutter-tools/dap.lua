@@ -26,6 +26,13 @@ function M.setup(config)
         args = { "debug-adapter" },
       }
       opts.register_configurations(paths)
+      local repl = require("dap.repl")
+      repl.commands = vim.tbl_extend("force", repl.commands, {
+        custom_commands = {
+          [".hot-reload"] = function() dap.session():request("hotReload") end,
+          [".hot-restart"] = function() dap.session():request("hotRestart") end,
+        },
+      })
     else
       dap.adapters.dart = {
         type = "executable",
