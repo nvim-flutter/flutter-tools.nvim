@@ -89,22 +89,24 @@ function DebuggerRunner:run(paths, args, cwd, on_run_data, on_run_exit)
   if launch_configuration_count == 0 then
     ui.notify("No launch configuration for DAP found", ui.ERROR)
     return
-  elseif launch_configuration_count == 1 then
-    launch_config = launch_configurations[1]
   else
-    launch_config = require("dap.ui").pick_one_sync(
+    require("dap.ui").pick_if_many(
       launch_configurations,
       "Select launch configuration",
-      function(item) return fmt("%s : %s", item.name, item.program, vim.inspect(item.args)) end
+      function(item)
+        return fmt("%s : %s | %s", item.name, item.program or item.cwd, vim.inspect(item.args))
+      end,
+      function(launch_config)
+        if not launch_config then return end
+        launch_config = vim.deepcopy(launch_config)
+        launch_config.cwd = launch_config.cwd or cwd
+        launch_config.args = vim.list_extend(launch_config.args or {}, args or {})
+        launch_config.dartSdkPath = paths.dart_sdk
+        launch_config.flutterSdkPath = paths.flutter_sdk
+        dap.run(launch_config)
+      end
     )
   end
-  if not launch_config then return end
-  launch_config = vim.deepcopy(launch_config)
-  launch_config.cwd = cwd
-  launch_config.args = vim.list_extend(launch_config.args or {}, args or {})
-  launch_config.dartSdkPath = paths.dart_sdk
-  launch_config.flutterSdkPath = paths.flutter_sdk
-  dap.run(launch_config)
 end
 
 function DebuggerRunner:send(cmd, quiet)
