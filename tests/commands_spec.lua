@@ -66,4 +66,24 @@ describe("commands", function()
       ["KEY=VALUE"] = 1,
     })
   end)
+
+  it(
+    "should add '--profile' config option correctly",
+    function()
+      assert.are.same(
+        { "run", "--profile" },
+        commands.__get_run_args({}, { flutter_mode = "profile" })
+      )
+    end
+  )
+
+  it(
+    "should add '--release' config option correctly",
+    function()
+      assert.are.same(
+        { "run", "--release" },
+        commands.__get_run_args({}, { flutter_mode = "release" })
+      )
+    end
+  )
 end)

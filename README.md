@@ -320,6 +320,10 @@ require('flutter-tools').setup_project({
     name = 'Web',
     device = 'chrome',
     flavor = 'WebApp'
+  },
+  {
+    name = 'Profile',
+    flutter_mode = 'profile', -- possible values: `debug`, `profile` or `release`, defaults to `debug`
   }
 })
 ```
