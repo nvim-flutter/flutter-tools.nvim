@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.6.0](https://github.com/akinsho/flutter-tools.nvim/compare/v1.5.1...v1.6.0) (2023-12-18)
+
+
+### Features
+
+* **commands:** add install/uninstall commands to menu ([#315](https://github.com/akinsho/flutter-tools.nvim/issues/315)) ([cd73844](https://github.com/akinsho/flutter-tools.nvim/commit/cd738444c27d3a34f03b6d43df08c814e8232fb7))
+
+
+### Bug Fixes
+
+* **commands:** set current device while running project ([045fa0f](https://github.com/akinsho/flutter-tools.nvim/commit/045fa0f56234943464a06666183cd1a3089aeca2))
+
 ## [1.5.1](https://github.com/akinsho/flutter-tools.nvim/compare/v1.5.0...v1.5.1) (2023-10-04)
 
 
