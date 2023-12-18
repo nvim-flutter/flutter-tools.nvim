@@ -1,5 +1,5 @@
 local lazy = require("flutter-tools.lazy")
-local Job = require("plenary.job")
+local Job = require("plenary.job") ---@module "plenary.job"
 local ui = lazy.require("flutter-tools.ui") ---@module "flutter-tools.ui"
 local utils = lazy.require("flutter-tools.utils") ---@module "flutter-tools.utils"
 local devices = lazy.require("flutter-tools.devices") ---@module "flutter-tools.devices"
@@ -386,6 +386,78 @@ function M.fvm_use(sdk_name)
     end))
 
     fvm_use_job:start()
+  end
+end
+
+---@param args string[]
+---@param project_conf flutter.ProjectConfig?
+---@return string[]
+local function set_args_from_project_config(args, project_conf)
+  local flavor = project_conf and project_conf.flavor
+  local device = project_conf and project_conf.device
+  if flavor then vim.list_extend(args, { "--flavor", flavor }) end
+  if device then vim.list_extend(args, { "-d", device }) end
+end
+
+---@type Job?
+local install_job = nil
+
+function M.install()
+  if not install_job then
+    select_project_config(function(project_conf)
+      local args = { "install" }
+      set_args_from_project_config(args, project_conf)
+      ui.notify("Installing the app...")
+      executable.flutter(function(cmd)
+        local notify_timeout = 10000
+        install_job = Job:new({
+          command = cmd,
+          args = args,
+        -- stylua: ignore
+        cwd = lsp.get_lsp_root_dir() --[[@as string]],
+        })
+        install_job:after_success(vim.schedule_wrap(function(j)
+          ui.notify(utils.join(j:result()), nil, { timeout = notify_timeout })
+          install_job = nil
+        end))
+        install_job:after_failure(vim.schedule_wrap(function(j)
+          ui.notify(utils.join(j:result()), nil, { timeout = notify_timeout })
+          install_job = nil
+        end))
+        install_job:start()
+      end)
+    end)
+  end
+end
+
+---@type Job?
+local uninstall_job = nil
+
+function M.uninstall()
+  if not uninstall_job then
+    select_project_config(function(project_conf)
+      local args = { "install", "--uninstall-only" }
+      set_args_from_project_config(args, project_conf)
+      ui.notify("Uninstalling the app...")
+      executable.flutter(function(cmd)
+        local notify_timeout = 10000
+        uninstall_job = Job:new({
+          command = cmd,
+          args = args,
+        -- stylua: ignore
+        cwd = lsp.get_lsp_root_dir() --[[@as string]],
+        })
+        uninstall_job:after_success(vim.schedule_wrap(function(j)
+          ui.notify(utils.join(j:result()), nil, { timeout = notify_timeout })
+          uninstall_job = nil
+        end))
+        uninstall_job:after_failure(vim.schedule_wrap(function(j)
+          ui.notify(utils.join(j:result()), nil, { timeout = notify_timeout })
+          uninstall_job = nil
+        end))
+        uninstall_job:start()
+      end)
+    end)
   end
 end
 
