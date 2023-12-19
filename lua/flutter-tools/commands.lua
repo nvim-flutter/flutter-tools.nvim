@@ -133,6 +133,7 @@ local function get_run_args(opts, conf)
   local target = conf and conf.target
   local dart_defines = conf and conf.dart_define
   local dart_define_from_file = conf and conf.dart_define_from_file
+  local flutter_mode = conf and conf.flutter_mode
   local dev_url = dev_tools.get_url()
 
   if not use_debugger_runner() then vim.list_extend(args, { "run" }) end
@@ -147,6 +148,13 @@ local function get_run_args(opts, conf)
     for key, value in pairs(dart_defines) do
       vim.list_extend(args, { "--dart-define", ("%s=%s"):format(key, value) })
     end
+  end
+  if flutter_mode then
+    if flutter_mode == "profile" then
+      vim.list_extend(args, { "--profile" })
+    elseif flutter_mode == "release" then
+      vim.list_extend(args, { "--release" })
+    end -- else default to debug
   end
   if dev_url then vim.list_extend(args, { "--devtools-server-address", dev_url }) end
   return args
