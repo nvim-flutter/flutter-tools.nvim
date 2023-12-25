@@ -225,6 +225,15 @@ end
 function M.visual_debug(quiet) send("visual_debug", quiet) end
 
 ---@param quiet boolean?
+function M.performance_overlay(quiet) send("performance_overlay", quiet) end
+
+---@param quiet boolean?
+function M.repaint_rainbow(quiet) send("repaint_rainbow", quiet) end
+
+---@param quiet boolean?
+function M.slow_animations(quiet) send("slow_animations", quiet) end
+
+---@param quiet boolean?
 function M.detach(quiet) send("detach", quiet) end
 
 function M.copy_profiler_url()

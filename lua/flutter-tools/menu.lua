@@ -104,43 +104,61 @@ function M.commands(opts)
     cmds = {
       {
         id = "flutter-tools-hot-reload",
-        label = "Flutter tools: Hot reload",
+        label = "Hot reload",
         hint = "Reload a running flutter project",
         command = commands.reload,
       },
       {
         id = "flutter-tools-hot-restart",
-        label = "Flutter tools: Hot restart",
+        label = "Hot restart",
         hint = "Restart a running flutter project",
         command = commands.restart,
       },
       {
         id = "flutter-tools-visual-debug",
-        label = "Flutter tools: Visual Debug",
+        label = "Visual Debug",
         hint = "Add the visual debugging overlay",
         command = commands.visual_debug,
       },
       {
+        id = "flutter-tools-performance-overlay",
+        label = "Performance Overlay",
+        hint = "Toggle performance overlay",
+        command = commands.performance_overlay,
+      },
+      {
+        id = "flutter-tools-repaint-rainbow",
+        label = "Repaint Rainbow",
+        hint = "Toggle repaint rainbow",
+        command = commands.repaint_rainbow,
+      },
+      {
+        id = "flutter-tools-slow-animations",
+        label = "Slow Animations",
+        hint = "Toggle slow animations",
+        command = commands.slow_animations,
+      },
+      {
         id = "flutter-tools-quit",
-        label = "Flutter tools: Quit",
+        label = "Quit",
         hint = "Quit running flutter project",
         command = commands.quit,
       },
       {
         id = "flutter-tools-detach",
-        label = "Flutter tools: Detach",
+        label = "Detach",
         hint = "Quit running flutter project but leave the process running",
         command = commands.detach,
       },
       {
         id = "flutter-tools-widget-inspector",
-        label = "Flutter tools: Widget Inspector",
+        label = "Widget Inspector",
         hint = "Toggle the widget inspector",
         command = commands.widget_inspector,
       },
       {
         id = "flutter-tools-construction-lines",
-        label = "Flutter tools: Construction Lines",
+        label = "Construction Lines",
         hint = "Display construction lines",
         command = commands.construction_lines,
       },
@@ -149,7 +167,7 @@ function M.commands(opts)
     cmds = {
       {
         id = "flutter-tools-run",
-        label = "Flutter tools: Run",
+        label = "Run",
         hint = "Start a flutter project",
         command = commands.run,
       },
@@ -159,55 +177,55 @@ function M.commands(opts)
   vim.list_extend(cmds, {
     {
       id = "flutter-tools-pub-get",
-      label = "Flutter tools: Pub get",
+      label = "Pub get",
       hint = "Run pub get in the project directory",
       command = commands.pub_get,
     },
     {
       id = "flutter-tools-pub-upgrade",
-      label = "Flutter tools: Pub upgrade",
+      label = "Pub upgrade",
       hint = "Run pub upgrade in the project directory",
       command = commands.pub_upgrade,
     },
     {
       id = "flutter-tools-list-devices",
-      label = "Flutter tools: List Devices",
+      label = "List Devices",
       hint = "Show the available physical devices",
       command = require("flutter-tools.devices").list_devices,
     },
     {
       id = "flutter-tools-list-emulators",
-      label = "Flutter tools: List Emulators",
+      label = "List Emulators",
       hint = "Show the available emulator devices",
       command = require("flutter-tools.devices").list_emulators,
     },
     {
       id = "flutter-tools-open-outline",
-      label = "Flutter tools: Open Outline",
+      label = "Open Outline",
       hint = "Show the current files widget tree",
       command = require("flutter-tools.outline").open,
     },
     {
       id = "flutter-tools-generate",
-      label = "Flutter tools: Generate ",
+      label = "Generate ",
       hint = "Generate code",
       command = commands.generate,
     },
     {
       id = "flutter-tools-clear-dev-log",
-      label = "Flutter tools: Clear Dev Log",
+      label = "Clear Dev Log",
       hint = "Clear previous logs in the output buffer",
       command = require("flutter-tools.log").clear,
     },
     {
       id = "flutter-tools-install-app",
-      label = "Flutter tools: Install app",
+      label = "Install app",
       hint = "Install a Flutter app on an attached device.",
       command = require("flutter-tools.commands").install,
     },
     {
       id = "flutter-tools-uninstall-app",
-      label = "Flutter tools: Uninstall app",
+      label = "Uninstall app",
       hint = "Uninstall the app if already on the device.",
       command = require("flutter-tools.commands").uninstall,
     },
@@ -219,13 +237,13 @@ function M.commands(opts)
     vim.list_extend(cmds, {
       {
         id = "flutter-tools-copy-profiler-url",
-        label = "Flutter tools: Copy Profiler Url",
+        label = "Copy Profiler Url",
         hint = "Run the app and the DevTools first",
         command = commands.copy_profiler_url,
       },
       {
         id = "flutter-tools-open-dev-tools",
-        label = "Flutter tools: Open Dev Tools",
+        label = "Open Dev Tools",
         hint = "Run the app and the Dev Tools first",
         command = commands.open_dev_tools,
       },
@@ -234,7 +252,7 @@ function M.commands(opts)
     vim.list_extend(cmds, {
       {
         id = "flutter-tools-start-dev-tools",
-        label = "Flutter tools: Start Dev Tools",
+        label = "Start Dev Tools",
         hint = "Open flutter dev tools in the browser",
         command = require("flutter-tools.dev_tools").start,
       },
