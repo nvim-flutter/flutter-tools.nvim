@@ -3,15 +3,13 @@ local ui = lazy.require("flutter-tools.ui") ---@module "flutter-tools.ui"
 local dev_tools = lazy.require("flutter-tools.dev_tools") ---@module "flutter-tools.dev_tools"
 local config = lazy.require("flutter-tools.config") ---@module "flutter-tools.config"
 local utils = lazy.require("flutter-tools.utils") ---@module "flutter-tools.utils"
+local vm_service_extensions = lazy.require("flutter-tools.runners.vm_service_extensions") ---@module "flutter-tools.runners.vm_service_extensions"
 local _, dap = pcall(require, "dap")
 
 local fmt = string.format
 
 ---@type flutter.Runner
 local DebuggerRunner = {}
-
-local service_extensions_isolateid = {}
-local service_extensions_state = {}
 
 local plugin_identifier = "flutter-tools"
 
@@ -23,16 +21,12 @@ local command_requests = {
   construction_lines = "constructionLines",
 }
 
-local service_activation_requests = {
-  visual_debug = "ext.flutter.debugPaint",
-}
-
 function DebuggerRunner:is_running() return dap.session() ~= nil end
 
 function DebuggerRunner:run(paths, args, cwd, on_run_data, on_run_exit)
   local started = false
   local before_start_logs = {}
-  service_extensions_isolateid = {}
+  vm_service_extensions.reset()
   dap.listeners.after["event_output"][plugin_identifier] = function(_, body)
     if body and body.output then
       for line in body.output:gmatch("[^\r\n]+") do
@@ -61,7 +55,7 @@ function DebuggerRunner:run(paths, args, cwd, on_run_data, on_run_exit)
 
   dap.listeners.before["event_dart.serviceExtensionAdded"][plugin_identifier] = function(_, body)
     if body and body.extensionRPC and body.isolateId then
-      service_extensions_isolateid[body.extensionRPC] = body.isolateId
+      vm_service_extensions.set_isolate_id(body.extensionRPC, body.isolateId)
     end
   end
 
@@ -70,7 +64,7 @@ function DebuggerRunner:run(paths, args, cwd, on_run_data, on_run_exit)
     body
   )
     if body and body.extension and body.value then
-      service_extensions_state[body.extension] = body.value
+      vm_service_extensions.set_service_extensions_state(body.extension, body.value)
     end
   end
 
@@ -111,24 +105,16 @@ end
 
 function DebuggerRunner:send(cmd, quiet)
   local request = command_requests[cmd]
-  local service_activation_request = service_activation_requests[cmd]
   if request ~= nil then
     dap.session():request(request)
-  elseif service_activation_request then
-    local new_value
-    if service_extensions_state[service_activation_request] == "true" then
-      new_value = "false"
-    else
-      new_value = "true"
-    end
-    dap.session():request("callService", {
-      method = service_activation_request,
-      params = {
-        enabled = new_value,
-        isolateId = service_extensions_isolateid[service_activation_request],
-      },
-    })
-  elseif not quiet then
+    return
+  end
+  local service_activation_params = vm_service_extensions.get_request_params(cmd)
+  if service_activation_params then
+    dap.session():request("callService", service_activation_params)
+    return
+  end
+  if not quiet then
     ui.notify("Command " .. cmd .. " is not yet implemented for DAP runner", ui.ERROR)
   end
 end
