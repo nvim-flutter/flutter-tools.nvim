@@ -319,7 +319,8 @@ require('flutter-tools').setup_project({
   {
     name = 'Web',
     device = 'chrome',
-    flavor = 'WebApp'
+    flavor = 'WebApp',
+    web_port = 4000
   },
   {
     name = 'Profile',

@@ -134,10 +134,12 @@ local function get_run_args(opts, conf)
   local dart_defines = conf and conf.dart_define
   local dart_define_from_file = conf and conf.dart_define_from_file
   local flutter_mode = conf and conf.flutter_mode
+  local web_port = conf and conf.web_port
   local dev_url = dev_tools.get_url()
 
   if not use_debugger_runner() then vim.list_extend(args, { "run" }) end
   if not cmd_args and device then vim.list_extend(args, { "-d", device }) end
+  if web_port then vim.list_extend(args, { "--web-port", web_port }) end
   if cmd_args then vim.list_extend(args, cmd_args) end
   if flavor then vim.list_extend(args, { "--flavor", flavor }) end
   if target then vim.list_extend(args, { "--target", target }) end
