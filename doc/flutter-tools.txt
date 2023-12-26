@@ -1,4 +1,4 @@
-*flutter-tools.txt*      For Neovim >= 0.8.0     Last change: 2023 December 19
+*flutter-tools.txt*      For Neovim >= 0.8.0     Last change: 2023 December 26
 
 ==============================================================================
 Table of Contents                            *flutter-tools-table-of-contents*
@@ -358,7 +358,8 @@ _conceptually_ to vscode’s `launch.json` file.
       {
         name = 'Web',
         device = 'chrome',
-        flavor = 'WebApp'
+        flavor = 'WebApp',
+        web_port = 4000
       },
       {
         name = 'Profile',
