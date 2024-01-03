@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.7.0](https://github.com/akinsho/flutter-tools.nvim/compare/v1.6.0...v1.7.0) (2024-01-03)
+
+
+### Features
+
+* add option to configure flutter mode via config ([#314](https://github.com/akinsho/flutter-tools.nvim/issues/314)) ([69466cc](https://github.com/akinsho/flutter-tools.nvim/commit/69466cc5ce3743bfb08ae07b0c415d7e549437d4))
+* add performance_overlay, repaint_rainbow and slow_animations commands ([deb4fa8](https://github.com/akinsho/flutter-tools.nvim/commit/deb4fa80812157e6c6dadaa25dfe0cfa42950e5c))
+* add web port param to config ([#320](https://github.com/akinsho/flutter-tools.nvim/issues/320)) ([b13d46b](https://github.com/akinsho/flutter-tools.nvim/commit/b13d46b3a06a9e2c414d0020c0cb7cf0dd51d426))
+
 ## [1.6.0](https://github.com/akinsho/flutter-tools.nvim/compare/v1.5.1...v1.6.0) (2023-12-18)
 
 
