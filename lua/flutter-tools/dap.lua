@@ -11,13 +11,20 @@ end
 
 local M = {}
 
+local function has_flutter_dependency_in_pubspec()
+  local pubspec = vim.fn.glob("pubspec.yaml")
+  if pubspec == "" then return false end
+  local pubspec_content = vim.fn.readfile(pubspec)
+  local joined_content = table.concat(pubspec_content, "\n")
+
+  local flutter_dependency = string.match(joined_content, "flutter:\n[%s\t]*sdk:[%s\t]*flutter")
+  return flutter_dependency ~= nil
+end
+
 function M.setup(config)
   local opts = config.debugger
   require("flutter-tools.executable").get(function(paths)
-    local root_patterns = { ".git", "pubspec.yaml" }
-    local current_dir = vim.fn.expand("%:p:h")
-    local root_dir = path.find_root(root_patterns, current_dir) or current_dir
-    local is_flutter_project = vim.loop.fs_stat(path.join(root_dir, ".metadata"))
+    local is_flutter_project = has_flutter_dependency_in_pubspec()
 
     if is_flutter_project then
       dap.adapters.dart = {
