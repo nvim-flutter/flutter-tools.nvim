@@ -181,6 +181,8 @@ end
 
 --- Checks if buffer path is valid for attaching LSP
 local function is_valid_path(buffer_path)
+  if buffer_path == "" then return false end
+
   local start_index, _, uri_prefix = buffer_path:find("^(%w+://).*")
   -- Do not attach LSP if file URI prefix is not file.
   -- For example LSP will not be attached for diffview:// or fugitive:// buffers.
