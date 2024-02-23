@@ -6,6 +6,7 @@ local config = lazy.require("flutter-tools.config") ---@module "flutter-tools.co
 local Job = require("plenary.job")
 
 local fn = vim.fn
+local fs = vim.fs
 local luv = vim.loop
 
 local M = {}
@@ -98,15 +99,22 @@ local function path_from_lookup_cmd(lookup_cmd, callback)
   job:start()
 end
 
+local function _flutter_bin_from_fvm()
+  local fvm_root =
+    fs.dirname(fs.find(".fvm", { path = luv.cwd(), upward = true, type = "directory" })[1])
+  local flutter_bin_symlink = path.join(fvm_root, ".fvm", "flutter_sdk", "bin", "flutter")
+  local flutter_bin = luv.fs_realpath(flutter_bin_symlink)
+  if path.exists(flutter_bin_symlink) and path.exists(flutter_bin) then return flutter_bin end
+end
+
 ---Fetch the paths to the users binaries.
 ---@param callback fun(paths: table<string, string>)
 ---@return nil
 function M.get(callback)
   if _paths then return callback(_paths) end
   if config.fvm then
-    local flutter_bin_symlink = path.join(luv.cwd(), ".fvm", "flutter_sdk", "bin", "flutter")
-    local flutter_bin = luv.fs_realpath(flutter_bin_symlink)
-    if path.exists(flutter_bin_symlink) and path.exists(flutter_bin) then
+    local flutter_bin = _flutter_bin_from_fvm()
+    if flutter_bin then
       _paths = {
         flutter_bin = flutter_bin,
         flutter_sdk = _flutter_sdk_root(flutter_bin),
