@@ -1,4 +1,4 @@
-*flutter-tools.txt*       For Neovim >= 0.8.0       Last change: 2024 March 27
+*flutter-tools.txt*       For Neovim >= 0.8.0       Last change: 2024 March 28
 
 ==============================================================================
 Table of Contents                            *flutter-tools-table-of-contents*
@@ -14,6 +14,7 @@ Table of Contents                            *flutter-tools-table-of-contents*
   - FlutterOutline                        |flutter-tools-usage-flutteroutline|
   - Debugging                                  |flutter-tools-usage-debugging|
   - FAQ                                              |flutter-tools-usage-faq|
+3. Links                                                 |flutter-tools-links|
 
 ==============================================================================
 1. flutter-tools.nvim                       *flutter-tools-flutter-tools.nvim*
