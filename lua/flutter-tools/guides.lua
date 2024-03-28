@@ -157,7 +157,9 @@ end
 
 function M.setup()
   local color = utils.get_hl("Normal", "fg")
-  if color and color ~= "" then utils.highlight(hl_group, { foreground = color }) end
+  if color and color ~= "" then
+    utils.highlight(hl_group, { foreground = color, default = true })
+  end
 end
 
 local function is_buf_valid(bufnum)
