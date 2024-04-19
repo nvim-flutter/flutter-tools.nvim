@@ -1,4 +1,4 @@
-*flutter-tools.txt*       For Neovim >= 0.8.0       Last change: 2024 March 28
+*flutter-tools.txt*       For Neovim >= 0.8.0       Last change: 2024 April 19
 
 ==============================================================================
 Table of Contents                            *flutter-tools-table-of-contents*
