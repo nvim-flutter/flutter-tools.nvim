@@ -85,7 +85,7 @@ end
 
 function M.handle_devtools_available()
   start_browser()
-  ui.notify("Detected devtools url\nExecute FlutterCopyProfilerUrl to copy it")
+  ui.notify("Detected devtools url, execute FlutterCopyProfilerUrl to copy it")
 end
 
 --[[ {
