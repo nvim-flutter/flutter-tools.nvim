@@ -1,6 +1,7 @@
 local lazy = require("flutter-tools.lazy")
 local path = lazy.require("flutter-tools.utils.path") ---@module "flutter-tools.utils.path"
 local ui = lazy.require("flutter-tools.ui") ---@module "flutter-tools.ui"
+local utils = lazy.require("flutter-tools.utils") ---@module "flutter-tools.utils"
 
 ---@class flutter.ProjectConfig
 ---@field name string?
@@ -155,7 +156,7 @@ end
 
 ---@param project flutter.ProjectConfig | flutter.ProjectConfig[]
 function M.setup_project(project)
-  if not vim.tbl_islist(project) then project = { project } end
+  if not utils.islist(project) then project = { project } end
   project_config = project
 end
 

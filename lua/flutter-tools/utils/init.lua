@@ -141,4 +141,7 @@ function M.emit_event(event, opts)
   api.nvim_exec_autocmds("User", { pattern = event, data = data })
 end
 
+-- TODO: Remove after compatibility with Neovim=0.9 is dropped
+M.islist = vim.fn.has("nvim-0.10") == 1 and vim.islist or vim.tbl_islist
+
 return M
