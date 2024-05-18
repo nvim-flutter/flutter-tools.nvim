@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.9.1](https://github.com/akinsho/flutter-tools.nvim/compare/v1.9.0...v1.9.1) (2024-05-18)
+
+
+### Bug Fixes
+
+* handle deprecated vim.tbl_islist function ([e9f6f65](https://github.com/akinsho/flutter-tools.nvim/commit/e9f6f65ca5f72123a0f1e3a162d888e3889163f2))
+* replace deprecated vim.lsp.get_active_clients with  vim.lsp.get_clients ([c19f945](https://github.com/akinsho/flutter-tools.nvim/commit/c19f94576f866888f1b84aa73c690b30de4b86fb))
+
 ## [1.9.0](https://github.com/akinsho/flutter-tools.nvim/compare/v1.8.0...v1.9.0) (2024-03-28)
 
 
