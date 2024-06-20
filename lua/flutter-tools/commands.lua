@@ -179,6 +179,17 @@ local function run(opts, project_conf)
 
     current_device = opts.device or get_device_from_args(args)
     ui.notify("Starting flutter project...")
+    if project_conf then
+      if project_conf.pre_run_callback then
+        local callback_args = {
+          name = project_conf.name,
+          target = project_conf.target,
+          flavor = project_conf.flavor,
+          device = project_conf.device,
+        }
+        project_conf.pre_run_callback(callback_args)
+      end
+    end
     runner = use_debugger_runner() and debugger_runner or job_runner
     runner:run(paths, args, lsp.get_lsp_root_dir(), on_run_data, on_run_exit)
   end)
@@ -432,8 +443,8 @@ function M.install()
         install_job = Job:new({
           command = cmd,
           args = args,
-        -- stylua: ignore
-        cwd = lsp.get_lsp_root_dir() --[[@as string]],
+          -- stylua: ignore
+          cwd = lsp.get_lsp_root_dir() --[[@as string]],
         })
         install_job:after_success(vim.schedule_wrap(function(j)
           ui.notify(utils.join(j:result()), nil, { timeout = notify_timeout })
@@ -463,8 +474,8 @@ function M.uninstall()
         uninstall_job = Job:new({
           command = cmd,
           args = args,
-        -- stylua: ignore
-        cwd = lsp.get_lsp_root_dir() --[[@as string]],
+          -- stylua: ignore
+          cwd = lsp.get_lsp_root_dir() --[[@as string]],
         })
         uninstall_job:after_success(vim.schedule_wrap(function(j)
           ui.notify(utils.join(j:result()), nil, { timeout = notify_timeout })
