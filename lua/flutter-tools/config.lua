@@ -6,6 +6,7 @@ local utils = lazy.require("flutter-tools.utils") ---@module "flutter-tools.util
 ---@class flutter.ProjectConfig
 ---@field name string?
 ---@field device string
+---@field pre_run_callback fun(opts: {string: string})
 ---@field flavor string
 ---@field target string
 ---@field dart_define {[string]: string}
@@ -62,6 +63,7 @@ M.debug_levels = {
 local config = {
   flutter_path = nil,
   flutter_lookup_cmd = get_default_lookup(),
+  pre_run_callback = nil,
   root_patterns = { ".git", "pubspec.yaml" },
   fvm = false,
   widget_guides = {

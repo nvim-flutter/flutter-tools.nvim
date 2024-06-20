@@ -314,6 +314,8 @@ require('flutter-tools').setup_project({
       API_URL = 'https://dev.example.com/api',
       IS_DEV = true,
     },
+    pre_run_callback = nil, -- optional callback to run before the configuration
+    -- exposes a table containing name, target, flavor and device in the arguments
     dart_define_from_file = 'config.json' -- the path to a JSON configuration file
   },
   {
