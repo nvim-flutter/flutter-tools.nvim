@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.10.0](https://github.com/akinsho/flutter-tools.nvim/compare/v1.9.1...v1.10.0) (2024-06-25)
+
+
+### Features
+
+* **config:** add an optional pre_run_callback attribute to `setup_project` ([f898850](https://github.com/akinsho/flutter-tools.nvim/commit/f8988508798ebc4af2c43405d2c35432a50efd9f))
+
+
+### Bug Fixes
+
+* **ui:** add check for line in buffer range ([0fbb3ee](https://github.com/akinsho/flutter-tools.nvim/commit/0fbb3ee9056236d907b4b5680fcaa1da23cddc29))
+* **ui:** render labels only in the document range ([#360](https://github.com/akinsho/flutter-tools.nvim/issues/360)) ([fd0443e](https://github.com/akinsho/flutter-tools.nvim/commit/fd0443ede63d7ff52b98c25b75a822c65315df7c))
+
 ## [1.9.1](https://github.com/akinsho/flutter-tools.nvim/compare/v1.9.0...v1.9.1) (2024-05-18)
 
 
