@@ -1,9 +1,7 @@
 local lazy = require("flutter-tools.lazy")
-local ui = lazy.require("flutter-tools.ui") ---@module "flutter-tools.ui"
 local config = lazy.require("flutter-tools.config") ---@module "flutter-tools.labels"
 
 local api = vim.api
-local fmt = string.format
 
 local M = {}
 
@@ -16,18 +14,16 @@ local function render_labels(labels, opts)
   local prefix = opts and opts.prefix or "// "
 
   for _, item in ipairs(labels) do
-    local line = item.range["end"].line
-    local ok, err = pcall(api.nvim_buf_set_extmark, 0, namespace, tonumber(line), -1, {
-      virt_text = { {
-        prefix .. item.label,
-        highlight,
-      } },
-      virt_text_pos = "eol",
-      hl_mode = "combine",
-    })
-    if not ok then
-      local name = api.nvim_buf_get_name(0)
-      ui.notify(fmt("error drawing label for %s on line %d.\nbecause: ", name, line, err), ui.ERROR)
+    local line = tonumber(item.range["end"].line)
+    if line <= api.nvim_buf_line_count(0) then
+      api.nvim_buf_set_extmark(0, namespace, line, -1, {
+        virt_text = { {
+          prefix .. item.label,
+          highlight,
+        } },
+        virt_text_pos = "eol",
+        hl_mode = "combine",
+      })
     end
   end
 end
