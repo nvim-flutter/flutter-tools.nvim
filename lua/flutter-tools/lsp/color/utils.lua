@@ -162,9 +162,11 @@ local function color_virtual_text(_, bufnr, range, rgb, virtual_text_str)
   local hex = rgb_to_hex(rgb)
   local hlname = create_set_hl("LspDocumentColorVirtualText", { foreground = hex })
   local line = range["end"]["line"]
-  api.nvim_buf_set_extmark(bufnr, CLIENT_NS, line, -1, {
-    virt_text = { { virtual_text_str, hlname } },
-  })
+  if line <= api.nvim_buf_line_count(0) then
+    api.nvim_buf_set_extmark(bufnr, CLIENT_NS, line, -1, {
+      virt_text = { { virtual_text_str, hlname } },
+    })
+  end
 end
 
 --- Clears the previous document colors and adds the new document colors from @result.
