@@ -128,6 +128,7 @@ local config = {
     __index = function(_, k) return k == "open_cmd" and get_split_cmd(0.3, 40) or nil end,
   }),
   dev_log = setmetatable({
+    filter = nil,
     enabled = true,
     notify_errors = false,
   }, {
