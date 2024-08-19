@@ -109,6 +109,7 @@ local config = {
   closing_tags = {
     highlight = "Comment",
     prefix = "// ",
+    priority = 10,
     enabled = true,
   },
   lsp = {
