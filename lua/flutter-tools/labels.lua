@@ -12,7 +12,7 @@ local function render_labels(labels, opts)
   opts = opts or {}
   local highlight = opts and opts.highlight or "Comment"
   local prefix = opts and opts.prefix or "// "
-  local priority = opts and opts.priority or 0
+  local priority = opts and opts.priority or 10
 
   for _, item in ipairs(labels) do
     local line = tonumber(item.range["end"].line)
