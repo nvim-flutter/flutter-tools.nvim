@@ -28,13 +28,10 @@ local current_device = nil
 local runner = nil
 
 local function use_debugger_runner()
-  local dap_ok, dap = pcall(require, "dap")
-  if not config.debugger.run_via_dap then return false end
+  if not config.debugger.enabled then return false end
+  local dap_ok, _ = pcall(require, "dap")
   if dap_ok then return true end
-  ui.notify(
-    utils.join({ "debugger runner was request but nvim-dap is not installed!", dap }),
-    ui.ERROR
-  )
+  ui.notify("debugger runner was request but nvim-dap is not installed!", ui.ERROR)
   return false
 end
 
@@ -421,7 +418,6 @@ end
 
 ---@param args string[]
 ---@param project_conf flutter.ProjectConfig?
----@return string[]
 local function set_args_from_project_config(args, project_conf)
   local flavor = project_conf and project_conf.flavor
   local device = project_conf and project_conf.device
