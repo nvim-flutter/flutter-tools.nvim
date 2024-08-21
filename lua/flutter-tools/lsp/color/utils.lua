@@ -4,6 +4,7 @@ local validate, api = vim.validate, vim.api
 local lazy = require("flutter-tools.lazy")
 local ui = lazy.require("flutter-tools.ui") ---@module "flutter-tools.ui"
 local config = lazy.require("flutter-tools.config") ---@module "flutter-tools.config"
+local utils = lazy.require("flutter-tools.utils") ---@module "flutter-tools.utils"
 
 local M = {}
 
@@ -182,15 +183,7 @@ function M.on_document_color(err, result, ctx, conf)
 end
 
 local function get_background_color()
-  local normal_bg --- @type string?
-  if api.nvim_get_hl then
-    local hl = api.nvim_get_hl(0, { name = "Normal" })
-    normal_bg = hl.bg
-  else
-    ---@diagnostic disable-next-line: undefined-field
-    local hl = api.nvim_get_hl_by_name("Normal", true)
-    normal_bg = hl.background
-  end
+  local normal_bg = utils.get_hl("Normal", "bg")
   if not normal_bg then return end
   return M.decode_24bit_rgb(normal_bg)
 end
@@ -198,7 +191,7 @@ end
 --- Shows a list of document colors for a certain buffer.
 ---
 ---@param client_id number client id
----@param bufnr buffer id
+---@param bufnr number buffer id
 ---@param color_infos table of `ColorInformation` objects to highlight.
 -- See https://microsoft.github.io/language-server-protocol/specification#textDocument_documentColor
 function M.buf_color(client_id, bufnr, color_infos, _)
@@ -223,7 +216,7 @@ end
 
 ---Removes document color highlights from a buffer.
 ---@param client_id number client id
----@param bufnr buffer id
+---@param bufnr number buffer id
 function M.buf_clear_color(client_id, bufnr)
   validate({ client_id = { client_id, "n", true }, bufnr = { bufnr, "n", true } })
   if api.nvim_buf_is_valid(bufnr) then api.nvim_buf_clear_namespace(bufnr, CLIENT_NS, 0, -1) end

@@ -82,14 +82,19 @@ function M.executable(bin) return fn.executable(bin) > 0 end
 ---Get the attribute value of a specified highlight
 ---@param name string
 ---@param attribute string
----@return string
+---@return string?
 function M.get_hl(name, attribute)
-  local ok, hl = pcall(api.nvim_get_hl_by_name, name, true)
-  if not ok then return "NONE" end
-  hl.foreground = hl.foreground and "#" .. bit.tohex(hl.foreground, 6)
-  hl.background = hl.background and "#" .. bit.tohex(hl.background, 6)
-  local attr = ({ bg = "background", fg = "foreground" })[attribute] or attribute
-  return hl[attr] or "NONE"
+  if api.nvim_get_hl then
+    local hl = api.nvim_get_hl(0, { name = name })
+    return hl[attribute]
+  else
+    local ok, hl = pcall(api.nvim_get_hl_by_name, name, true)
+    if not ok then return end
+    hl.foreground = hl.foreground and "#" .. bit.tohex(hl.foreground, 6)
+    hl.background = hl.background and "#" .. bit.tohex(hl.background, 6)
+    local attr = ({ bg = "background", fg = "foreground" })[attribute] or attribute
+    return hl[attr]
+  end
 end
 
 function M.open_command()
