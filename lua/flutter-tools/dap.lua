@@ -1,6 +1,3 @@
-local lazy = require("flutter-tools.lazy")
-local path = lazy.require("flutter-tools.utils.path") ---@module "flutter-tools.utils.path"
-
 local ui = require("flutter-tools.ui")
 
 local success, dap = pcall(require, "dap")
