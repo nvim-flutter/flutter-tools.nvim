@@ -4,15 +4,15 @@ local ui = lazy.require("flutter-tools.ui") ---@module "flutter-tools.ui"
 local utils = lazy.require("flutter-tools.utils") ---@module "flutter-tools.utils"
 
 ---@class flutter.ProjectConfig
----@field name string?
----@field device string
----@field pre_run_callback fun(opts: {string: string})
----@field flavor string
----@field target string
----@field dart_define {[string]: string}
----@field dart_define_from_file string
----@field flutter_mode string
----@field web_port number
+---@field name? string
+---@field device? string
+---@field pre_run_callback? fun(opts: {string: string})
+---@field flavor? string
+---@field target? string
+---@field dart_define? {[string]: string}
+---@field dart_define_from_file? string
+---@field flutter_mode? string
+---@field web_port? number
 
 local M = {}
 
