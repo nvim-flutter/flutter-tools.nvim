@@ -27,7 +27,7 @@ local function _dart_sdk_root(paths)
     if path.is_dir(path.join(unpack(segments))) then
       -- remove the /cache/ directory as it's already part of the SDK path above
       segments[#segments] = nil
-      return path.join(unpack(vim.tbl_flatten({ segments, dart_sdk })))
+      return path.join(unpack(utils.flatten({ segments, dart_sdk })))
     end
   end
 

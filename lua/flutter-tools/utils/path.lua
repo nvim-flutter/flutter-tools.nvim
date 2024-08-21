@@ -1,4 +1,6 @@
 -- Some path utilities, copied from nvim-lsp config
+local lazy = require("flutter-tools.lazy")
+local utils = lazy.require("flutter-tools.utils") ---@module "flutter-tools.utils"
 
 local luv = vim.loop
 local M = {}
@@ -51,7 +53,7 @@ end
 ---@return string
 function M.join(...)
   local result =
-    table.concat(vim.tbl_flatten({ ... }), M.path_sep):gsub(M.path_sep .. "+", M.path_sep)
+    table.concat(utils.flatten({ ... }), M.path_sep):gsub(M.path_sep .. "+", M.path_sep)
   return result
 end
 
