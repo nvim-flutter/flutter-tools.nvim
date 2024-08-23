@@ -216,7 +216,6 @@ require("flutter-tools").setup {
   },
   debugger = { -- integrate with nvim dap + install dart code debugger
     enabled = false,
-    run_via_dap = false, -- use dap instead of a plenary job to run flutter apps
     -- if empty dap will not stop on any exceptions, otherwise it will stop on those specified
     -- see |:help dap.set_exception_breakpoints()| for more info
     exception_breakpoints = {}
@@ -435,9 +434,6 @@ If `dap` is this plugin will use `flutter` or `dart` native debugger to debug yo
 To use the debugger you need to run `:lua require('dap').continue()<CR>`. This will start your app. You should then be able
 to use `dap` commands to begin to debug it. For more information on how to use `nvim-dap` please read the project's README
 or see `:h dap`. Note that running the app this way will prevent commands such as `:FlutterRestart`, `:FlutterReload` from working.
-
-Alternatively, if you prefer always running your app via dap, you can set `debugger.run_via_dap = true` in your config.
-This way you benefit from the debugging abilities of DAP, AND you can still use `:FlutterRestart`, `:FlutterReload`, etc.
 
 You can use the `debugger.register_configurations` to register custom runner configuration (for example for different targets or flavor).
 If your flutter repo contains launch configurations in `.vscode/launch.json` you can use them via this config :

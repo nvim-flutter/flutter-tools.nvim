@@ -81,7 +81,6 @@ local config = {
   },
   debugger = {
     enabled = false,
-    run_via_dap = false,
     exception_breakpoints = nil,
     register_configurations = function(paths)
       require("dap").configurations.dart = {
