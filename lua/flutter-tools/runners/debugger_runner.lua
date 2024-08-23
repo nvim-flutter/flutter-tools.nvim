@@ -96,6 +96,9 @@ function DebuggerRunner:run(paths, args, cwd, on_run_data, on_run_exit)
         launch_config.args = vim.list_extend(launch_config.args or {}, args or {})
         launch_config.dartSdkPath = paths.dart_sdk
         launch_config.flutterSdkPath = paths.flutter_sdk
+        if config.debugger.evaluate_to_string_in_debug_views then
+          launch_config.evaluateToStringInDebugViews = true
+        end
         dap.run(launch_config)
       end
     )
