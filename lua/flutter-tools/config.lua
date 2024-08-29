@@ -13,6 +13,7 @@ local utils = lazy.require("flutter-tools.utils") ---@module "flutter-tools.util
 ---@field dart_define_from_file? string
 ---@field flutter_mode? string
 ---@field web_port? number
+---@field cwd? string full path of current working directory, defaults to LSP root
 
 local M = {}
 
@@ -92,7 +93,6 @@ local config = {
           dartSdkPath = paths.dart_sdk,
           flutterSdkPath = paths.flutter_sdk,
           program = "${workspaceFolder}/lib/main.dart",
-          cwd = "${workspaceFolder}",
         },
         {
           type = "dart",
@@ -101,7 +101,6 @@ local config = {
           dartSdkPath = paths.dart_sdk,
           flutterSdkPath = paths.flutter_sdk,
           program = "${workspaceFolder}/lib/main.dart",
-          cwd = "${workspaceFolder}",
         },
       }
     end,

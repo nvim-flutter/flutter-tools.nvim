@@ -254,16 +254,18 @@ both are set.
         enabled = false,
         -- if empty dap will not stop on any exceptions, otherwise it will stop on those specified
         -- see |:help dap.set_exception_breakpoints()| for more info
-        exception_breakpoints = {}
+        exception_breakpoints = {},
         -- Whether to call toString() on objects in debug views like hovers and the
         -- variables list.
         -- Invoking toString() has a performance cost and may introduce side-effects,
         -- although users may expected this functionality. null is treated like false.
         evaluate_to_string_in_debug_views = true,
         register_configurations = function(paths)
-          require("dap").configurations.dart = {
-            <put here config that you would find in .vscode/launch.json>
-          }
+	  require("dap").configurations.dart = {
+	    --put here config that you would find in .vscode/launch.json
+	    }
+	  -- If you want to load .vscode launch.json automatically run the following:
+	  -- require("dap.ext.vscode").load_launchjs()
         end,
       },
       flutter_path = "<full/path/if/needed>", -- <-- this takes priority over the lookup
@@ -307,7 +309,7 @@ both are set.
           virtual_text_str = "■", -- the virtual text character to highlight
         },
         on_attach = my_custom_on_attach,
-        capabilities = my_custom_capabilities -- e.g. lsp_status capabilities
+        capabilities = my_custom_capabilities, -- e.g. lsp_status capabilities
         --- OR you can specify a function to deactivate or change or control how the config is created
         capabilities = function(config)
           config.specificThingIDontWant = false
@@ -359,6 +361,7 @@ _conceptually_ to vscode’s `launch.json` file.
         name = 'Development', -- an arbitrary name that you provide so you can recognise this config
         flavor = 'DevFlavor', -- your flavour
         target = 'lib/main_dev.dart', -- your target
+        cwd = 'example', -- the working directory for the project. Optional, defaults to the LSP root directory.
         device = 'pixel6pro', -- the device ID, which you can get by running `flutter devices`
         dart_define = {
           API_URL = 'https://dev.example.com/api',
@@ -366,7 +369,7 @@ _conceptually_ to vscode’s `launch.json` file.
         },
         pre_run_callback = nil, -- optional callback to run before the configuration
         -- exposes a table containing name, target, flavor and device in the arguments
-        dart_define_from_file = 'config.json' -- the path to a JSON configuration file
+        dart_define_from_file = 'config.json', -- the path to a JSON configuration file
       },
       {
         name = 'Web',
