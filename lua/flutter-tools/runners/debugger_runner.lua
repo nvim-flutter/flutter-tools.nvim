@@ -3,6 +3,7 @@ local ui = lazy.require("flutter-tools.ui") ---@module "flutter-tools.ui"
 local dev_tools = lazy.require("flutter-tools.dev_tools") ---@module "flutter-tools.dev_tools"
 local config = lazy.require("flutter-tools.config") ---@module "flutter-tools.config"
 local utils = lazy.require("flutter-tools.utils") ---@module "flutter-tools.utils"
+local path = lazy.require("flutter-tools.utils.path") ---@module "flutter-tools.utils.path"
 local vm_service_extensions = lazy.require("flutter-tools.runners.vm_service_extensions") ---@module "flutter-tools.runners.vm_service_extensions"
 local _, dap = pcall(require, "dap")
 
@@ -23,7 +24,95 @@ local command_requests = {
 
 function DebuggerRunner:is_running() return dap.session() ~= nil end
 
-function DebuggerRunner:run(paths, args, cwd, on_run_data, on_run_exit)
+---@param paths table<string, string>
+---@param is_flutter_project boolean
+local function register_debug_adapter(paths, is_flutter_project)
+  if is_flutter_project then
+    dap.adapters.dart = {
+      type = "executable",
+      command = paths.flutter_bin,
+      args = { "debug-adapter" },
+    }
+    if path.is_windows then
+      -- https://github.com/mfussenegger/nvim-dap/wiki/Debug-Adapter-installation#dart
+      -- add this if on windows, otherwise server won't open successfully
+      dap.adapters.dart.options = {
+        detached = false,
+      }
+    end
+    local repl = require("dap.repl")
+    repl.commands = vim.tbl_extend("force", repl.commands, {
+      custom_commands = {
+        [".hot-reload"] = function() dap.session():request("hotReload") end,
+        [".hot-restart"] = function() dap.session():request("hotRestart") end,
+      },
+    })
+  else
+    dap.adapters.dart = {
+      type = "executable",
+      command = paths.dart_bin,
+      args = { "debug_adapter" },
+    }
+  end
+end
+
+---@param paths table<string, string>
+---@param is_flutter_project boolean
+---@param project_config flutter.ProjectConfig?
+local function register_default_configurations(paths, is_flutter_project, project_config)
+  local program
+  if is_flutter_project then
+    if project_config and project_config.target then
+      program = project_config.target
+    else
+      program = "lib/main.dart"
+    end
+    require("dap").configurations.dart = {
+      {
+        type = "dart",
+        request = "launch",
+        name = "Launch flutter",
+        dartSdkPath = paths.dart_sdk,
+        flutterSdkPath = paths.flutter_sdk,
+        program = program,
+      },
+      {
+        type = "dart",
+        request = "attach",
+        name = "Connect flutter",
+        dartSdkPath = paths.dart_sdk,
+        flutterSdkPath = paths.flutter_sdk,
+        program = program,
+      },
+    }
+  else
+    if project_config and project_config.target then
+      program = project_config.target
+    else
+      local root_dir_name = vim.fn.fnamemodify(vim.fn.getcwd(), ":t")
+      program = path.join("bin", root_dir_name .. ".dart")
+    end
+    require("dap").configurations.dart = {
+      {
+        type = "dart",
+        request = "launch",
+        name = "Launch dart",
+        dartSdkPath = paths.dart_sdk,
+        program = program,
+      },
+    }
+  end
+end
+
+function DebuggerRunner:run(
+  paths,
+  args,
+  cwd,
+  on_run_data,
+  on_run_exit,
+  is_flutter_project,
+  project_config
+)
   local started = false
   local before_start_logs = {}
   vm_service_extensions.reset()
@@ -68,9 +157,11 @@ function DebuggerRunner:run(paths, args, cwd, on_run_data, on_run_exit)
     end
   end
 
+  register_debug_adapter(paths, is_flutter_project)
   local launch_configurations = {}
   local launch_configuration_count = 0
-  config.debugger.register_configurations(paths)
+  register_default_configurations(paths, is_flutter_project, project_config)
+  if config.debugger.register_configurations then config.debugger.register_configurations(paths) end
   local all_configurations = require("dap").configurations.dart
   if not all_configurations then
     ui.notify("No launch configuration for DAP found", ui.ERROR)
