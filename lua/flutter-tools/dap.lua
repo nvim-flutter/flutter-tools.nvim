@@ -29,7 +29,6 @@ function M.setup(config)
         command = paths.flutter_bin,
         args = { "debug-adapter" },
       }
-      opts.register_configurations(paths)
       local repl = require("dap.repl")
       repl.commands = vim.tbl_extend("force", repl.commands, {
         custom_commands = {
