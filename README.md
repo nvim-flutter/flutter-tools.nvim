@@ -218,7 +218,7 @@ require("flutter-tools").setup {
     enabled = false,
     -- if empty dap will not stop on any exceptions, otherwise it will stop on those specified
     -- see |:help dap.set_exception_breakpoints()| for more info
-    exception_breakpoints = {}
+    exception_breakpoints = {},
     -- Whether to call toString() on objects in debug views like hovers and the
     -- variables list.
     -- Invoking toString() has a performance cost and may introduce side-effects,
@@ -226,8 +226,10 @@ require("flutter-tools").setup {
     evaluate_to_string_in_debug_views = true,
     register_configurations = function(paths)
       require("dap").configurations.dart = {
-        <put here config that you would find in .vscode/launch.json>
+        --put here config that you would find in .vscode/launch.json
       }
+      -- If you want to load .vscode launch.json automatically run the following:
+	  -- require("dap.ext.vscode").load_launchjs()
     end,
   },
   flutter_path = "<full/path/if/needed>", -- <-- this takes priority over the lookup
@@ -271,7 +273,7 @@ require("flutter-tools").setup {
       virtual_text_str = "■", -- the virtual text character to highlight
     },
     on_attach = my_custom_on_attach,
-    capabilities = my_custom_capabilities -- e.g. lsp_status capabilities
+    capabilities = my_custom_capabilities, -- e.g. lsp_status capabilities
     --- OR you can specify a function to deactivate or change or control how the config is created
     capabilities = function(config)
       config.specificThingIDontWant = false
@@ -319,6 +321,7 @@ require('flutter-tools').setup_project({
     name = 'Development', -- an arbitrary name that you provide so you can recognise this config
     flavor = 'DevFlavor', -- your flavour
     target = 'lib/main_dev.dart', -- your target
+    cwd = 'example',      -- the working directory for the project. Optional, defaults to the LSP root directory.
     device = 'pixel6pro', -- the device ID, which you can get by running `flutter devices`
     dart_define = {
       API_URL = 'https://dev.example.com/api',

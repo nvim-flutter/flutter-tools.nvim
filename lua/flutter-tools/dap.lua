@@ -58,7 +58,6 @@ function M.setup(config)
           name = "Launch Dart",
           dartSdkPath = paths.dart_sdk,
           program = "${workspaceFolder}/bin/main.dart",
-          cwd = "${workspaceFolder}",
         },
       }
     end

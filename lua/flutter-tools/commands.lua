@@ -167,6 +167,34 @@ local function get_device_from_args(args)
   end
 end
 
+local function get_absolute_path(input_path)
+  -- Check if the provided path is an absolute path
+  if
+    vim.fn.isdirectory(input_path) == 1
+    and not input_path:match("^/")
+    and not input_path:match("^%a:[/\\]")
+  then
+    -- It's a relative path, so expand it to an absolute path
+    local absolute_path = vim.fn.fnamemodify(input_path, ":p")
+    return absolute_path
+  else
+    -- It's already an absolute path
+    return input_path
+  end
+end
+
+---@param project_conf flutter.ProjectConfig?
+local function get_cwd(project_conf)
+  if project_conf and project_conf.cwd then
+    local resolved_path = get_absolute_path(project_conf.cwd)
+    if not vim.loop.fs_stat(resolved_path) then
+      return ui.notify("Provided cwd does not exist: " .. resolved_path, ui.ERROR)
+    end
+    return resolved_path
+  end
+  return lsp.get_lsp_root_dir()
+end
+
 ---@param opts RunOpts
 ---@param project_conf flutter.ProjectConfig?
 local function run(opts, project_conf)
@@ -188,7 +216,7 @@ local function run(opts, project_conf)
       end
     end
     runner = use_debugger_runner() and debugger_runner or job_runner
-    runner:run(paths, args, lsp.get_lsp_root_dir(), on_run_data, on_run_exit)
+    runner:run(paths, args, get_cwd(project_conf), on_run_data, on_run_exit)
   end)
 end
 
