@@ -1,4 +1,6 @@
-local ui = require("flutter-tools.ui")
+local lazy = require("flutter-tools.lazy")
+local path = lazy.require("flutter-tools.utils.path") ---@module "flutter-tools.utils.path"
+local ui = lazy.require("flutter-tools.ui") ---@module "flutter-tools.ui"
 
 local success, dap = pcall(require, "dap")
 if not success then
@@ -29,7 +31,13 @@ function M.setup(config)
         command = paths.flutter_bin,
         args = { "debug-adapter" },
       }
-      opts.register_configurations(paths)
+      if path.is_windows then
+        -- https://github.com/mfussenegger/nvim-dap/wiki/Debug-Adapter-installation#dart
+        -- add this if on windows, otherwise server won't open successfully
+        dap.adapters.dart.options = {
+          detached = false,
+        }
+      end
       local repl = require("dap.repl")
       repl.commands = vim.tbl_extend("force", repl.commands, {
         custom_commands = {

@@ -72,6 +72,10 @@ function DebuggerRunner:run(paths, args, cwd, on_run_data, on_run_exit)
   local launch_configuration_count = 0
   config.debugger.register_configurations(paths)
   local all_configurations = require("dap").configurations.dart
+  if not all_configurations then
+    ui.notify("No launch configuration for DAP found", ui.ERROR)
+    return
+  end
   for _, c in ipairs(all_configurations) do
     if c.request == "launch" then
       table.insert(launch_configurations, c)
