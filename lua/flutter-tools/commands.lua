@@ -9,6 +9,7 @@ local dev_tools = lazy.require("flutter-tools.dev_tools") ---@module   "flutter-
 local lsp = lazy.require("flutter-tools.lsp") ---@module "flutter-tools.lsp"
 local job_runner = lazy.require("flutter-tools.runners.job_runner") ---@module "flutter-tools.runners.job_runner"
 local debugger_runner = lazy.require("flutter-tools.runners.debugger_runner") ---@module "flutter-tools.runners.debugger_runner"
+local path = lazy.require("flutter-tools.utils.path") ---@module "flutter-tools.utils.path"
 local dev_log = lazy.require("flutter-tools.log") ---@module "flutter-tools.log"
 
 local M = {}
@@ -20,7 +21,7 @@ local current_device = nil
 
 ---@class flutter.Runner
 ---@field is_running fun(runner: flutter.Runner):boolean
----@field run fun(runner: flutter.Runner, paths:table, args:table, cwd:string, on_run_data:fun(is_err:boolean, data:string), on_run_exit:fun(data:string[], args: table))
+---@field run fun(runner: flutter.Runner, paths:table, args:table, cwd:string, on_run_data:fun(is_err:boolean, data:string), on_run_exit:fun(data:string[], args: table),  is_flutter_project: boolean, project_conf: flutter.ProjectConfig?)
 ---@field cleanup fun(funner: flutter.Runner)
 ---@field send fun(runner: flutter.Runner, cmd:string, quiet: boolean?)
 
@@ -195,6 +196,17 @@ local function get_cwd(project_conf)
   return lsp.get_lsp_root_dir()
 end
 
+---@param cwd string
+local function has_flutter_dependency_in_pubspec(cwd)
+  local pubspec = vim.fn.glob(path.join(cwd, "pubspec.yaml"))
+  if pubspec == "" then return false end
+  local pubspec_content = vim.fn.readfile(pubspec)
+  local joined_content = table.concat(pubspec_content, "\n")
+
+  local flutter_dependency = string.match(joined_content, "flutter:\n[%s\t]*sdk:[%s\t]*flutter")
+  return flutter_dependency ~= nil
+end
+
 ---@param opts RunOpts
 ---@param project_conf flutter.ProjectConfig?
 local function run(opts, project_conf)
@@ -203,7 +215,6 @@ local function run(opts, project_conf)
     local args = opts.cli_args or get_run_args(opts, project_conf)
 
     current_device = opts.device or get_device_from_args(args)
-    ui.notify("Starting flutter project...")
     if project_conf then
       if project_conf.pre_run_callback then
         local callback_args = {
@@ -215,8 +226,17 @@ local function run(opts, project_conf)
         project_conf.pre_run_callback(callback_args)
       end
     end
+    local cwd = get_cwd(project_conf)
+    -- To determinate if the project is a flutter project we need to check if the pubspec.yaml
+    -- file has a flutter dependency in it. We need to get cwd first to pick correct pubspec.yaml file.
+    local is_flutter_project = has_flutter_dependency_in_pubspec(cwd)
+    if is_flutter_project then
+      ui.notify("Starting flutter project...")
+    else
+      ui.notify("Starting dart project...")
+    end
     runner = use_debugger_runner() and debugger_runner or job_runner
-    runner:run(paths, args, get_cwd(project_conf), on_run_data, on_run_exit)
+    runner:run(paths, args, cwd, on_run_data, on_run_exit, is_flutter_project, project_conf)
   end)
 end
 

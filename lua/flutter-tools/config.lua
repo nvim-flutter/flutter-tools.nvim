@@ -84,26 +84,7 @@ local config = {
     enabled = false,
     exception_breakpoints = nil,
     evaluate_to_string_in_debug_views = true,
-    register_configurations = function(paths)
-      require("dap").configurations.dart = {
-        {
-          type = "dart",
-          request = "launch",
-          name = "Launch flutter",
-          dartSdkPath = paths.dart_sdk,
-          flutterSdkPath = paths.flutter_sdk,
-          program = "${workspaceFolder}/lib/main.dart",
-        },
-        {
-          type = "dart",
-          request = "attach",
-          name = "Connect flutter",
-          dartSdkPath = paths.dart_sdk,
-          flutterSdkPath = paths.flutter_sdk,
-          program = "${workspaceFolder}/lib/main.dart",
-        },
-      }
-    end,
+    register_configurations = nil,
   },
   closing_tags = {
     highlight = "Comment",
