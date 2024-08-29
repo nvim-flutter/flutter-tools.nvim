@@ -261,11 +261,11 @@ both are set.
         -- although users may expected this functionality. null is treated like false.
         evaluate_to_string_in_debug_views = true,
         register_configurations = function(paths)
-	  require("dap").configurations.dart = {
-	    --put here config that you would find in .vscode/launch.json
-	    }
-	  -- If you want to load .vscode launch.json automatically run the following:
-	  -- require("dap.ext.vscode").load_launchjs()
+          require("dap").configurations.dart = {
+            --put here config that you would find in .vscode/launch.json
+          }
+          -- If you want to load .vscode launch.json automatically run the following:
+          -- require("dap.ext.vscode").load_launchjs()
         end,
       },
       flutter_path = "<full/path/if/needed>", -- <-- this takes priority over the lookup
@@ -361,7 +361,7 @@ _conceptually_ to vscode’s `launch.json` file.
         name = 'Development', -- an arbitrary name that you provide so you can recognise this config
         flavor = 'DevFlavor', -- your flavour
         target = 'lib/main_dev.dart', -- your target
-        cwd = 'example', -- the working directory for the project. Optional, defaults to the LSP root directory.
+        cwd = 'example',      -- the working directory for the project. Optional, defaults to the LSP root directory.
         device = 'pixel6pro', -- the device ID, which you can get by running `flutter devices`
         dart_define = {
           API_URL = 'https://dev.example.com/api',
@@ -369,7 +369,7 @@ _conceptually_ to vscode’s `launch.json` file.
         },
         pre_run_callback = nil, -- optional callback to run before the configuration
         -- exposes a table containing name, target, flavor and device in the arguments
-        dart_define_from_file = 'config.json', -- the path to a JSON configuration file
+        dart_define_from_file = 'config.json' -- the path to a JSON configuration file
       },
       {
         name = 'Web',
