@@ -107,7 +107,7 @@ function M.resolve_url(uri)
   local package_lib = package_map[package_name]
 
   -- Replace the package name part of the URI with the actual package path
-  local resolved_uri = uri:gsub(package_name, package_lib)
+  local resolved_uri = uri:gsub("^" .. package_name, package_lib)
 
   return resolved_uri
 end
