@@ -9,18 +9,15 @@ local function resolve(path)
   return real_path or path
 end
 
--- Finds a file named `path` in the cwd, or in any directory above the open file
+-- Finds a file named `path` in any directory above the open file
 -- Returns a boolean (found or not) and the file path
 local function find_file(path)
-  -- Check if the file is in the current directory (cwd)
-  if vim.fn.filereadable(path) == 1 then return true, path end
-
   -- Get the directory path of the current buffer
   local dir_path = vim.fn.expand("%:p:h")
 
   -- Search upwards through parent directories
   while true do
-    local file_path = dir_path .. "/" .. path
+    local file_path = vim.fs.joinpath(dir_path, path)
 
     -- If the file is found, return true and the path
     if vim.fn.filereadable(file_path) == 1 then return true, file_path end
@@ -43,7 +40,7 @@ end
 -- Returns a boolean indicating whether it was found, and the package map.
 local function get_package_map()
   -- Try to find 'package_config.json' first
-  local found, package_config = find_file(".dart_tool/package_config.json")
+  local found, package_config = find_file(vim.fs.joinpath(".dart_tool", "package_config.json"))
 
   if found then
     local dart_tool_dir = vim.fn.fnamemodify(package_config, ":p:h")
@@ -65,9 +62,9 @@ local function get_package_map()
       -- Resolve file path from uri and packageUri
       if uri:match("file:/") then
         uri = uri:gsub("file://", "")
-        lib_dir = resolve(uri .. "/" .. package_uri)
+        lib_dir = resolve(vim.fs.joinpath(uri, package_uri):gsub("/$", ""))
       else
-        lib_dir = resolve(dart_tool_dir .. "/" .. uri .. "/" .. package_uri)
+        lib_dir = resolve(vim.fs.joinpath(dart_tool_dir, uri, package_uri):gsub("/$", ""))
       end
 
       map[name] = lib_dir
@@ -82,9 +79,8 @@ end
 
 -- Finds the path to `uri`.
 --
--- Looks for a package_config.json
--- file to resolve the path. If the path cannot be resolved, or is not a
--- package: uri, returns the original.
+-- Looks for a package_config.json file to resolve the path.
+-- If the path cannot be resolved, or is not a package: uri, returns the original.
 function M.resolve_url(uri)
   -- Extract package name
   local package_name = uri:match("([%w_]+)/.*")
@@ -93,7 +89,7 @@ function M.resolve_url(uri)
   -- Fetch package map
   local found, package_map = get_package_map()
   if not found then
-    error("Cannot find .packages or package_config.json file")
+    error("Cannot find package_config.json file")
     return uri
   end
 
