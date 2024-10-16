@@ -93,6 +93,7 @@ local config = {
     enabled = true,
   },
   lsp = {
+    offset_encoding = "utf-8",
     debug = M.debug_levels.WARN,
     color = {
       enabled = false,
