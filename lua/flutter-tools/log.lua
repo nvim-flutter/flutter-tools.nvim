@@ -102,7 +102,7 @@ function M.__resurrect()
 end
 
 function M.clear()
-  if api.nvim_buf_is_valid(M.buf) then
+  if M.buf and api.nvim_buf_is_valid(M.buf) then
     vim.bo[M.buf].modifiable = true
     api.nvim_buf_set_lines(M.buf, 0, -1, false, {})
     vim.bo[M.buf].modifiable = false
