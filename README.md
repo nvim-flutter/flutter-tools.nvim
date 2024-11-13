@@ -336,7 +336,7 @@ require('flutter-tools').setup_project({
     device = 'chrome',
     flavor = 'WebApp',
     web_port = "4000",
-    web_browser_flag = "--disable-web-security",
+    additional_args = { "--wasm" }
   },
   {
     name = 'Profile',

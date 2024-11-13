@@ -14,7 +14,7 @@ local utils = lazy.require("flutter-tools.utils") ---@module "flutter-tools.util
 ---@field flutter_mode? string
 ---@field web_port? string
 ---@field cwd? string full path of current working directory, defaults to LSP root
----@field web_browser_flag? string e.g. --web-browser-flag "--disable-web-security"
+---@field additional_args? string[] additional arguments to pass to the flutter run command
 
 local M = {}
 
