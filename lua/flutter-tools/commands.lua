@@ -135,7 +135,7 @@ local function get_run_args(opts, conf)
   local flutter_mode = conf and conf.flutter_mode
   local web_port = conf and conf.web_port
   local dev_url = dev_tools.get_url()
-  local web_browser_flag = conf and conf.web_browser_flag
+  local additional_args = conf and conf.additional_args
 
   if not use_debugger_runner() then vim.list_extend(args, { "run" }) end
   if not cmd_args and device then vim.list_extend(args, { "-d", device }) end
@@ -159,7 +159,7 @@ local function get_run_args(opts, conf)
     end -- else default to debug
   end
   if dev_url then vim.list_extend(args, { "--devtools-server-address", dev_url }) end
-  if web_browser_flag then vim.list_extend(args, { "--web-browser-flag", web_browser_flag }) end
+  if additional_args then vim.list_extend(args, additional_args) end
   return args
 end
 
