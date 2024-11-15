@@ -20,9 +20,6 @@ local command = function(name, callback, opts)
   api.nvim_create_user_command(name, callback, opts or {})
 end
 
----@param opts flutter.ProjectConfig
-function M.setup_project(opts) config.setup_project(opts) end
-
 local function setup_commands()
   -- Commands
   command("FlutterRun", function(data) commands.run_command(data.args) end, { nargs = "*" })
@@ -55,12 +52,17 @@ local function setup_commands()
   command("FlutterRename", function() require("flutter-tools.lsp.rename").rename() end)
 end
 
+local _setup_started = false
+
 ---Initialise various plugin modules
 local function start()
-  setup_commands()
-  if config.debugger.enabled then dap.setup(config) end
-  if config.widget_guides.enabled then guides.setup() end
-  if config.decorations then decorations.apply(config.decorations) end
+  if not _setup_started then
+    _setup_started = true
+    setup_commands()
+    if config.debugger.enabled then dap.setup(config) end
+    if config.widget_guides.enabled then guides.setup() end
+    if config.decorations then decorations.apply(config.decorations) end
+  end
 end
 
 local AUGROUP = api.nvim_create_augroup("FlutterToolsGroup", { clear = true })
@@ -111,6 +113,12 @@ local function setup_autocommands()
     pattern = { "*" },
     callback = function() dev_tools.stop() end,
   })
+end
+
+---@param opts flutter.ProjectConfig
+function M.setup_project(opts)
+  config.setup_project(opts)
+  start()
 end
 
 ---Entry point for this plugin
