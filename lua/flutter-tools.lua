@@ -46,6 +46,7 @@ local function setup_commands()
   })
   --- Log
   command("FlutterLogClear", log.clear)
+  command("FlutterLogToggle", log.toggle)
   --- LSP
   command("FlutterSuper", lsp.dart_lsp_super)
   command("FlutterReanalyze", lsp.dart_reanalyze)
