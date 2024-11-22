@@ -59,6 +59,13 @@ local function autoscroll(buf, target_win)
     api.nvim_tabpage_list_wins(0),
     function(item) return item == target_win end
   )
+  if not win then
+    win = utils.find(
+      api.nvim_tabpage_list_wins(0),
+      function(item) return vim.api.nvim_win_get_buf(item) == buf end
+    )
+    if win then M.win = win end
+  end
   if not win then return end
   -- if the dev log is focused don't scroll it as it will block the user from perusing
   if api.nvim_get_current_win() == win then return end
