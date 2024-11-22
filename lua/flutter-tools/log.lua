@@ -76,7 +76,7 @@ end
 ---@param lines string[]
 local function append(buf, lines)
   vim.bo[buf].modifiable = true
-  api.nvim_buf_set_lines(M.buf, -1, -1, true, lines)
+  api.nvim_buf_set_lines(buf, -1, -1, true, lines)
   vim.bo[buf].modifiable = false
 end
 
