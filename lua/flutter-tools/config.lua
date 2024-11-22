@@ -113,6 +113,7 @@ local config = {
     filter = nil,
     enabled = true,
     notify_errors = false,
+    focus_on_open = true,
   }, {
     __index = function(_, k) return k == "open_cmd" and get_split_cmd(0.4, 50) or nil end,
   }),
