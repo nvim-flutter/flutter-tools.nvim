@@ -198,6 +198,8 @@ APP VERSION
 - `FlutterSuper` - Go to super class, method using custom LSP method `dart/textDocument/super`.
 - `FlutterReanalyze` - Forces LSP server reanalyze using custom LSP method `dart/reanalyze`.
 - `FlutterRename` - Renames and updates imports if `lsp.settings.renameFilesWithClasses == "always"`
+- `FlutterLogClear` - Clears the log buffer.
+- `FlutterLogToggle` - Toggles the log buffer.
 
 
 FLUTTERRUN ~
@@ -289,7 +291,7 @@ both are set.
         -- takes a log_line as string argument; returns a boolean or nil;
         -- the log_line is only added to the output if the function returns true
         notify_errors = false, -- if there is an error whilst running then notify the user
-        open_cmd = "botright 30vnew", -- command to use to open the log buffer
+        open_cmd = "15split", -- command to use to open the log buffer
         focus_on_open = true, -- focus on the newly opened log window
       },
       dev_tools = {

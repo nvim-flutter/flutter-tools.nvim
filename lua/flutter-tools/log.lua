@@ -1,6 +1,7 @@
 local lazy = require("flutter-tools.lazy")
 local ui = lazy.require("flutter-tools.ui") ---@module "flutter-tools.ui"
 local utils = lazy.require("flutter-tools.utils") ---@module "flutter-tools.utils"
+local config = lazy.require("flutter-tools.config") ---@module "flutter-tools.config"
 
 local api = vim.api
 local fmt = string.format
@@ -91,8 +92,8 @@ end
 --- Open a log showing the output from a command
 --- in this case flutter run
 ---@param data string
----@param opts table
-function M.log(data, opts)
+function M.log(data)
+  local opts = config.dev_log
   if opts.enabled then
     if not exists() then create(opts) end
     if opts.filter and not opts.filter(data) then return end
@@ -115,6 +116,21 @@ function M.clear()
     api.nvim_buf_set_lines(M.buf, 0, -1, false, {})
     vim.bo[M.buf].modifiable = false
   end
+end
+
+M.toggle = function()
+  local wins = vim.api.nvim_list_wins()
+  for _, id in pairs(wins) do
+    local bufnr = vim.api.nvim_win_get_buf(id)
+    if vim.api.nvim_buf_get_name(bufnr):match(".*/([^/]+)$") == M.filename then
+      return vim.api.nvim_win_close(id, true)
+    end
+  end
+  create(config.dev_log)
+  autoscroll(M.buf, M.win)
+  -- Auto scroll to bottom
+  local buf_length = vim.api.nvim_buf_line_count(M.buf)
+  pcall(vim.api.nvim_win_set_cursor, M.win, { buf_length, 0 })
 end
 
 return M
