@@ -31,6 +31,8 @@ end
 ---@param device_type number
 ---@return Device?
 function M.parse(line, device_type)
+  if line:find("Manufacturer") and line:find("Platform") then return end
+  if line:find("crashdata") then return end
   local parts = vim.split(line, "•")
   local is_emulator = device_type == EMULATOR
   local name_index = not is_emulator and 1 or 2
