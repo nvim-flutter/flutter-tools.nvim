@@ -127,7 +127,6 @@ M.toggle = function()
     end
   end
   create(config.dev_log)
-  autoscroll(M.buf, M.win)
   -- Auto scroll to bottom
   local buf_length = vim.api.nvim_buf_line_count(M.buf)
   pcall(vim.api.nvim_win_set_cursor, M.win, { buf_length, 0 })
