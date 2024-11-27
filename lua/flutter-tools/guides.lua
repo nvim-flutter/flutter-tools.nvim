@@ -1,7 +1,7 @@
 local lazy = require("flutter-tools.lazy")
 local ui = lazy.require("flutter-tools.ui") ---@module "flutter-tools.ui"
 local utils = lazy.require("flutter-tools.utils") ---@module "flutter-tools.utils"
-local config = lazy.require("flutter-tools.config") ---@module "flutter-tools.config"
+local flutter_config = lazy.require("flutter-tools.config") ---@module "flutter-tools.config"
 
 local M = {}
 
@@ -62,7 +62,7 @@ local function get_guide_character(lnum, end_line, parent_start, indent_size, ch
     end
   end
   return lnum ~= end_line and markers.vertical
-    or markers.bottom .. markers.horizontal:rep(indent_size)
+      or markers.bottom .. markers.horizontal:rep(indent_size)
 end
 
 -- Marshal the lsp flutter outline into a table of lines and characters
@@ -108,7 +108,7 @@ local function collect_guides(lines, data, guides)
           -- also if the start index is out of range e.g. -1 don't add it
           if not guides[lnum][start_index] and start_index >= 0 then
             guides[lnum][start_index] =
-              get_guide_character(lnum, end_lnum, start_index, indent_size, data.children, lines)
+                get_guide_character(lnum, end_lnum, start_index, indent_size, data.children, lines)
           end
         end
       end
@@ -133,11 +133,11 @@ local function render_guides(bufnum, guides, conf)
   for lnum, guide in pairs(guides) do
     for start, character in pairs(guide) do
       local success, msg =
-        pcall(api.nvim_buf_set_extmark, bufnum, widget_outline_ns_id, lnum, start, {
-          virt_text = { { character, hl_group } },
-          virt_text_pos = "overlay",
-          hl_mode = "combine",
-        })
+          pcall(api.nvim_buf_set_extmark, bufnum, widget_outline_ns_id, lnum, start, {
+            virt_text = { { character, hl_group } },
+            virt_text_pos = "overlay",
+            hl_mode = "combine",
+          })
       if not success and conf.debug then
         local name = api.nvim_buf_get_name(bufnum)
         ui.notify(
@@ -155,8 +155,9 @@ local function render_guides(bufnum, guides, conf)
   end
 end
 
-function M.setup()
-  local color = utils.get_hl("Normal", "fg")
+---@param config table<string, any>
+function M.setup(config)
+  local color = config.color or utils.get_hl("Normal", "fg")
   if color and color ~= "" then
     utils.highlight(hl_group, { foreground = color, default = true })
   end
@@ -164,13 +165,13 @@ end
 
 local function is_buf_valid(bufnum)
   return bufnum
-    and api.nvim_buf_is_valid(bufnum)
-    and not vim.wo.previewwindow
-    and vim.bo.buftype == ""
+      and api.nvim_buf_is_valid(bufnum)
+      and not vim.wo.previewwindow
+      and vim.bo.buftype == ""
 end
 
 function M.widget_guides(_, data, _, _)
-  local conf = config.widget_guides
+  local conf = flutter_config.widget_guides
   if conf.enabled then
     local bufnum = vim.uri_to_bufnr(data.uri)
     if not is_buf_valid(bufnum) then return end

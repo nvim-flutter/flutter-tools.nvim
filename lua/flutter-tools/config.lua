@@ -71,6 +71,7 @@ local config = {
   widget_guides = {
     enabled = false,
     debug = false,
+    color = nil,
   },
   ui = {
     border = "single",
