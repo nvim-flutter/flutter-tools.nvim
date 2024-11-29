@@ -6,7 +6,7 @@ local commands = lazy.require("flutter-tools.commands") ---@module "flutter-tool
 local executable = lazy.require("flutter-tools.executable") ---@module "flutter-tools.executable"
 local fmt = string.format
 
----@alias Device {name: string, id: string, platform: string, system: string, type: integer}
+---@alias Device {name: string, id: string, platform: string, system: string, type: integer, cold_boot: boolean}
 
 local M = {
   ---@type Job
@@ -22,7 +22,14 @@ local function get_devices(result, type)
   local devices = {}
   for _, line in pairs(result) do
     local device = M.parse(line, type)
-    if device then table.insert(devices, device) end
+    if device then
+      table.insert(devices, device)
+      if type == EMULATOR and device.system and device.system == "android" then
+        local cold_boot_device = vim.tbl_extend("force", {}, device, { cold_boot = true })
+        cold_boot_device.name = fmt("%s (cold boot)", device.name)
+        table.insert(devices, cold_boot_device)
+      end
+    end
   end
   return devices
 end
@@ -97,7 +104,9 @@ end
 function M.launch_emulator(emulator)
   if not emulator then return end
   executable.flutter(function(cmd)
-    M.emulator_job = Job:new({ command = cmd, args = { "emulators", "--launch", emulator.id } })
+    args = { "emulator", "--launch", emulator.id }
+    if emulator.cold_boot then table.insert(args, "--cold") end
+    M.emulator_job = Job:new({ command = cmd, args = args })
     M.emulator_job:after_success(vim.schedule_wrap(handle_launch))
     M.emulator_job:start()
   end)
