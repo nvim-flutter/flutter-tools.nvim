@@ -17,5 +17,15 @@ describe("Devices - ", function()
       assert.equal(output.platform, "")
       assert.equal(output.system, "android")
     end)
+
+    it("should skip `crashdata` lines", function()
+      local output = parse(
+        [[INFO    | Storing crashdata in: /tmp/android-ts/emu-crash-34.2.14.db, detection is enabled for process: 46675 •
+INFO    | Storing crashdata in: /tmp/android-ts/emu-crash-34.2.14.db, detection is enabled for process: 46675 •
+• android]],
+        1
+      )
+      assert.is_nil(output)
+    end)
   end)
 end)
