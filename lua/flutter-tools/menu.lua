@@ -151,16 +151,16 @@ function M.commands(opts)
         command = commands.detach,
       },
       {
-        id = "flutter-tools-widget-inspector",
-        label = "Widget Inspector",
+        id = "flutter-tools-inspect-widget",
+        label = "Inspect Widget",
         hint = "Toggle the widget inspector",
-        command = commands.widget_inspector,
+        command = commands.inspect_widget,
       },
       {
-        id = "flutter-tools-construction-lines",
-        label = "Construction Lines",
-        hint = "Display construction lines",
-        command = commands.construction_lines,
+        id = "flutter-tools-paint-baselines",
+        label = "Paint Baselines",
+        hint = "Toggle paint baselines",
+        command = commands.paint_baselines,
       },
     }
   else

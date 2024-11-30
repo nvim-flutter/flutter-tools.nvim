@@ -350,10 +350,10 @@ function M.open_dev_tools(quiet) send("open_dev_tools", quiet) end
 function M.generate(quiet) send("generate", quiet) end
 
 ---@param quiet boolean
-function M.widget_inspector(quiet) send("inspect", quiet) end
+function M.inspect_widget(quiet) send("inspect_widget", quiet) end
 
 ---@param quiet boolean
-function M.construction_lines(quiet) send("construction_lines", quiet) end
+function M.paint_baselines(quiet) send("paint_baselines", quiet) end
 
 -----------------------------------------------------------------------------//
 -- Pub commands

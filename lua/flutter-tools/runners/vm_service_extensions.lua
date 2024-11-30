@@ -12,6 +12,8 @@ local service_activation_requests = {
   performance_overlay = "ext.flutter.showPerformanceOverlay",
   repaint_rainbow = "ext.flutter.repaintRainbow",
   slow_animations = "ext.flutter.timeDilation",
+  inspect_widget = "ext.flutter.inspector.show",
+  paint_baselines = "ext.flutter.debugPaintBaselinesEnabled",
 }
 
 local toggle_extension_state_keys = {
@@ -19,6 +21,8 @@ local toggle_extension_state_keys = {
   performance_overlay = "enabled",
   repaint_rainbow = "enabled",
   slow_animations = "timeDilation",
+  inspect_widget = "enabled",
+  paint_baselines = "enabled",
 }
 
 local function toggle_value(request)
@@ -30,11 +34,7 @@ local function toggle_value(request)
       return "5.0"
     end
   end
-  if value == "true" then
-    return "false"
-  else
-    return "true"
-  end
+  return not value
 end
 
 ---@type flutter.VmServiceExtensions

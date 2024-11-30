@@ -15,8 +15,8 @@ local command_keys = {
   quit = "q",
   visual_debug = "p",
   detach = "d",
-  inspect = "i",
-  construction_lines = "p",
+  inspect_widget = "i",
+  paint_baselines = "p",
   open_dev_tools = "v",
   generate = "g",
 }
