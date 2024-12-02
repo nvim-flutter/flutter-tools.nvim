@@ -18,8 +18,6 @@ local command_requests = {
   restart = "hotRestart",
   reload = "hotReload",
   quit = "terminate",
-  inspect = "widgetInspector",
-  construction_lines = "constructionLines",
 }
 
 function DebuggerRunner:is_running() return dap.session() ~= nil end
@@ -208,7 +206,11 @@ function DebuggerRunner:send(cmd, quiet)
   end
   local service_activation_params = vm_service_extensions.get_request_params(cmd)
   if service_activation_params then
-    dap.session():request("callService", service_activation_params)
+    dap.session():request("callService", service_activation_params, function(err, _)
+      if err and not quiet then
+        ui.notify("Error calling service " .. cmd .. ": " .. err, ui.ERROR)
+      end
+    end)
     return
   end
   if not quiet then
