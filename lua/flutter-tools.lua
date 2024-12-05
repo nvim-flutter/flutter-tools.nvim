@@ -13,6 +13,7 @@ local lsp = lazy.require("flutter-tools.lsp") ---@module "flutter-tools.lsp"
 local outline = lazy.require("flutter-tools.outline") ---@module "flutter-tools.outline"
 local devices = lazy.require("flutter-tools.devices") ---@module "flutter-tools.devices"
 local utils = lazy.require("flutter-tools.utils") ---@module "flutter-tools.utils"
+local ui = lazy.require("flutter-tools.ui") ---@module "flutter-tools.ui"
 
 local api = vim.api
 
@@ -55,17 +56,26 @@ local function setup_commands()
   command("FlutterRename", function() require("flutter-tools.lsp.rename").rename() end)
 end
 
-local _setup_started = false
+local _has_started = false
+local _has_setup = false
 
 ---Initialise various plugin modules
-local function start()
-  if not _setup_started then
-    _setup_started = true
-    setup_commands()
-    if config.debugger.enabled then dap.setup(config) end
-    if config.widget_guides.enabled then guides.setup() end
-    if config.decorations then decorations.apply(config.decorations) end
+function M.start()
+  if _has_started then return end
+
+  if not _has_setup then
+    ui.notify(
+      "Cannot start because the plugin has not been setup yet.",
+      ui.ERROR
+    )
+    return
   end
+
+  _has_started = true
+  setup_commands()
+  if config.debugger.enabled then dap.setup(config) end
+  if config.widget_guides.enabled then guides.setup() end
+  if config.decorations then decorations.apply(config.decorations) end
 end
 
 local AUGROUP = api.nvim_create_augroup("FlutterToolsGroup", { clear = true })
@@ -78,7 +88,7 @@ local function setup_autocommands()
     group = AUGROUP,
     pattern = { "*.dart", "pubspec.yaml" },
     once = true,
-    callback = start,
+    callback = M.start,
   })
 
   if config.lsp.color.enabled then
@@ -120,13 +130,15 @@ end
 
 ---@param opts flutter.ProjectConfig
 function M.setup_project(opts)
+  _has_setup = true
   config.setup_project(opts)
-  start()
+  M.start()
 end
 
 ---Entry point for this plugin
 ---@param user_config table
 function M.setup(user_config)
+  _has_setup = true
   config.set(user_config)
   setup_autocommands()
 end
