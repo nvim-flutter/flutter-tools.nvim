@@ -1,5 +1,40 @@
 # Changelog
 
+## [2.0.0](https://github.com/nvim-flutter/flutter-tools.nvim/compare/v1.14.0...v2.0.0) (2024-12-23)
+
+
+### ⚠ BREAKING CHANGES
+
+* **config:** allow to pass additional arguments to flutter run command ([#407](https://github.com/nvim-flutter/flutter-tools.nvim/issues/407))
+* **outline:** remove code actions from outline ([#387](https://github.com/nvim-flutter/flutter-tools.nvim/issues/387))
+
+### Features
+
+* add option to disable ftplugin ([#417](https://github.com/nvim-flutter/flutter-tools.nvim/issues/417)) ([85492be](https://github.com/nvim-flutter/flutter-tools.nvim/commit/85492bee069af1155bb10bfbee90ac7d4168eced))
+* **config:** add ability to set web-browser-flag ([#406](https://github.com/nvim-flutter/flutter-tools.nvim/issues/406)) ([80770c6](https://github.com/nvim-flutter/flutter-tools.nvim/commit/80770c67aa2d9e1eccf6bb52fac78115831acd04))
+* **config:** allow to pass additional arguments to flutter run command ([#407](https://github.com/nvim-flutter/flutter-tools.nvim/issues/407)) ([4f48d8b](https://github.com/nvim-flutter/flutter-tools.nvim/commit/4f48d8b84bb09cfe66e13884f5fb1847b18d403f))
+* **devices:** add cold boot option for android emulators ([#412](https://github.com/nvim-flutter/flutter-tools.nvim/issues/412)) ([40f974b](https://github.com/nvim-flutter/flutter-tools.nvim/commit/40f974b15f82f9af498adda8d93aabd637f3ab58))
+* **log:** add focus option for log window ([9ad676c](https://github.com/nvim-flutter/flutter-tools.nvim/commit/9ad676c61dfc590f3852955ed2030abacc54b0e1))
+* **log:** add toggle command for log buffer ([#411](https://github.com/nvim-flutter/flutter-tools.nvim/issues/411)) ([bc36e2e](https://github.com/nvim-flutter/flutter-tools.nvim/commit/bc36e2eb3f2d8be939aa5667615cc3aceebb5874))
+* open dev tools when running in debug mode ([#419](https://github.com/nvim-flutter/flutter-tools.nvim/issues/419)) ([2f9db8b](https://github.com/nvim-flutter/flutter-tools.nvim/commit/2f9db8b15133ab789cd1be913e2d081e19b1f88d))
+* **outline:** remove code actions from outline ([#387](https://github.com/nvim-flutter/flutter-tools.nvim/issues/387)) ([6610090](https://github.com/nvim-flutter/flutter-tools.nvim/commit/6610090a4e68d10fd73b68450004dafd26e7cc34))
+* resolve package urls when using `gf` or `gF` ([#392](https://github.com/nvim-flutter/flutter-tools.nvim/issues/392)) ([6bf887b](https://github.com/nvim-flutter/flutter-tools.nvim/commit/6bf887bb9442b80a67f36e7465a66de4202d8a3f))
+* setup plugin on `require("flutter-tools").setup_project` ([#408](https://github.com/nvim-flutter/flutter-tools.nvim/issues/408)) ([fb976f0](https://github.com/nvim-flutter/flutter-tools.nvim/commit/fb976f0e83296d011be95701085ff4711a89de94))
+
+
+### Bug Fixes
+
+* add write permission to release workflow ([654c013](https://github.com/nvim-flutter/flutter-tools.nvim/commit/654c01335248a21be0b9d145103b3f40115ca63a))
+* **commands:** make inspect widget command work in debug runner ([#413](https://github.com/nvim-flutter/flutter-tools.nvim/issues/413)) ([824faf5](https://github.com/nvim-flutter/flutter-tools.nvim/commit/824faf57964c77ae8a80c9e642e5124d0e5c28e9))
+* **devices:** filter out unwanted device lines ([1787090](https://github.com/nvim-flutter/flutter-tools.nvim/commit/1787090d66482552505a6498e3d2f06fb4290f96))
+* **docs:** remove misleading debugger instructions ([377f21c](https://github.com/nvim-flutter/flutter-tools.nvim/commit/377f21c46c2e5092d79ad50d48816280c0262539))
+* **docs:** update repo name ([#400](https://github.com/nvim-flutter/flutter-tools.nvim/issues/400)) ([3d6979b](https://github.com/nvim-flutter/flutter-tools.nvim/commit/3d6979b900c8787906427fece1344a25c8e17eba))
+* **log:** correct buffer variable in append function ([9955c98](https://github.com/nvim-flutter/flutter-tools.nvim/commit/9955c98d1587ee92bd452e0c6f39cbd18de5cad9))
+* **log:** ensure autoscroll finds correct window ([f06ac07](https://github.com/nvim-flutter/flutter-tools.nvim/commit/f06ac0714e60c596af4d27efcf9f754919c58a8b))
+* **log:** handle nil when clearing log ([7e6d861](https://github.com/nvim-flutter/flutter-tools.nvim/commit/7e6d8611d8606efca64cb8cf1ca07550b7087d1c))
+* **log:** remove redundant autoscroll call in toggle ([e5a3998](https://github.com/nvim-flutter/flutter-tools.nvim/commit/e5a399895ab92a66ad5f8c0c91b7980858d7e924))
+* use yaml parser for flutter dependency detection in pubspec.yaml ([#389](https://github.com/nvim-flutter/flutter-tools.nvim/issues/389)) ([ce18f5d](https://github.com/nvim-flutter/flutter-tools.nvim/commit/ce18f5da5f9c458cd26eef5c3accb0c37b2263c2))
+
 ## [1.14.0](https://github.com/akinsho/flutter-tools.nvim/compare/v1.13.0...v1.14.0) (2024-08-29)
 
 
