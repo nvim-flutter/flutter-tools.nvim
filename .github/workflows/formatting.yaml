@@ -6,17 +6,18 @@ on:
       - ".github/**"
       - "*.md"
 
+permissions:
+  contents: write
+
 jobs:
   stylua:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.WORKFLOW_ACCESS_TOKEN }}
 
       - uses: JohnnyMorganz/stylua-action@v2
         with:
-          token: ${{ secrets.WORKFLOW_ACCESS_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           args: --config-path=stylua.toml lua/
 
       - uses: stefanzweifel/git-auto-commit-action@v4
@@ -27,5 +28,5 @@ jobs:
       - name: Push changes
         uses: ad-m/github-push-action@master
         with:
-          github_token: ${{ secrets.WORKFLOW_ACCESS_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           branch: ${{ github.ref }}
