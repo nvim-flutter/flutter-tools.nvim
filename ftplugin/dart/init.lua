@@ -1,7 +1,5 @@
 -- See section 'DISABLING' in :h ftplugin
-if vim.b.flutter_tools_did_ftplugin then
-  return
-end
+if vim.b.flutter_tools_did_ftplugin then return end
 vim.b.flutter_tools_did_ftplugin = 1
 
 require("flutter-tools.lsp").attach()
