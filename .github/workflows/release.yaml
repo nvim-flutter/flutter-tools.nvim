@@ -6,6 +6,7 @@ on:
 
 permissions:
   contents: write
+  pull-requests: write
 
 jobs:
   tests:
@@ -60,13 +61,11 @@ jobs:
       - tests
     runs-on: ubuntu-latest
     steps:
-      - uses: google-github-actions/release-please-action@v3
+      - uses: googleapis/release-please-action@v4
         id: release
         with:
           release-type: simple
           package-name: flutter-tools.nvim
-          # extra-files: |
-          #   lua/flutter-tools/core/config.lua
       - uses: actions/checkout@v4
       - name: tag stable versions
         if: ${{ steps.release.outputs.release_created }}
