@@ -199,6 +199,10 @@ function DebuggerRunner:run(
 end
 
 function DebuggerRunner:send(cmd, quiet)
+  if cmd == "open_dev_tools" then
+    dev_tools.open_dev_tools()
+    return
+  end
   local request = command_requests[cmd]
   if request ~= nil then
     dap.session():request(request)
