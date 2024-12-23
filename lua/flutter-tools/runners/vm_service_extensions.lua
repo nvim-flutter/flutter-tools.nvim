@@ -1,8 +1,14 @@
+local lazy = require("flutter-tools.lazy")
+local dev_tools = lazy.require("flutter-tools.dev_tools") ---@module "flutter-tools.dev_tools"
+
 ---@class flutter.VmServiceExtensions
 ---@field set_service_extensions_state fun(extension: string, value: string)
 ---@field get_request_params fun(cmd: string): table | nil
 ---@field reset fun()
 ---@field set_isolate_id fun(extension: string, isolate_id: string)
+
+local state_key_active_dev_tools_server_address = "ext.flutter.activeDevToolsServerAddress"
+local state_key_connected_vm_service_uri = "ext.flutter.connectedVmServiceUri"
 
 local service_extensions_state = {}
 local service_extensions_isolateid = {}
@@ -41,6 +47,11 @@ end
 return {
   set_service_extensions_state = function(extension, value)
     if extension and value then service_extensions_state[extension] = value end
+    if extension == state_key_active_dev_tools_server_address then
+      dev_tools.set_devtools_url(value)
+    elseif extension == state_key_connected_vm_service_uri then
+      dev_tools.set_profiler_url(value)
+    end
   end,
 
   get_request_params = function(cmd)
