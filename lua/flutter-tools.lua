@@ -23,6 +23,7 @@ end
 local function setup_commands()
   -- Commands
   command("FlutterRun", function(data) commands.run_command(data.args) end, { nargs = "*" })
+  command("FlutterDebug", function(data) commands.run_command(data.args) end, { nargs = "*" })
   command("FlutterLspRestart", lsp.restart)
   command("FlutterDetach", commands.detach)
   command("FlutterReload", commands.reload)

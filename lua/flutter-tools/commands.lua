@@ -15,7 +15,7 @@ local parser = lazy.require("flutter-tools.utils.yaml_parser")
 
 local M = {}
 
----@alias RunOpts {cli_args: string[]?, args: string[]?, device: Device?}
+---@alias RunOpts {cli_args: string[]?, args: string[]?, device: Device?, force_debug: boolean?}
 
 ---@type table?
 local current_device = nil
@@ -29,11 +29,13 @@ local current_device = nil
 ---@type flutter.Runner?
 local runner = nil
 
-local function use_debugger_runner()
-  if not config.debugger.enabled then return false end
-  local dap_ok, _ = pcall(require, "dap")
-  if dap_ok then return true end
-  ui.notify("debugger runner was request but nvim-dap is not installed!", ui.ERROR)
+local function use_debugger_runner(force_debug)
+  if force_debug or config.debugger.enabled then
+    local dap_ok, _ = pcall(require, "dap")
+    if dap_ok then return true end
+    ui.notify("debugger runner was request but nvim-dap is not installed!", ui.ERROR)
+    return false
+  end
   return false
 end
 
@@ -95,9 +97,10 @@ end
 --- Take arguments from the commandline and pass
 --- them to the run command
 ---@param args string
-function M.run_command(args)
+---@param force_debug boolean true if the command is a debug command
+function M.run_command(args, force_debug)
   args = args and args ~= "" and vim.split(args, " ") or nil
-  M.run({ args = args })
+  M.run({ args = args, force_debug = force_debug })
 end
 
 ---@param callback fun(project_config: flutter.ProjectConfig?)
@@ -137,7 +140,7 @@ local function get_run_args(opts, conf)
   local dev_url = dev_tools.get_url()
   local additional_args = conf and conf.additional_args
 
-  if not use_debugger_runner() then vim.list_extend(args, { "run" }) end
+  if not use_debugger_runner(opts.force_debug) then vim.list_extend(args, { "run" }) end
   if not cmd_args and device then vim.list_extend(args, { "-d", device }) end
   if web_port then vim.list_extend(args, { "--web-port", web_port }) end
   if cmd_args then vim.list_extend(args, cmd_args) end
@@ -266,7 +269,7 @@ local function run(opts, project_conf)
     else
       ui.notify("Starting dart project...")
     end
-    runner = use_debugger_runner() and debugger_runner or job_runner
+    runner = use_debugger_runner(opts.force_debug) and debugger_runner or job_runner
     runner:run(paths, args, cwd, on_run_data, on_run_exit, is_flutter_project, project_conf)
   end)
 end
