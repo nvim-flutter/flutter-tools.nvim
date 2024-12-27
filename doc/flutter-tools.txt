@@ -1,4 +1,4 @@
-*flutter-tools.txt*      For Neovim >= 0.8.0     Last change: 2024 December 23
+*flutter-tools.txt*      For Neovim >= 0.8.0     Last change: 2024 December 27
 
 ==============================================================================
 Table of Contents                            *flutter-tools-table-of-contents*
@@ -181,7 +181,8 @@ APP VERSION
 ==============================================================================
 2. Usage                                                 *flutter-tools-usage*
 
-- `FlutterRun` - Run the current project. This needs to be run from within a flutter project.
+- `FlutterRun` - Run the current project. Respects `config.debugger.enabled` setting.
+- `FlutterDebug` - Force run current project in debug mode.
 - `FlutterDevices` - Brings up a list of connected devices to select from.
 - `FlutterEmulators` - Similar to devices but shows a list of emulators to choose from.
 - `FlutterReload` - Reload the running project.
