@@ -148,7 +148,8 @@ require("flutter-tools").setup {} -- use defaults
 
 # Usage
 
-- `FlutterRun` - Run the current project. This needs to be run from within a flutter project.
+- `FlutterRun` - Run the current project. Respects `config.debugger.enabled` setting.
+- `FlutterDebug` - Force run current project in debug mode.
 - `FlutterDevices` - Brings up a list of connected devices to select from.
 - `FlutterEmulators` - Similar to devices but shows a list of emulators to choose from.
 - `FlutterReload` - Reload the running project.
