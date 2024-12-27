@@ -439,25 +439,25 @@ local fvm_list_job = nil
 --- Returns table<{name: string, status: active|global|nil}>
 function M.fvm_list(callback)
   if not fvm_list_job then
-    -- Example output:
-    --
-    -- Cache Directory:  /Users/rjm/fvm/versions
-    --
-    -- master (active)
-    -- beta
-    -- stable (global)
-    fvm_list_job = Job:new({ command = "fvm", args = { "list" } })
+    fvm_list_job = Job:new({ command = "fvm", args = { "api", "list" } })
 
     fvm_list_job:after_success(vim.schedule_wrap(function(j)
       local out = j:result()
-      local sdks_out = { unpack(out, 3, #out) }
+      local json_str = table.concat(out, "\n")
+      -- Parse the JSON string
+      local ok, parsed = pcall(vim.json.decode, json_str)
+      if not ok then
+        ui.notify("Failed to parse fvm list output", ui.ERROR)
+        fvm_list_job = nil
+        return
+      end
 
       local sdks = {}
-      for _, sdk_out in pairs(sdks_out) do
-        -- matches: "<name> (<status>)"
-        local name, status = sdk_out:match("(.*)%s%((%w+)%)")
-        name = name or sdk_out
-        table.insert(sdks, { name = name, status = status })
+      for _, version in pairs(parsed.versions) do
+        table.insert(sdks, {
+          name = version.name,
+          dart_sdk_version = version.dartSdkVersion,
+        })
       end
 
       callback(sdks)

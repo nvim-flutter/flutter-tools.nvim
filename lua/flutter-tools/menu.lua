@@ -287,7 +287,7 @@ function M.fvm(opts)
       table.insert(sdk_entries, {
         id = sdk.name,
         label = sdk.name,
-        hint = sdk.status and "(" .. sdk.status .. ")" or "",
+        hint = sdk.dart_sdk_version and "(Dart SDK " .. sdk.dart_sdk_version .. ")" or "",
         command = commands.fvm_use,
       })
     end
