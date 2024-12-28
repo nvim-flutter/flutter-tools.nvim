@@ -124,7 +124,7 @@ function DebuggerRunner:run(
   end
 
   local handle_termination = function()
-    if next(before_start_logs) ~= nil then on_run_exit(before_start_logs, args) end
+    if next(before_start_logs) ~= nil then on_run_exit(before_start_logs, args, project_config) end
   end
 
   dap.listeners.before["event_exited"][plugin_identifier] = function(_, _) handle_termination() end

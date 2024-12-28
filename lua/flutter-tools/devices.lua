@@ -75,16 +75,17 @@ function M.to_selection_entries(result, device_type)
   end, devices)
 end
 
-function M.select_device(device, args)
+---@param project_config flutter.ProjectConfig?
+function M.select_device(device, args, project_config)
   if not device then return ui.notify("Sorry there is no device on this line") end
   if device.type == EMULATOR then
     M.launch_emulator(device)
   else
     if args then
       vim.list_extend(args, { "-d", device.id })
-      commands.run({ cli_args = args })
+      commands.run({ cli_args = args }, project_config)
     else
-      commands.run({ device = device })
+      commands.run({ device = device }, project_config)
     end
   end
 end
