@@ -22,7 +22,7 @@ local current_device = nil
 
 ---@class flutter.Runner
 ---@field is_running fun(runner: flutter.Runner):boolean
----@field run fun(runner: flutter.Runner, paths:table, args:table, cwd:string, on_run_data:fun(is_err:boolean, data:string), on_run_exit:fun(data:string[], args: table),  is_flutter_project: boolean, project_conf: flutter.ProjectConfig?)
+---@field run fun(runner: flutter.Runner, paths:table, args:table, cwd:string, on_run_data:fun(is_err:boolean, data:string), on_run_exit:fun(data:string[], args: table, project_conf: flutter.ProjectConfig?),  is_flutter_project: boolean, project_conf: flutter.ProjectConfig?)
 ---@field cleanup fun(funner: flutter.Runner)
 ---@field send fun(runner: flutter.Runner, cmd:string, quiet: boolean?)
 
@@ -81,14 +81,16 @@ end
 
 ---Handle a finished flutter run command
 ---@param result string[]
-local function on_run_exit(result, cli_args)
+---@param cli_args string[]
+---@param project_config flutter.ProjectConfig?
+local function on_run_exit(result, cli_args, project_config)
   local matched_error, msg = has_recoverable_error(result)
   if matched_error then
     local lines = devices.to_selection_entries(result)
     ui.select({
       title = ("Flutter run (%s)"):format(msg),
       lines = lines,
-      on_select = function(device) devices.select_device(device, cli_args) end,
+      on_select = function(device) devices.select_device(device, cli_args, project_config) end,
     })
   end
   shutdown()
@@ -276,9 +278,14 @@ end
 
 ---Run the flutter application
 ---@param opts RunOpts
-function M.run(opts)
+---@param project_conf flutter.ProjectConfig?
+function M.run(opts, project_conf)
   if M.is_running() then return ui.notify("Flutter is already running!") end
-  select_project_config(function(project_conf) run(opts, project_conf) end)
+  if project_conf then
+    run(opts, project_conf)
+  else
+    select_project_config(function(selected_project_conf) run(opts, selected_project_conf) end)
+  end
 end
 
 ---@param cmd string
