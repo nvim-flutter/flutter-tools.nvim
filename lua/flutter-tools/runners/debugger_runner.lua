@@ -109,8 +109,12 @@ function DebuggerRunner:run(
   on_run_data,
   on_run_exit,
   is_flutter_project,
-  project_config
+  project_config,
+  last_launch_config
 )
+  ---@type dap.Configuration
+  local selected_launch_config = nil
+
   local started = false
   local before_start_logs = {}
   vm_service_extensions.reset()
@@ -124,7 +128,9 @@ function DebuggerRunner:run(
   end
 
   local handle_termination = function()
-    if next(before_start_logs) ~= nil then on_run_exit(before_start_logs, args, project_config) end
+    if next(before_start_logs) ~= nil then
+      on_run_exit(before_start_logs, args, project_config, selected_launch_config)
+    end
   end
 
   dap.listeners.before["event_exited"][plugin_identifier] = function(_, _) handle_termination() end
@@ -158,17 +164,24 @@ function DebuggerRunner:run(
   register_debug_adapter(paths, is_flutter_project)
   local launch_configurations = {}
   local launch_configuration_count = 0
-  register_default_configurations(paths, is_flutter_project, project_config)
-  if config.debugger.register_configurations then config.debugger.register_configurations(paths) end
-  local all_configurations = require("dap").configurations.dart
-  if not all_configurations then
-    ui.notify("No launch configuration for DAP found", ui.ERROR)
+  if last_launch_config then
+    dap.run(last_launch_config)
     return
-  end
-  for _, c in ipairs(all_configurations) do
-    if c.request == "launch" then
-      table.insert(launch_configurations, c)
-      launch_configuration_count = launch_configuration_count + 1
+  else
+    register_default_configurations(paths, is_flutter_project, project_config)
+    if config.debugger.register_configurations then
+      config.debugger.register_configurations(paths)
+    end
+    local all_configurations = require("dap").configurations.dart
+    if not all_configurations then
+      ui.notify("No launch configuration for DAP found", ui.ERROR)
+      return
+    end
+    for _, c in ipairs(all_configurations) do
+      if c.request == "launch" then
+        table.insert(launch_configurations, c)
+        launch_configuration_count = launch_configuration_count + 1
+      end
     end
   end
 
@@ -192,6 +205,7 @@ function DebuggerRunner:run(
         if config.debugger.evaluate_to_string_in_debug_views then
           launch_config.evaluateToStringInDebugViews = true
         end
+        selected_launch_config = launch_config
         dap.run(launch_config)
       end
     )

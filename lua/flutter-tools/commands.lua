@@ -22,7 +22,7 @@ local current_device = nil
 
 ---@class flutter.Runner
 ---@field is_running fun(runner: flutter.Runner):boolean
----@field run fun(runner: flutter.Runner, paths:table, args:table, cwd:string, on_run_data:fun(is_err:boolean, data:string), on_run_exit:fun(data:string[], args: table, project_conf: flutter.ProjectConfig?),  is_flutter_project: boolean, project_conf: flutter.ProjectConfig?)
+---@field run fun(runner: flutter.Runner, paths:table, args:table, cwd:string, on_run_data:fun(is_err:boolean, data:string), on_run_exit:fun(data:string[], args: table, project_conf: flutter.ProjectConfig?,launch_config: dap.Configuration?),  is_flutter_project: boolean, project_conf: flutter.ProjectConfig?, launch_config: dap.Configuration?)
 ---@field cleanup fun(funner: flutter.Runner)
 ---@field send fun(runner: flutter.Runner, cmd:string, quiet: boolean?)
 
@@ -83,14 +83,19 @@ end
 ---@param result string[]
 ---@param cli_args string[]
 ---@param project_config flutter.ProjectConfig?
-local function on_run_exit(result, cli_args, project_config)
+---@param launch_config dap.Configuration?
+local function on_run_exit(result, cli_args, project_config, launch_config)
   local matched_error, msg = has_recoverable_error(result)
   if matched_error then
     local lines = devices.to_selection_entries(result)
     ui.select({
       title = ("Flutter run (%s)"):format(msg),
       lines = lines,
-      on_select = function(device) devices.select_device(device, cli_args, project_config) end,
+      on_select = function(device)
+        vim.list_extend(cli_args, { "-d", device.id })
+        if launch_config then vim.list_extend(launch_config.args, { "-d", device.id }) end
+        M.run({ cli_args = cli_args }, project_config, launch_config)
+      end,
     })
   end
   shutdown()
@@ -245,7 +250,8 @@ end
 
 ---@param opts RunOpts
 ---@param project_conf flutter.ProjectConfig?
-local function run(opts, project_conf)
+---@param launch_config dap.Configuration?
+local function run(opts, project_conf, launch_config)
   opts = opts or {}
   executable.get(function(paths)
     local args = opts.cli_args or get_run_args(opts, project_conf)
@@ -272,19 +278,31 @@ local function run(opts, project_conf)
       ui.notify("Starting dart project...")
     end
     runner = use_debugger_runner(opts.force_debug) and debugger_runner or job_runner
-    runner:run(paths, args, cwd, on_run_data, on_run_exit, is_flutter_project, project_conf)
+    runner:run(
+      paths,
+      args,
+      cwd,
+      on_run_data,
+      on_run_exit,
+      is_flutter_project,
+      project_conf,
+      launch_config
+    )
   end)
 end
 
 ---Run the flutter application
 ---@param opts RunOpts
 ---@param project_conf flutter.ProjectConfig?
-function M.run(opts, project_conf)
+---@param launch_config dap.Configuration?
+function M.run(opts, project_conf, launch_config)
   if M.is_running() then return ui.notify("Flutter is already running!") end
   if project_conf then
-    run(opts, project_conf)
+    run(opts, project_conf, launch_config)
   else
-    select_project_config(function(selected_project_conf) run(opts, selected_project_conf) end)
+    select_project_config(
+      function(selected_project_conf) run(opts, selected_project_conf, launch_config) end
+    )
   end
 end
 
