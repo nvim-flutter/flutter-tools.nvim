@@ -155,6 +155,7 @@ require("flutter-tools").setup {} -- use defaults
 - `FlutterReload` - Reload the running project.
 - `FlutterRestart` - Restart the current project.
 - `FlutterQuit` - Ends a running session.
+- `FlutterAttach` - Attach to a running app.
 - `FlutterDetach` - Ends a running session locally but keeps the process running on the device.
 - `FlutterOutlineToggle` - Toggle the outline window showing the widget tree for the given file.
 - `FlutterOutlineOpen` - Opens an outline window showing the widget tree for the given file.
