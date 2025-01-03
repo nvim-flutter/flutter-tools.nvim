@@ -1,4 +1,4 @@
-*flutter-tools.txt*      For Neovim >= 0.8.0     Last change: 2024 December 28
+*flutter-tools.txt*      For Neovim >= 0.8.0      Last change: 2025 January 03
 
 ==============================================================================
 Table of Contents                            *flutter-tools-table-of-contents*
@@ -188,6 +188,7 @@ APP VERSION
 - `FlutterReload` - Reload the running project.
 - `FlutterRestart` - Restart the current project.
 - `FlutterQuit` - Ends a running session.
+- `FlutterAttach` - Attach to a running app.
 - `FlutterDetach` - Ends a running session locally but keeps the process running on the device.
 - `FlutterOutlineToggle` - Toggle the outline window showing the widget tree for the given file.
 - `FlutterOutlineOpen` - Opens an outline window showing the widget tree for the given file.
