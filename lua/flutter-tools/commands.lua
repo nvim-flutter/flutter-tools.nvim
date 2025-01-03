@@ -16,6 +16,7 @@ local parser = lazy.require("flutter-tools.utils.yaml_parser")
 local M = {}
 
 ---@alias RunOpts {cli_args: string[]?, args: string[]?, device: Device?, force_debug: boolean?}
+---@alias AttachOpts {cli_args: string[]?, args: string[]?, device: Device?}
 
 ---@type table?
 local current_device = nil
@@ -25,6 +26,7 @@ local current_device = nil
 ---@field run fun(runner: flutter.Runner, paths:table, args:table, cwd:string, on_run_data:fun(is_err:boolean, data:string), on_run_exit:fun(data:string[], args: table, project_conf: flutter.ProjectConfig?,launch_config: dap.Configuration?),  is_flutter_project: boolean, project_conf: flutter.ProjectConfig?, launch_config: dap.Configuration?)
 ---@field cleanup fun(funner: flutter.Runner)
 ---@field send fun(runner: flutter.Runner, cmd:string, quiet: boolean?)
+---@field attach fun(runner: flutter.Runner, paths:table, args:table, cwd:string, on_run_data:fun(is_err:boolean, data:string), on_run_exit:fun(data:string[], args: table, project_conf: flutter.ProjectConfig?,launch_config: dap.Configuration?))
 
 ---@type flutter.Runner?
 local runner = nil
@@ -304,6 +306,27 @@ function M.run(opts, project_conf, launch_config)
       function(selected_project_conf) run(opts, selected_project_conf, launch_config) end
     )
   end
+end
+
+---@param opts AttachOpts
+local function attach(opts)
+  opts = opts or {}
+  executable.get(function(paths)
+    local args = opts.cli_args or {}
+    if not use_debugger_runner() then vim.list_extend(args, { "attach" }) end
+
+    local cwd = get_cwd()
+    ui.notify("Attaching flutter project...")
+    runner = use_debugger_runner() and debugger_runner or job_runner
+    runner:attach(paths, args, cwd, on_run_data, on_run_exit)
+  end)
+end
+
+--- Attach to a running app
+---@param opts AttachOpts
+function M.attach(opts)
+  if M.is_running() then return ui.notify("Flutter is already running!") end
+  attach(opts)
 end
 
 ---@param cmd string

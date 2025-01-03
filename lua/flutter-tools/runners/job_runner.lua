@@ -69,4 +69,23 @@ end
 
 function JobRunner:cleanup() run_job = nil end
 
+function JobRunner:attach(paths, args, cwd, on_run_data, on_run_exit)
+  local command = paths.flutter_bin
+  local command_args = args
+
+  run_job = Job:new({
+    command = command,
+    args = command_args,
+    cwd = cwd,
+    on_start = function() utils.emit_event(utils.events.APP_STARTED) end,
+    on_stdout = vim.schedule_wrap(function(_, data, _)
+      on_run_data(false, data)
+      dev_tools.handle_log(data)
+    end),
+    on_stderr = vim.schedule_wrap(function(_, data, _) on_run_data(true, data) end),
+    on_exit = vim.schedule_wrap(function(j, _) on_run_exit(j:result(), args) end),
+  })
+  run_job:start()
+end
+
 return JobRunner
