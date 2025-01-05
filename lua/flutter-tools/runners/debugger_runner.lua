@@ -282,7 +282,7 @@ function DebuggerRunner:send(cmd, quiet)
   end
   local request = command_requests[cmd]
   if request ~= nil then
-    dap.session():request(request)
+    dap.session():request(request, nil, function() end)
     return
   end
   local service_activation_params = vm_service_extensions.get_request_params(cmd)
