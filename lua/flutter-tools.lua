@@ -64,10 +64,7 @@ function M.start()
   if _has_started then return end
 
   if not _has_setup then
-    ui.notify(
-      "Cannot start because the plugin has not been setup yet.",
-      ui.ERROR
-    )
+    ui.notify("Cannot start because the plugin has not been setup yet.", ui.ERROR)
     return
   end
 
