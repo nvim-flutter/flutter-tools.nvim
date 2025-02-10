@@ -128,7 +128,6 @@ local function get_defaults(opts)
         require("flutter-tools.guides").widget_guides
       ),
       ["textDocument/documentColor"] = require("flutter-tools.lsp.color").on_document_color,
-      -- ["dart/textDocument/super"] = lsp.handlers["textDocument/definition"],
       ["dart/reanalyze"] = function() end, -- returns: None
       ["dart/textDocument/super"] = handle_super,
     },
