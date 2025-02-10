@@ -26,12 +26,14 @@ local devtools_profiler_url = nil
 
 local activate_cmd = { "pub", "global", "activate", "devtools" }
 
--- Android when flutter run starts a new devtools process
--- OLD: Flutter DevTools, a Flutter debugger and profiler,
--- on sdk gphone x86 arm is available at:
--- http://127.0.0.1:9102?uri=http%3A%2F%2F127.0.0.1%3A46051%2FNvCev-HjyX4%3D%2F
--- NEW: The Flutter DevTools debugger and profiler on sdk gphone x86 arm is available at:
--- http://127.0.0.1:9100?uri=http%3A%2F%2F127.0.0.1%3A35479%2FgQ0BNyM2xB8%3D%2F
+---Android when flutter run starts a new devtools process
+---OLD: Flutter DevTools, a Flutter debugger and profiler,
+---on sdk gphone x86 arm is available at:
+---http://127.0.0.1:9102?uri=http%3A%2F%2F127.0.0.1%3A46051%2FNvCev-HjyX4%3D%2F
+---NEW: The Flutter DevTools debugger and profiler on sdk gphone x86 arm is available at:
+--- http://127.0.0.1:9100?uri=http%3A%2F%2F127.0.0.1%3A35479%2FgQ0BNyM2xB8%3D%2F
+---@param data string
+---@return unknown
 local function try_get_tools_flutter(data) return data:match("(https?://127%.0%.0%.1:%d+%?uri=.+)$") end
 
 --- Debug service listening on ws://127.0.0.1:44293/heXbxLM_lhM=/ws
@@ -75,7 +77,10 @@ function M.open_dev_tools()
   end
 end
 
+---@param data string?
 function M.handle_log(data)
+  if not data then return end
+
   if devtools_profiler_url or (profiler_url and devtools_url) then return end
 
   devtools_profiler_url = try_get_tools_flutter(data)
@@ -233,6 +238,7 @@ function M.on_flutter_shutdown()
 end
 
 function M.set_devtools_url(url) devtools_url = url end
+
 function M.set_profiler_url(url) profiler_url = url end
 
 return M
