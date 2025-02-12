@@ -49,6 +49,48 @@ local function handle_progress(err, result, ctx)
   end
 end
 
+local function handle_super(err, result)
+  if err then
+    return vim.notify("Error when finding super" .. vim.inspect(err), vim.log.levels.ERROR)
+  end
+  if not result or vim.tbl_isempty(result) then return end
+  local client = lsp_utils.get_dartls_client()
+  if not client then return end
+  local locations = {}
+  local win = api.nvim_get_current_win()
+  local from = vim.fn.getpos(".")
+  local bufnr = api.nvim_get_current_buf()
+  from[1] = bufnr
+  local tagname = vim.fn.expand("<cword>")
+  if result then locations = vim.islist(result) and result or { result } end
+  local items = vim.lsp.util.locations_to_items(locations, client.offset_encoding)
+  if vim.tbl_isempty(items) then
+    vim.notify("No locations found", vim.log.levels.INFO)
+    return
+  end
+  if #items == 1 then
+    local item = items[1]
+    local b = item.bufnr or vim.fn.bufadd(item.filename)
+
+    -- Save position in jumplist
+    vim.cmd("normal! m'")
+    -- Push a new item into tagstack
+    local tagstack = { { tagname = tagname, from = from } }
+    vim.fn.settagstack(vim.fn.win_getid(win), { items = tagstack }, "t")
+
+    vim.bo[b].buflisted = true
+    api.nvim_win_set_buf(win, b)
+    api.nvim_win_set_cursor(win, { item.lnum, item.col - 1 })
+    vim._with({ win = win }, function()
+      -- Open folds under the cursor
+      vim.cmd("normal! zv")
+    end)
+    return
+  else
+    vim.notify("More than one location found", vim.log.levels.ERROR)
+  end
+end
+
 ---Create default config for dartls
 ---@param opts table
 ---@return table
@@ -86,8 +128,8 @@ local function get_defaults(opts)
         require("flutter-tools.guides").widget_guides
       ),
       ["textDocument/documentColor"] = require("flutter-tools.lsp.color").on_document_color,
-      ["dart/textDocument/super"] = lsp.handlers["textDocument/definition"],
       ["dart/reanalyze"] = function() end, -- returns: None
+      ["dart/textDocument/super"] = handle_super,
     },
     commands = {
       ["refactor.perform"] = require("flutter-tools.lsp.commands").refactor_perform,
@@ -146,7 +188,23 @@ function M.dart_lsp_super()
     debug_log("No active dartls server found")
     return
   end
-  client.request("dart/textDocument/super", nil, nil, 0)
+  -- Get current cursor position (1-based)
+  local line, col = unpack(vim.api.nvim_win_get_cursor(0))
+
+  -- Note: line is 1-based but col is 0-based
+  -- To make line 0-based for LSP, subtract 1:
+  local lsp_line = line - 1
+  local lsp_col = col
+  local params = {
+    textDocument = {
+      uri = vim.uri_from_bufnr(0), -- gets URI of current buffer
+    },
+    position = {
+      line = lsp_line, -- 0-based line number
+      character = lsp_col, -- 0-based character position
+    },
+  }
+  client.request("dart/textDocument/super", params, nil, 0)
 end
 
 function M.dart_reanalyze() lsp.buf_request(0, "dart/reanalyze") end
