@@ -67,6 +67,7 @@ api.nvim_set_hl(0, MARKER_HL, { default = true, link = "NonText" })
 local state = setmetatable({
   outline_buf = nil,
   outline_win = nil,
+  outline_uri = nil,
 }, {
   __index = function(_, k)
     --- if the buffer of the outline file is nil but it *might* exist
@@ -301,7 +302,7 @@ end
 
 local function select_outline_item()
   local line = fn.line(".")
-  local uri = vim.b.outline_uri
+  local uri = state.outline_uri
   if not uri then return ui.notify("Sorry! this item can't be opened", ui.WARN) end
   local outline = M.outlines[uri]
   local item = outline[line]
@@ -374,7 +375,7 @@ function M.open(opts)
     refresh_outline(state.outline_buf, lines, highlights)
   end
   if not outline then return end
-  vim.b.outline_uri = outline.uri
+  state.outline_uri = outline.uri
   if opts.go_back and api.nvim_win_is_valid(parent_win) then
     api.nvim_set_current_win(parent_win)
   end
