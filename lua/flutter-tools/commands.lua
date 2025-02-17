@@ -23,7 +23,7 @@ local current_device = nil
 
 ---@class flutter.Runner
 ---@field is_running fun(runner: flutter.Runner):boolean
----@field run fun(runner: flutter.Runner, paths:table, args:table, cwd:string, on_run_data:fun(is_err:boolean, data:string), on_run_exit:fun(data:string[], args: table, project_conf: flutter.ProjectConfig?,launch_config: dap.Configuration?),  is_flutter_project: boolean, project_conf: flutter.ProjectConfig?, launch_config: dap.Configuration?)
+---@field run fun(runner: flutter.Runner, opts: RunOpts, paths:table, args:table, cwd:string, on_run_data:fun(is_err:boolean, data:string), on_run_exit:fun(data:string[], args: table, opts: RunOpts?, project_conf: flutter.ProjectConfig?,launch_config: dap.Configuration?),  is_flutter_project: boolean, project_conf: flutter.ProjectConfig?, launch_config: dap.Configuration?)
 ---@field cleanup fun(funner: flutter.Runner)
 ---@field send fun(runner: flutter.Runner, cmd:string, quiet: boolean?)
 ---@field attach fun(runner: flutter.Runner, paths:table, args:table, cwd:string, on_run_data:fun(is_err:boolean, data:string), on_run_exit:fun(data:string[], args: table, project_conf: flutter.ProjectConfig?,launch_config: dap.Configuration?))
@@ -84,9 +84,10 @@ end
 ---Handle a finished flutter run command
 ---@param result string[]
 ---@param cli_args string[]
+---@param opts RunOpts?
 ---@param project_config flutter.ProjectConfig?
 ---@param launch_config dap.Configuration?
-local function on_run_exit(result, cli_args, project_config, launch_config)
+local function on_run_exit(result, cli_args, opts, project_config, launch_config)
   local matched_error, msg = has_recoverable_error(result)
   if matched_error then
     local lines = devices.to_selection_entries(result)
@@ -96,7 +97,10 @@ local function on_run_exit(result, cli_args, project_config, launch_config)
       on_select = function(device)
         vim.list_extend(cli_args, { "-d", device.id })
         if launch_config then vim.list_extend(launch_config.args, { "-d", device.id }) end
-        M.run({ cli_args = cli_args }, project_config, launch_config)
+        opts = opts or {}
+        opts.cli_args = cli_args
+
+        M.run(opts, project_config, launch_config)
       end,
     })
   end
@@ -281,6 +285,7 @@ local function run(opts, project_conf, launch_config)
     end
     runner = use_debugger_runner(opts.force_debug) and debugger_runner or job_runner
     runner:run(
+      opts,
       paths,
       args,
       cwd,
