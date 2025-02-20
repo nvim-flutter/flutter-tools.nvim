@@ -24,6 +24,7 @@ local command_keys = {
 function JobRunner:is_running() return run_job ~= nil end
 
 function JobRunner:run(
+  opts,
   paths,
   args,
   cwd,
@@ -53,7 +54,9 @@ function JobRunner:run(
       dev_tools.handle_log(data)
     end),
     on_stderr = vim.schedule_wrap(function(_, data, _) on_run_data(true, data) end),
-    on_exit = vim.schedule_wrap(function(j, _) on_run_exit(j:result(), args, project_config) end),
+    on_exit = vim.schedule_wrap(
+      function(j, _) on_run_exit(j:result(), args, opts, project_config) end
+    ),
   })
   run_job:start()
 end

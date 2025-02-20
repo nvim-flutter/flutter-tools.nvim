@@ -143,6 +143,7 @@ local function register_dap_listeners(on_run_data, on_run_exit)
 end
 
 function DebuggerRunner:run(
+  opts,
   paths,
   args,
   cwd,
@@ -166,7 +167,7 @@ function DebuggerRunner:run(
       end
     end,
     function(before_start_logs)
-      on_run_exit(before_start_logs, args, project_config, selected_launch_config)
+      on_run_exit(before_start_logs, args, opts, project_config, selected_launch_config)
     end
   )
 
