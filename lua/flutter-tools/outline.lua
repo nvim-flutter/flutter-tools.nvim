@@ -208,11 +208,13 @@ end
 ---@param buf integer the buf number
 ---@param lines table the lines to append
 ---@param highlights? table the highlights to apply
-local function refresh_outline(buf, lines, highlights)
+---@param outline_uri string the uri of the outline
+local function refresh_outline(buf, lines, highlights, outline_uri)
   vim.bo[buf].modifiable = true
   local ok = pcall(api.nvim_buf_set_lines, buf, 0, -1, false, lines)
   if not ok then return end
   vim.bo[buf].modifiable = false
+  vim.b[buf].outline_uri = outline_uri
   if highlights then ui.add_highlights(state.outline_buf, highlights) end
 end
 
@@ -282,9 +284,9 @@ local function setup_autocommands()
     pattern = utils.events.OUTLINE_CHANGED,
     callback = function()
       if not utils.buf_valid(state.outline_buf) then return end
-      local ok, lines, highlights = get_outline_content()
-      if not ok or not lines then return end
-      refresh_outline(state.outline_buf, lines, highlights)
+      local ok, lines, highlights, outline = get_outline_content()
+      if not ok or not lines or not outline then return end
+      refresh_outline(state.outline_buf, lines, highlights, outline.uri)
     end,
   })
   autocmd({ "CursorHold" }, {
@@ -358,7 +360,7 @@ end
 function M.open(opts)
   opts = opts or {}
   local ok, lines, highlights, outline = get_outline_content()
-  if not ok or not lines then
+  if not ok or not lines or not outline then
     ui.notify("Sorry! There is no outline for this file")
     return
   end
@@ -369,12 +371,14 @@ function M.open(opts)
       open_cmd = options.open_cmd,
       filetype = outline_filetype,
       filename = outline_filename,
-    }, function(buf, win) setup_outline_window(buf, win, lines, highlights, opts.go_back) end)
+      focus_on_open = true,
+    }, function(buf, win)
+      setup_outline_window(buf, win, lines, highlights, opts.go_back)
+      vim.b[buf].outline_uri = outline.uri
+    end)
   else
-    refresh_outline(state.outline_buf, lines, highlights)
+    refresh_outline(state.outline_buf, lines, highlights, outline.uri)
   end
-  if not outline then return end
-  vim.b.outline_uri = outline.uri
   if opts.go_back and api.nvim_win_is_valid(parent_win) then
     api.nvim_set_current_win(parent_win)
   end
