@@ -103,6 +103,7 @@ local function _flutter_bin_from_fvm()
   local fvm_root =
     fs.dirname(fs.find(".fvm", { path = luv.cwd(), upward = true, type = "directory" })[1])
   local flutter_bin_symlink = path.join(fvm_root, ".fvm", "flutter_sdk", "bin", "flutter")
+  flutter_bin_symlink = fn.exepath(flutter_bin_symlink)
   local flutter_bin = luv.fs_realpath(flutter_bin_symlink)
   if path.exists(flutter_bin_symlink) and path.exists(flutter_bin) then return flutter_bin end
 end
