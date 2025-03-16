@@ -229,13 +229,12 @@ require("flutter-tools").setup {
     -- Invoking toString() has a performance cost and may introduce side-effects,
     -- although users may expected this functionality. null is treated like false.
     evaluate_to_string_in_debug_views = true,
-    register_configurations = function(paths)
-      require("dap").configurations.dart = {
-        --put here config that you would find in .vscode/launch.json
-      }
-      -- If you want to load .vscode launch.json automatically run the following:
-	  -- require("dap.ext.vscode").load_launchjs()
-    end,
+    -- You can use the `debugger.register_configurations` to register custom runner configuration (for example for different targets or flavor). Plugin automatically registers the default configuration, but you can override it or add new ones.
+    -- register_configurations = function(paths)
+    --   require("dap").configurations.dart = {
+    --     -- your custom configuration
+    --   }
+    -- end,
   },
   flutter_path = "<full/path/if/needed>", -- <-- this takes priority over the lookup
   flutter_lookup_cmd = nil, -- example "dirname $(which flutter)" or "asdf where flutter"
@@ -438,28 +437,13 @@ This can be accessed using `Telescope flutter fvm` or `require('telescope').exte
 _Requires nvim-dap_
 
 ```lua
--- with packer
-use 'mfussenegger/nvim-dap'
+-- with lazy
+return  { 'mfussenegger/nvim-dap' }
 ```
 
-This plugin integrates with [nvim-dap](https://github.com/mfussenegger/nvim-dap) to provide debug capabilities.
-Currently if `debugger.enabled` is set to `true` in the user's config **it will expect `nvim-dap` to be installed**.
-If `dap` is this plugin will use `flutter` or `dart` native debugger to debug your project.
+This plugin integrates with [nvim-dap](https://github.com/mfussenegger/nvim-dap) to provide debug capabilities for Flutter and Dart applications.
 
-You can use the `debugger.register_configurations` to register custom runner configuration (for example for different targets or flavor).
-If your flutter repo contains launch configurations in `.vscode/launch.json` you can use them via this config :
-
-```lua
-  debugger = {
-    enabled = true,
-    register_configurations = function(_)
-      require("dap").configurations.dart = {}
-      require("dap.ext.vscode").load_launchjs()
-    end,
-  },
-```
-
-Since there is an overlap between this plugin's log buffer and the repl buffer when running via dap, you may use the `dev_log.enabled` configuration option if you want.
+The plugin will automatically set up `nvim-dap` for Flutter/Dart debugging.
 
 Also see:
 

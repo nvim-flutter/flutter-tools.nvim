@@ -62,7 +62,7 @@ local function start()
   if not _setup_started then
     _setup_started = true
     setup_commands()
-    if config.debugger.enabled then dap.setup(config) end
+    dap.setup(config)
     if config.widget_guides.enabled then guides.setup() end
     if config.decorations then decorations.apply(config.decorations) end
   end

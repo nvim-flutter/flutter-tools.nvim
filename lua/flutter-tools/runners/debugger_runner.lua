@@ -5,7 +5,11 @@ local config = lazy.require("flutter-tools.config") ---@module "flutter-tools.co
 local utils = lazy.require("flutter-tools.utils") ---@module "flutter-tools.utils"
 local path = lazy.require("flutter-tools.utils.path") ---@module "flutter-tools.utils.path"
 local vm_service_extensions = lazy.require("flutter-tools.runners.vm_service_extensions") ---@module "flutter-tools.runners.vm_service_extensions"
-local _, dap = pcall(require, "dap")
+local success, dap = pcall(require, "dap")
+if not success then
+  ui.notify(string.format("nvim-dap is not installed!\n%s", dap), ui.ERROR)
+  return
+end
 
 local fmt = string.format
 
