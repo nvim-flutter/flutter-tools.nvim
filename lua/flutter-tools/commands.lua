@@ -317,8 +317,8 @@ end
 local function attach(opts)
   opts = opts or {}
   executable.get(function(paths)
-    local args = opts.cli_args or {}
-    if not use_debugger_runner() then vim.list_extend(args, { "attach" }) end
+    local args = opts.cli_args or opts.args or {}
+    if not use_debugger_runner() then table.insert(args, 1, "attach") end
 
     local cwd = get_cwd()
     ui.notify("Attaching flutter project...")
@@ -330,6 +330,8 @@ end
 --- Attach to a running app
 ---@param opts AttachOpts
 function M.attach(opts)
+  if type(opts) == "string" then opts = { args = opts ~= "" and vim.split(opts, " ") or {} } end
+  opts = opts or {}
   if M.is_running() then return ui.notify("Flutter is already running!") end
   attach(opts)
 end
