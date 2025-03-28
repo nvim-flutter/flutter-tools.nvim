@@ -32,16 +32,16 @@ end
 ---@return RGB rgb_table
 --- FIXME: this currently does not support transparent backgrounds. Need a replacement for bg_rgb
 function M.rgba_to_rgb(rgba, bg_rgb)
-  validate("rgba", rgba, "t", true)
-  validate("bg_rgb", bg_rgb, "t", false)
-  validate("r", rgba.r, "n", true)
-  validate("g", rgba.g, "n", true)
-  validate("b", rgba.b, "n", true)
-  validate("a", rgba.a, "n", true)
+  validate("rgba", rgba, "table", true)
+  validate("bg_rgb", bg_rgb, "table", false)
+  validate("r", rgba.r, "number", true)
+  validate("g", rgba.g, "number", true)
+  validate("b", rgba.b, "number", true)
+  validate("a", rgba.a, "number", true)
 
-  validate("bg_r", bg_rgb.r, "n", true)
-  validate("bg_g", bg_rgb.g, "n", true)
-  validate("bg_b", bg_rgb.b, "n", true)
+  validate("bg_r", bg_rgb.r, "number", true)
+  validate("bg_g", bg_rgb.g, "number", true)
+  validate("bg_b", bg_rgb.b, "number", true)
 
   local r = rgba.r * rgba.a + bg_rgb.r * (1 - rgba.a)
   local g = rgba.g * rgba.a + bg_rgb.g * (1 - rgba.a)
@@ -54,9 +54,9 @@ end
 ---@param rgb RGB with keys 'r', 'g', 'b' in [0,255]
 ---@return number 6 digit hex representing the rgb params
 local function rgb_to_hex(rgb)
-  validate("r", rgb.r, "n", false)
-  validate("g", rgb.g, "n", false)
-  validate("b", rgb.b, "n", false)
+  validate("r", rgb.r, "number", false)
+  validate("g", rgb.g, "number", false)
+  validate("b", rgb.b, "number", false)
   return tohex(bor(lshift(rgb.r, 16), lshift(rgb.g, 8), rgb.b), 6)
 end
 
@@ -189,8 +189,8 @@ end
 ---@param color_infos table of `ColorInformation` objects to highlight.
 -- See https://microsoft.github.io/language-server-protocol/specification#textDocument_documentColor
 function M.buf_color(client_id, bufnr, color_infos, _)
-  validate("bufnr", bufnr, "n", false)
-  validate("color_infos", color_infos, "t", false)
+  validate("bufnr", bufnr, "number", false)
+  validate("color_infos", color_infos, "table", false)
   if not color_infos or not bufnr then return end
   local c = config.lsp.color
 
@@ -213,8 +213,8 @@ end
 ---@param client_id number client id
 ---@param bufnr number buffer id
 function M.buf_clear_color(client_id, bufnr)
-  validate("client_id", client_id, "n", true)
-  validate("bufnr", bufnr, "n", true)
+  validate("client_id", client_id, "number", true)
+  validate("bufnr", bufnr, "number", true)
   if api.nvim_buf_is_valid(bufnr) then api.nvim_buf_clear_namespace(bufnr, CLIENT_NS, 0, -1) end
 end
 
