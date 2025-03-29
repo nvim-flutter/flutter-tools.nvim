@@ -52,7 +52,7 @@ end
 
 --- Returns a string containing the 6 digit hex value for a given RGB.
 ---@param rgb RGB with keys 'r', 'g', 'b' in [0,255]
----@return number 6 digit hex representing the rgb params
+---@return string 6 digit hex representing the rgb params
 local function rgb_to_hex(rgb)
   validate("r", rgb.r, "number", false)
   validate("g", rgb.g, "number", false)
@@ -64,7 +64,7 @@ end
 --- the @rgba with the background @bg_rgb.
 ---
 ---@param rgba RGBA
----@return number 6 digit hex
+---@return string 6 digit hex
 function M.rgba_to_hex(rgba, bg_rgb) return rgb_to_hex(M.rgba_to_rgb(rgba, bg_rgb)) end
 
 --- Returns a table containing the RGB values encoded inside 24 least
@@ -157,7 +157,7 @@ local function color_virtual_text(_, bufnr, range, rgb, virtual_text_str)
   local hex = rgb_to_hex(rgb)
   local hlname = create_set_hl("LspDocumentColorVirtualText", { foreground = hex })
   local line = range["end"]["line"]
-  if line <= api.nvim_buf_line_count(0) then
+  if line <= api.nvim_buf_line_count(bufnr) then
     api.nvim_buf_set_extmark(bufnr, CLIENT_NS, line, -1, {
       virt_text = { { virtual_text_str, hlname } },
     })
