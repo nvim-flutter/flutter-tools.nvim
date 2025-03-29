@@ -36,9 +36,17 @@ local function validate_prefs(prefs)
       end
     )
   end
-  vim.validate("outline", prefs.outline, "table", true)
-  vim.validate("dev_log", prefs.dev_log, "table", true)
-  vim.validate("closing_tags", prefs.closing_tags, "table", true)
+  if vim.fn.has("nvim-0.11") then
+    vim.validate("outline", prefs.outline, "table", true)
+    vim.validate("dev_log", prefs.dev_log, "table", true)
+    vim.validate("closing_tags", prefs.closing_tags, "table", true)
+  else
+    vim.validate({
+      outline = { prefs.outline, "table", true },
+      dev_log = { prefs.dev_log, "table", true },
+      closing_tags = { prefs.closing_tags, "table", true },
+    })
+  end
 end
 
 ---Create a proportional split using a percentage specified as a float
