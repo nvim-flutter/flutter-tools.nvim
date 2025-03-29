@@ -1,5 +1,5 @@
 local tohex, bor, lshift, rshift, band = bit.tohex, bit.bor, bit.lshift, bit.rshift, bit.band
-local api = vim.vim.api
+local api = vim.api
 
 local lazy = require("flutter-tools.lazy")
 local ui = lazy.require("flutter-tools.ui") ---@module "flutter-tools.ui"
