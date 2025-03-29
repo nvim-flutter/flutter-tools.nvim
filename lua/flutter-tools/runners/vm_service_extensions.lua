@@ -40,7 +40,11 @@ local function toggle_value(request)
       return "5.0"
     end
   end
-  return not value
+  if value == "true" then
+    return "false"
+  else
+    return "true"
+  end
 end
 
 ---@type flutter.VmServiceExtensions
