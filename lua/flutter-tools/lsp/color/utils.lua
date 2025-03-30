@@ -32,7 +32,7 @@ end
 ---@return RGB rgb_table
 --- FIXME: this currently does not support transparent backgrounds. Need a replacement for bg_rgb
 function M.rgba_to_rgb(rgba, bg_rgb)
-  if vim.fn.has("nvim-0.11") then
+  if vim.fn.has("nvim-0.11") == 1 then
     vim.validate("rgba", rgba, "table", true)
     vim.validate("bg_rgb", bg_rgb, "table", false)
     vim.validate("r", rgba.r, "number", true)
@@ -70,7 +70,7 @@ end
 ---@param rgb RGB with keys 'r', 'g', 'b' in [0,255]
 ---@return string 6 digit hex representing the rgb params
 local function rgb_to_hex(rgb)
-  if vim.fn.has("nvim-0.11") then
+  if vim.fn.has("nvim-0.11") == 1 then
     vim.validate("rgb", rgb, "table", false)
     vim.validate("r", rgb.r, "number", false)
     vim.validate("g", rgb.g, "number", false)
@@ -98,7 +98,7 @@ function M.rgba_to_hex(rgba, bg_rgb) return rgb_to_hex(M.rgba_to_rgb(rgba, bg_rg
 ---@param rgb_24bit number 24-bit RGB value
 ---@return RGB
 function M.decode_24bit_rgb(rgb_24bit)
-  if vim.fn.has("nvim-0.11") then
+  if vim.fn.has("nvim-0.11") == 1 then
     vim.validate("rgb_24bit", rgb_24bit, "number", true)
   else
     vim.validate({ rgb_24bit = { rgb_24bit, "number", true } })
@@ -219,7 +219,7 @@ end
 ---@param color_infos table of `ColorInformation` objects to highlight.
 -- See https://microsoft.github.io/language-server-protocol/specification#textDocument_documentColor
 function M.buf_color(client_id, bufnr, color_infos, _)
-  if vim.fn.has("nvim-0.11") then
+  if vim.fn.has("nvim-0.11") == 1 then
     vim.validate("bufnr", bufnr, "number", true)
     vim.validate("color_infos", color_infos, "table", true)
   else
@@ -250,7 +250,7 @@ end
 ---@param client_id number client id
 ---@param bufnr number buffer id
 function M.buf_clear_color(client_id, bufnr)
-  if vim.fn.has("nvim-0.11") then
+  if vim.fn.has("nvim-0.11") == 1 then
     vim.validate("client_id", client_id, "number", true)
     vim.validate("bufnr", bufnr, "number", true)
   else

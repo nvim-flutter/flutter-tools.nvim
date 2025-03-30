@@ -93,7 +93,7 @@ function M.is_descendant(root, path)
 end
 
 function M.search_ancestors(startpath, func)
-  if vim.fn.has("nvim-0.11") then
+  if vim.fn.has("nvim-0.11") == 1 then
     vim.validate("func", func, "function")
   else
     vim.validate({ func = { func, "function" } })
