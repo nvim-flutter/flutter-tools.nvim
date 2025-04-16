@@ -11,6 +11,12 @@ local luv = vim.loop
 
 local M = {}
 
+local uname = luv.os_uname()
+M.is_mac = uname.sysname == "Darwin"
+M.is_linux = uname.sysname == "Linux"
+---@type boolean
+M.is_windows = uname.version:match("Windows")
+
 local dart_sdk = path.join("cache", "dart-sdk")
 
 local function _flutter_sdk_root(bin_path)
@@ -102,9 +108,20 @@ end
 local function _flutter_bin_from_fvm()
   local fvm_root =
     fs.dirname(fs.find(".fvm", { path = luv.cwd(), upward = true, type = "directory" })[1])
-  local flutter_bin_symlink = path.join(fvm_root, ".fvm", "flutter_sdk", "bin", "flutter")
-  flutter_bin_symlink = fn.exepath(flutter_bin_symlink)
-  local flutter_bin = luv.fs_realpath(flutter_bin_symlink)
+
+  local flutter_bin_symlink
+  local flutter_bin
+
+  if M.is_linux then
+    flutter_bin_symlink = path.join(fvm_root, ".fvm", "flutter_sdk")
+    flutter_bin_symlink = luv.fs_realpath(flutter_bin_symlink)
+    flutter_bin = path.join(flutter_bin_symlink, "bin", "flutter")
+    flutter_bin = fn.exepath(flutter_bin)
+  else
+    flutter_bin_symlink = path.join(fvm_root, ".fvm", "flutter_sdk", "bin", "flutter")
+    flutter_bin_symlink = fn.exepath(flutter_bin_symlink)
+    flutter_bin = luv.fs_realpath(flutter_bin_symlink)
+  end
   if path.exists(flutter_bin_symlink) and path.exists(flutter_bin) then return flutter_bin end
 end
 
