@@ -68,8 +68,11 @@ function M.rename(new_name, opts)
     params.newName = name
     local handler = client.handlers["textDocument/rename"] or lsp.handlers["textDocument/rename"]
     client.request("textDocument/rename", params, function(...)
-      if result then lsp.util.apply_workspace_edit(result, client.offset_encoding) end
       handler(...)
+      if result then lsp.util.apply_workspace_edit(result, client.offset_encoding) end
+
+      -- Save all modified buffers after applying workspace edits
+      vim.cmd("silent! wa")
     end, bufnr)
   end
 
