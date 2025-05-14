@@ -44,8 +44,8 @@ end
 ---Find an item in a list based on a compare function
 ---@generic T
 ---@param compare fun(item: T): boolean
----@param list `T`
----@return `T`?
+---@param list T[]
+---@return T?
 function M.find(list, compare)
   for _, item in ipairs(list) do
     if compare(item) then return item end
@@ -150,5 +150,19 @@ end
 M.islist = vim.fn.has("nvim-0.10") == 1 and vim.islist or vim.tbl_islist
 local flatten = function(t) return vim.iter(t):flatten():totable() end
 M.flatten = vim.fn.has("nvim-0.11") == 1 and flatten or vim.tbl_flatten
+
+---@generic T
+---@param t T[]
+---@param t2 T[]
+---@param compare fun(a: T, b: T): boolean
+function M.compare(t, t2, compare)
+  if #t2 ~= #t then return false end
+  for index, _ in ipairs(t) do
+    if not compare(t[index], t2[index]) then
+      return false
+    end
+  end
+  return true
+end
 
 return M

@@ -3,6 +3,7 @@ local lazy = require("flutter-tools.lazy")
 local utils = lazy.require("flutter-tools.utils") ---@module "flutter-tools.utils"
 
 local luv = vim.loop
+local api = vim.api
 local M = {}
 
 function M.exists(filename)
@@ -53,7 +54,7 @@ end
 ---@return string
 function M.join(...)
   local result =
-    table.concat(utils.flatten({ ... }), M.path_sep):gsub(M.path_sep .. "+", M.path_sep)
+      table.concat(utils.flatten({ ... }), M.path_sep):gsub(M.path_sep .. "+", M.path_sep)
   return result
 end
 
@@ -82,7 +83,10 @@ function M.iterate_parents(path)
   return it, path, path
 end
 
+---@param root string?
+---@param path string?
 function M.is_descendant(root, path)
+  if not root then return false end
   if not path then return false end
 
   local function cb(dir, _) return dir == root end
@@ -111,6 +115,28 @@ function M.find_root(patterns, startpath)
     end
   end
   return M.search_ancestors(startpath, matcher)
+end
+
+function M.current_buffer_path()
+  local current_buffer = api.nvim_get_current_buf()
+  local current_buffer_path = api.nvim_buf_get_name(current_buffer)
+  return current_buffer_path
+end
+
+function M.get_absolute_path(input_path)
+  -- Check if the provided path is an absolute path
+  if
+      vim.fn.isdirectory(input_path) == 1
+      and not input_path:match("^/")
+      and not input_path:match("^%a:[/\\]")
+  then
+    -- It's a relative path, so expand it to an absolute path
+    local absolute_path = vim.fn.fnamemodify(input_path, ":p")
+    return absolute_path
+  else
+    -- It's already an absolute path
+    return input_path
+  end
 end
 
 return M

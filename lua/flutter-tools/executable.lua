@@ -3,11 +3,10 @@ local utils = lazy.require("flutter-tools.utils") ---@module "flutter-tools.util
 local path = lazy.require("flutter-tools.utils.path") ---@module "flutter-tools.utils.path"
 local ui = lazy.require("flutter-tools.ui") ---@module "flutter-tools.ui"
 local config = lazy.require("flutter-tools.config") ---@module "flutter-tools.config"
+local fvm_utils = lazy.require("flutter-tools.lsp.fvm_utils") ---@module "flutter-tools.lsp.fvm_utils"
 local Job = require("plenary.job")
 
 local fn = vim.fn
-local fs = vim.fs
-local luv = vim.loop
 
 local M = {}
 
@@ -49,9 +48,10 @@ local function _flutter_sdk_dart_bin(flutter_sdk)
 end
 
 ---Get paths for flutter and dart based on the binary locations
----@return table<string, string>
+---@return table<string, string>?
 local function get_default_binaries()
   local flutter_bin = fn.resolve(fn.exepath("flutter"))
+  if #flutter_bin <= 0 then return nil end
   return {
     flutter_bin = flutter_bin,
     dart_bin = fn.resolve(fn.exepath("dart")),
@@ -66,7 +66,7 @@ function M.reset_paths() _paths = nil end
 
 ---Execute user's lookup command and pass it to the job callback
 ---@param lookup_cmd string
----@param callback fun(p: string, t: table<string, string>?)
+---@param callback fun(t: table<string, string>?)
 ---@return table<string, string>?
 local function path_from_lookup_cmd(lookup_cmd, callback)
   local paths = {}
@@ -99,15 +99,7 @@ local function path_from_lookup_cmd(lookup_cmd, callback)
   job:start()
 end
 
-local function _flutter_bin_from_fvm()
-  local fvm_root =
-    fs.dirname(fs.find(".fvm", { path = luv.cwd(), upward = true, type = "directory" })[1])
-  local binary_name = path.is_windows and "flutter.bat" or "flutter"
-  local flutter_bin_symlink = path.join(fvm_root, ".fvm", "flutter_sdk", "bin", binary_name)
-  flutter_bin_symlink = fn.exepath(flutter_bin_symlink)
-  local flutter_bin = luv.fs_realpath(flutter_bin_symlink)
-  if path.exists(flutter_bin_symlink) and path.exists(flutter_bin) then return flutter_bin end
-end
+
 
 ---Fetch the paths to the users binaries.
 ---@param callback fun(paths: table<string, string>)
@@ -115,12 +107,13 @@ end
 function M.get(callback)
   if _paths then return callback(_paths) end
   if config.fvm then
-    local flutter_bin = _flutter_bin_from_fvm()
-    if flutter_bin then
+    local fvm_root = fvm_utils.find_fvm_root()
+    local flutter_bin = fvm_utils.flutter_bin_from_fvm(fvm_root)
+    if fvm_root and flutter_bin then
       _paths = {
         flutter_bin = flutter_bin,
         flutter_sdk = _flutter_sdk_root(flutter_bin),
-        fvm = true,
+        fvm_dir = fvm_root,
       }
       _paths.dart_sdk = _dart_sdk_root(_paths)
       _paths.dart_bin = _flutter_sdk_dart_bin(_paths.flutter_sdk)
@@ -144,8 +137,9 @@ function M.get(callback)
     end)
   end
 
-  if not _paths then
-    _paths = get_default_binaries()
+  local paths = get_default_binaries()
+  if not _paths and paths then
+    _paths = paths
     _paths.dart_sdk = _dart_sdk_root(_paths)
     if _paths.flutter_sdk then _paths.dart_bin = _flutter_sdk_dart_bin(_paths.flutter_sdk) end
   end
