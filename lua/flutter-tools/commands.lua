@@ -31,6 +31,8 @@ local current_device = nil
 ---@type flutter.Runner?
 local runner = nil
 
+local fvm_name = path.is_windows and "fvm.bat" or "fvm"
+
 local function use_debugger_runner(force_debug)
   if force_debug or config.debugger.enabled then
     local dap_ok, _ = pcall(require, "dap")
@@ -190,9 +192,9 @@ end
 local function get_absolute_path(input_path)
   -- Check if the provided path is an absolute path
   if
-    vim.fn.isdirectory(input_path) == 1
-    and not input_path:match("^/")
-    and not input_path:match("^%a:[/\\]")
+      vim.fn.isdirectory(input_path) == 1
+      and not input_path:match("^/")
+      and not input_path:match("^%a:[/\\]")
   then
     -- It's a relative path, so expand it to an absolute path
     local absolute_path = vim.fn.fnamemodify(input_path, ":p")
@@ -235,23 +237,23 @@ local function has_flutter_dependency_in_pubspec(cwd)
   if not pubspec then return default_has_flutter_dependency end
   --https://github.com/Dart-Code/Dart-Code/blob/43914cd2709d77668e19a4edf3500f996d5c307b/src/shared/utils/fs.ts#L183
   return (
-    pubspec.dependencies
-    and (
-      pubspec.dependencies.flutter
-      or pubspec.dependencies.flutter_test
-      or pubspec.dependencies.sky_engine
-      or pubspec.dependencies.flutter_goldens
-    )
-  )
-    or (
-      pubspec.devDependencies
-      and (
-        pubspec.devDependencies.flutter
-        or pubspec.devDependencies.flutter_test
-        or pubspec.devDependencies.sky_engine
-        or pubspec.devDependencies.flutter_goldens
+        pubspec.dependencies
+        and (
+          pubspec.dependencies.flutter
+          or pubspec.dependencies.flutter_test
+          or pubspec.dependencies.sky_engine
+          or pubspec.dependencies.flutter_goldens
+        )
       )
-    )
+      or (
+        pubspec.devDependencies
+        and (
+          pubspec.devDependencies.flutter
+          or pubspec.devDependencies.flutter_test
+          or pubspec.devDependencies.sky_engine
+          or pubspec.devDependencies.flutter_goldens
+        )
+      )
 end
 
 ---@param opts RunOpts
@@ -494,7 +496,7 @@ local fvm_list_job = nil
 --- Returns table<{name: string, status: active|global|nil}>
 function M.fvm_list(callback)
   if not fvm_list_job then
-    fvm_list_job = Job:new({ command = "fvm", args = { "api", "list" } })
+    fvm_list_job = Job:new({ command = fvm_name, args = { "api", "list" } })
 
     fvm_list_job:after_success(vim.schedule_wrap(function(j)
       local out = j:result()
@@ -533,7 +535,7 @@ local fvm_use_job = nil
 
 function M.fvm_use(sdk_name)
   if not fvm_use_job then
-    fvm_use_job = Job:new({ command = "fvm", args = { "use", sdk_name } })
+    fvm_use_job = Job:new({ command = fvm_name, args = { "use", sdk_name } })
 
     fvm_use_job:after_success(vim.schedule_wrap(function(j)
       ui.notify(utils.join(j:result()))
