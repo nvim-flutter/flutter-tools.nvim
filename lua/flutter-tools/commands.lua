@@ -192,9 +192,9 @@ end
 local function get_absolute_path(input_path)
   -- Check if the provided path is an absolute path
   if
-      vim.fn.isdirectory(input_path) == 1
-      and not input_path:match("^/")
-      and not input_path:match("^%a:[/\\]")
+    vim.fn.isdirectory(input_path) == 1
+    and not input_path:match("^/")
+    and not input_path:match("^%a:[/\\]")
   then
     -- It's a relative path, so expand it to an absolute path
     local absolute_path = vim.fn.fnamemodify(input_path, ":p")
@@ -237,23 +237,23 @@ local function has_flutter_dependency_in_pubspec(cwd)
   if not pubspec then return default_has_flutter_dependency end
   --https://github.com/Dart-Code/Dart-Code/blob/43914cd2709d77668e19a4edf3500f996d5c307b/src/shared/utils/fs.ts#L183
   return (
-        pubspec.dependencies
-        and (
-          pubspec.dependencies.flutter
-          or pubspec.dependencies.flutter_test
-          or pubspec.dependencies.sky_engine
-          or pubspec.dependencies.flutter_goldens
-        )
+    pubspec.dependencies
+    and (
+      pubspec.dependencies.flutter
+      or pubspec.dependencies.flutter_test
+      or pubspec.dependencies.sky_engine
+      or pubspec.dependencies.flutter_goldens
+    )
+  )
+    or (
+      pubspec.devDependencies
+      and (
+        pubspec.devDependencies.flutter
+        or pubspec.devDependencies.flutter_test
+        or pubspec.devDependencies.sky_engine
+        or pubspec.devDependencies.flutter_goldens
       )
-      or (
-        pubspec.devDependencies
-        and (
-          pubspec.devDependencies.flutter
-          or pubspec.devDependencies.flutter_test
-          or pubspec.devDependencies.sky_engine
-          or pubspec.devDependencies.flutter_goldens
-        )
-      )
+    )
 end
 
 ---@param opts RunOpts
