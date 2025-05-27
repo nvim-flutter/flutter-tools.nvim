@@ -282,6 +282,25 @@ local function run(opts, project_conf, launch_config)
     local is_flutter_project = has_flutter_dependency_in_pubspec(cwd)
     if is_flutter_project then
       ui.notify("Starting flutter project...")
+
+      -- Prepend '--no-version-check' so that Flutter CLI tool does
+      -- not look for a new version.
+      --
+      -- Executing any command with the Flutter CLI tool makes the tool look
+      -- for a new version and optionally prints this banner:
+      --
+      -- ┌─────────────────────────────────────────────────────────┐
+      -- │ A new version of Flutter is available!                  │
+      -- │                                                         │
+      -- │ To update to the latest version, run "flutter upgrade". │
+      -- └─────────────────────────────────────────────────────────┘
+      --
+      -- The problem is that this banner causes errors when parsing the
+      -- output of the running command. To fix this, we omit the version
+      -- check by default, but give the user the option to enable it.
+      if not config.flutter_version_check then
+        args = table.insert(args, 1, "--no-version-check")
+      end
     else
       ui.notify("Starting dart project...")
     end

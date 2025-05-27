@@ -74,6 +74,11 @@ local config = {
   pre_run_callback = nil,
   root_patterns = { ".git", "pubspec.yaml" },
   fvm = false,
+  --- True if the Flutter CLI tool should check if a new version is
+  --- available before executing.
+  ---
+  --- Defaults to false.
+  flutter_version_check = false,
   widget_guides = {
     enabled = false,
     debug = false,
