@@ -283,6 +283,14 @@ local function run(opts, project_conf, launch_config)
     else
       ui.notify("Starting dart project...")
     end
+    local global_run_options = config.global_run_options
+    if global_run_options then
+      if type(global_run_options) == "string" then
+        vim.list_extend(args, vim.split(global_run_options, " "))
+      elseif type(global_run_options) == "table" then
+        vim.list_extend(args, global_run_options)
+      end
+    end
     runner = use_debugger_runner(opts.force_debug) and debugger_runner or job_runner
     runner:run(
       opts,
