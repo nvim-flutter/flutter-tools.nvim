@@ -125,14 +125,14 @@ local function setup_autocommands()
   })
 end
 
----@param opts flutter.ProjectConfig
+---@param opts flutter.ProjectConfig | flutter.ProjectConfig[] Project-specific configuration
 function M.setup_project(opts)
   config.setup_project(opts)
   start()
 end
 
 ---Entry point for this plugin
----@param user_config table
+---@param user_config flutter.Config Configuration options for flutter-tools
 function M.setup(user_config)
   config.set(user_config)
   setup_autocommands()

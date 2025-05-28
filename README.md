@@ -240,6 +240,7 @@ require("flutter-tools").setup {
   flutter_lookup_cmd = nil, -- example "dirname $(which flutter)" or "asdf where flutter"
   root_patterns = { ".git", "pubspec.yaml" }, -- patterns to find the root of your flutter project
   fvm = false, -- takes priority over path, uses <workspace>/.fvm/flutter_sdk if enabled
+  default_run_args= nil, -- Default options for run command (i.e `{ flutter = "--no-version-check" }`). Configured separately for `dart run` and `flutter run`.
   widget_guides = {
     enabled = false,
   },
