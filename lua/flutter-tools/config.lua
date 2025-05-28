@@ -15,6 +15,34 @@ local utils = lazy.require("flutter-tools.utils") ---@module "flutter-tools.util
 ---@field web_port? string
 ---@field cwd? string full path of current working directory, defaults to LSP root
 ---@field additional_args? string[] additional arguments to pass to the flutter run command
+---
+---@class flutter.DevLogOpts
+---@field filter? fun(data: string): boolean
+---@field enabled? boolean
+---@field notify_errors? boolean
+---@field focus_on_open? boolean
+---@field open_cmd? string
+---
+---@class flutter.RunArgsOpts
+---@field flutter? table|string -- options applied to `flutter run` command
+---@field dart? table|string -- options appliert to `dart run` command
+---
+---@class flutter.Config
+---@field flutter_path? string Path to the Flutter SDK
+---@field flutter_lookup_cmd? string Command to find Flutter SDK
+---@field pre_run_callback? fun(opts: table) Function called before running Flutter
+---@field root_patterns? string[] Patterns to find project root
+---@field fvm? boolean Whether to use FVM (Flutter Version Manager)
+---@field default_run_args? flutter.RunArgsOpts Default options for run command
+---@field widget_guides? {enabled: boolean, debug: boolean}
+---@field ui? {border: string}
+---@field decorations? {statusline: {app_version: boolean, device: boolean, project_config: boolean}}
+---@field debugger? {enabled: boolean, exception_breakpoints?: table, evaluate_to_string_in_debug_views?: boolean, register_configurations?: fun(paths: table)}
+---@field closing_tags? {highlight: string, prefix: string, priority: number, enabled: boolean}
+---@field lsp? {debug?: number, color?: {enabled: boolean, background: boolean, foreground: boolean, virtual_text: boolean, virtual_text_str: string, background_color?: string}, settings?: table}
+---@field outline? {auto_open: boolean, open_cmd?: string}
+---@field dev_log? flutter.DevLogOpts
+---@field dev_tools? {autostart: boolean, auto_open_browser: boolean}
 
 local M = {}
 
@@ -67,13 +95,13 @@ M.debug_levels = {
   DEBUG = 1,
   WARN = 2,
 }
-
 local config = {
   flutter_path = nil,
   flutter_lookup_cmd = get_default_lookup(),
   pre_run_callback = nil,
   root_patterns = { ".git", "pubspec.yaml" },
   fvm = false,
+  default_run_args = nil,
   widget_guides = {
     enabled = false,
     debug = false,
