@@ -278,17 +278,20 @@ local function run(opts, project_conf, launch_config)
     -- To determinate if the project is a flutter project we need to check if the pubspec.yaml
     -- file has a flutter dependency in it. We need to get cwd first to pick correct pubspec.yaml file.
     local is_flutter_project = has_flutter_dependency_in_pubspec(cwd)
+    local default_run_args = config.default_run_args
+    local run_args
     if is_flutter_project then
       ui.notify("Starting flutter project...")
+      if default_run_args then run_args = default_run_args.flutter end
     else
       ui.notify("Starting dart project...")
+      if default_run_args then run_args = default_run_args.dart end
     end
-    local global_run_options = config.global_run_options
-    if global_run_options then
-      if type(global_run_options) == "string" then
-        vim.list_extend(args, vim.split(global_run_options, " "))
-      elseif type(global_run_options) == "table" then
-        vim.list_extend(args, global_run_options)
+    if run_args then
+      if type(run_args) == "string" then
+        vim.list_extend(args, vim.split(run_args, " "))
+      elseif type(run_args) == "table" then
+        vim.list_extend(args, run_args)
       end
     end
     runner = use_debugger_runner(opts.force_debug) and debugger_runner or job_runner

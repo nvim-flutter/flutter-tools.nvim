@@ -23,13 +23,17 @@ local utils = lazy.require("flutter-tools.utils") ---@module "flutter-tools.util
 ---@field focus_on_open? boolean
 ---@field open_cmd? string
 ---
+---@class flutter.RunArgsOpts
+---@field flutter? table|string -- options applied to `flutter run` command
+---@field dart? table|string -- options appliert to `dart run` command
+---
 ---@class flutter.Config
 ---@field flutter_path? string Path to the Flutter SDK
 ---@field flutter_lookup_cmd? string Command to find Flutter SDK
 ---@field pre_run_callback? fun(opts: table) Function called before running Flutter
 ---@field root_patterns? string[] Patterns to find project root
 ---@field fvm? boolean Whether to use FVM (Flutter Version Manager)
----@field global_run_options? table|string Global options for flutter run (from `flutter run --verbose --help`)
+---@field default_run_args? flutter.RunArgsOpts Default options for run command
 ---@field widget_guides? {enabled: boolean, debug: boolean}
 ---@field ui? {border: string}
 ---@field decorations? {statusline: {app_version: boolean, device: boolean, project_config: boolean}}
