@@ -3,7 +3,6 @@ local utils = lazy.require("flutter-tools.utils") ---@module "flutter-tools.util
 local path = lazy.require("flutter-tools.utils.path") ---@module "flutter-tools.utils.path"
 local color = lazy.require("flutter-tools.lsp.color") ---@module "flutter-tools.lsp.color"
 local lsp_utils = lazy.require("flutter-tools.lsp.utils") ---@module "flutter-tools.lsp.utils"
-local fvm_utils = lazy.require("flutter-tools.lsp.fvm_utils") ---@module "flutter-tools.lsp.fvm_utils"
 
 local api = vim.api
 local lsp = vim.lsp
@@ -168,14 +167,16 @@ end
 ---@return string?
 function M.get_project_root_dir()
   local conf = require("flutter-tools.config")
-  local current_buffer_path = lsp_utils.current_buffer_path_if_valid()
+  local current_buffer_path = path.current_buffer_path()
+  local root_path = lsp_utils.is_valid_path(current_buffer_path) and
+      path.find_root(conf.root_patterns, current_buffer_path)
 
-  if (current_buffer_path == nil) then
-    local client = lsp_utils.get_dartls_client()
-    return client and client.config.root_dir or nil
+  if (root_path ~= nil) then
+    return root_path
   end
 
-  return path.find_root(conf.root_patterns, current_buffer_path) or current_buffer_path
+  local client = lsp_utils.get_dartls_client()
+  return client and client.config.root_dir or nil
 end
 
 -- FIXME: I'm not sure how to correctly wait till a server is ready before
@@ -241,18 +242,6 @@ local function get_server_config(user_config, callback)
 
     config.on_init = function(client, _)
       return client.notify("workspace/didChangeConfiguration", { settings = config.settings })
-    end
-    -- TODO: flag something such that we only call attach on exit that has been flagged to
-    -- re attach.
-    config.on_exit = function()
-      if not M.pending_reattach then
-        return
-      end
-      M.pending_reattach = false
-      -- vim.schedule does not work, it executes attach too soon and
-      -- instead of creating a new client, the lsp implementation tries
-      -- to use the old, stopped client.
-      vim.defer_fn(M.attach, 0)
     end
     callback(config, paths)
   end)
