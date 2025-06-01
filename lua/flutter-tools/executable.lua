@@ -62,8 +62,6 @@ end
 ---@type table<string, string>
 local _paths = nil
 
-function M.reset_paths() _paths = nil end
-
 ---Execute user's lookup command and pass it to the job callback
 ---@param lookup_cmd string
 ---@param callback fun(t: table<string, string>?)
@@ -105,22 +103,25 @@ end
 ---@param callback fun(paths: table<string, string>)
 ---@return nil
 function M.get(callback)
-  if _paths then return callback(_paths) end
   if config.fvm then
     local fvm_root = fvm_utils.find_fvm_root()
     local flutter_bin = fvm_utils.flutter_bin_from_fvm(fvm_root)
     if fvm_root and flutter_bin then
-      _paths = {
+      -- TODO(kaerum): We currently don't cache fvm based paths
+      -- because we'd need a multiple entry based cache
+      -- that is somehow better than just traversing up
+      -- the directory tree looking for the nearest .fvm
+      local paths = {
         flutter_bin = flutter_bin,
         flutter_sdk = _flutter_sdk_root(flutter_bin),
         fvm_dir = fvm_root,
       }
-      _paths.dart_sdk = _dart_sdk_root(_paths)
-      _paths.dart_bin = _flutter_sdk_dart_bin(_paths.flutter_sdk)
-      return callback(_paths)
+      paths.dart_sdk = _dart_sdk_root(paths)
+      paths.dart_bin = _flutter_sdk_dart_bin(paths.flutter_sdk)
+      return callback(paths)
     end
   end
-
+  if _paths then return callback(_paths) end
   if config.flutter_path then
     local flutter_path = fn.resolve(config.flutter_path)
     _paths = { flutter_bin = flutter_path, flutter_sdk = _flutter_sdk_root(flutter_path) }

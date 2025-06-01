@@ -524,7 +524,6 @@ function M.fvm_use(sdk_name)
     fvm_use_job:after_success(vim.schedule_wrap(function(j)
       ui.notify(utils.join(j:result()))
       shutdown()
-      executable.reset_paths()
       lsp.restart()
 
       fvm_use_job = nil

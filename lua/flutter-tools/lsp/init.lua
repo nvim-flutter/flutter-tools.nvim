@@ -222,7 +222,6 @@ function M.dart_reanalyze() lsp.buf_request(0, "dart/reanalyze") end
 local function get_server_config(user_config, callback)
   local config = utils.merge({ name = lsp_utils.SERVER_NAME }, user_config, { "color" })
   local executable = require("flutter-tools.executable")
-  executable.reset_paths()
   --- TODO: if a user specifies a command we do not need to call executable.get
   executable.get(function(paths)
     if paths == nil then return end
