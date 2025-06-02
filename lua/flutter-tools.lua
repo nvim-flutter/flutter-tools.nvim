@@ -119,9 +119,7 @@ local function setup_autocommands()
   autocmd({ "BufReadPost", "BufFilePost", "BufEnter" }, {
     group = AUGROUP,
     pattern = { "*.dart" },
-    callback = function()
-      lsp.attach()
-    end
+    callback = function() lsp.attach() end,
   })
 end
 

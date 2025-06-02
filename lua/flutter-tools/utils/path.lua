@@ -54,7 +54,7 @@ end
 ---@return string
 function M.join(...)
   local result =
-      table.concat(utils.flatten({ ... }), M.path_sep):gsub(M.path_sep .. "+", M.path_sep)
+    table.concat(utils.flatten({ ... }), M.path_sep):gsub(M.path_sep .. "+", M.path_sep)
   return result
 end
 
@@ -126,9 +126,9 @@ end
 function M.get_absolute_path(input_path)
   -- Check if the provided path is an absolute path
   if
-      vim.fn.isdirectory(input_path) == 1
-      and not input_path:match("^/")
-      and not input_path:match("^%a:[/\\]")
+    vim.fn.isdirectory(input_path) == 1
+    and not input_path:match("^/")
+    and not input_path:match("^%a:[/\\]")
   then
     -- It's a relative path, so expand it to an absolute path
     local absolute_path = vim.fn.fnamemodify(input_path, ":p")

@@ -168,12 +168,10 @@ end
 function M.get_project_root_dir()
   local conf = require("flutter-tools.config")
   local current_buffer_path = path.current_buffer_path()
-  local root_path = lsp_utils.is_valid_path(current_buffer_path) and
-      path.find_root(conf.root_patterns, current_buffer_path)
+  local root_path = lsp_utils.is_valid_path(current_buffer_path)
+    and path.find_root(conf.root_patterns, current_buffer_path)
 
-  if (root_path ~= nil) then
-    return root_path
-  end
+  if root_path ~= nil then return root_path end
 
   local client = lsp_utils.get_dartls_client()
   return client and client.config.root_dir or nil
@@ -208,7 +206,7 @@ function M.dart_lsp_super()
       uri = vim.uri_from_bufnr(0), -- gets URI of current buffer
     },
     position = {
-      line = lsp_line,     -- 0-based line number
+      line = lsp_line, -- 0-based line number
       character = lsp_col, -- 0-based character position
     },
   }
@@ -261,8 +259,7 @@ function M.attach()
   if not lsp_utils.is_valid_path(buffer_path) then return end
 
   get_server_config(user_config, function(c, paths)
-    c.root_dir = paths.fvm_dir
-        or M.get_project_root_dir()
+    c.root_dir = paths.fvm_dir or M.get_project_root_dir()
     vim.lsp.start(c)
   end)
 end
