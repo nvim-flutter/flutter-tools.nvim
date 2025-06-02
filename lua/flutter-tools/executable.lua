@@ -97,8 +97,6 @@ local function path_from_lookup_cmd(lookup_cmd, callback)
   job:start()
 end
 
-
-
 ---Fetch the paths to the users binaries.
 ---@param callback fun(paths: table<string, string>)
 ---@return nil

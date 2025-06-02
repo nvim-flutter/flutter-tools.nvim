@@ -10,7 +10,6 @@ local utils = lazy.require("flutter-tools.utils") ---@module "flutter-tools.util
 
 M.SERVER_NAME = "dartls"
 
-
 ---@param bufnr number?
 ---@return vim.lsp.Client?
 function M.get_dartls_client(bufnr)
