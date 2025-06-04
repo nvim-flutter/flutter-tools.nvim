@@ -169,7 +169,8 @@ function M.get_project_root_dir()
   local conf = require("flutter-tools.config")
   local current_buffer_path = path.current_buffer_path()
   local root_path = lsp_utils.is_valid_path(current_buffer_path)
-    and path.find_root(conf.root_patterns, current_buffer_path)
+      and path.find_root(conf.root_patterns, current_buffer_path)
+    or nil
 
   if root_path ~= nil then return root_path end
 
