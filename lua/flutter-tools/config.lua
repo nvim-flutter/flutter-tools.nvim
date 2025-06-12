@@ -137,6 +137,7 @@ local config = {
       virtual_text_str = "■",
       background_color = nil,
     },
+    web_port = nil
   },
   outline = setmetatable({
     auto_open = false,

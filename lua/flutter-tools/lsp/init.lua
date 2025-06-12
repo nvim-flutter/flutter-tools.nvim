@@ -170,7 +170,7 @@ function M.get_project_root_dir()
   local current_buffer_path = path.current_buffer_path()
   local root_path = lsp_utils.is_valid_path(current_buffer_path)
       and path.find_root(conf.root_patterns, current_buffer_path)
-    or nil
+      or nil
 
   if root_path ~= nil then return root_path end
 
@@ -207,7 +207,7 @@ function M.dart_lsp_super()
       uri = vim.uri_from_bufnr(0), -- gets URI of current buffer
     },
     position = {
-      line = lsp_line, -- 0-based line number
+      line = lsp_line,     -- 0-based line number
       character = lsp_col, -- 0-based character position
     },
   }
@@ -229,7 +229,13 @@ local function get_server_config(user_config, callback)
     local debug_log = create_debug_log(user_config.debug)
     debug_log(fmt("dart_sdk_path: %s", root_path))
 
-    config.cmd = config.cmd or { paths.dart_bin, "language-server", "--protocol=lsp" }
+    local cmd = { paths.dart_bin, "language-server", "--protocol=lsp" }
+
+    if (config.web_port) then
+      table.insert(cmd, "--port=" .. config.web_port)
+    end
+
+    config.cmd = config.cmd or cmd
 
     config.filetypes = { FILETYPE }
     config.capabilities = merge_config(defaults.capabilities, config.capabilities)
@@ -239,7 +245,7 @@ local function get_server_config(user_config, callback)
     config.commands = merge_config(defaults.commands, config.commands)
 
     config.on_init = function(client, _)
-      return client.notify("workspace/didChangeConfiguration", { settings = config.settings })
+      return client:notify("workspace/didChangeConfiguration", { settings = config.settings })
     end
     callback(config, paths)
   end)
@@ -253,6 +259,13 @@ function M.attach()
   debug_log("attaching LSP")
 
   local buf = api.nvim_get_current_buf()
+
+  local key = "dart_lsp_attaching"
+
+  local err, attaching = pcall(vim.api.nvim_buf_get_var, buf, key)
+  if (err or attaching == true) then return end
+  vim.api.nvim_buf_set_var(buf, key, true)
+
   if lsp_utils.get_dartls_client(buf) ~= nil then return end
 
   local buffer_path = api.nvim_buf_get_name(buf)
@@ -260,8 +273,19 @@ function M.attach()
   if not lsp_utils.is_valid_path(buffer_path) then return end
 
   get_server_config(user_config, function(c, paths)
-    c.root_dir = paths.fvm_dir or M.get_project_root_dir()
-    vim.lsp.start(c)
+    local project_root = M.get_project_root_dir()
+    c.root_dir = paths.fvm_dir or project_root
+    vim.schedule(function()
+      local client = lsp_utils.get_dartls_client_for_version(c.cmd[1])
+      if client == nil then
+        local id = vim.lsp.start(c)
+        client = vim.lsp.get_clients({ id = id })[1]
+        if client == nil then return end
+      end
+      client:_add_workspace_folder(project_root)
+      vim.lsp.buf_attach_client(buf, client.id)
+    end)
+    vim.api.nvim_buf_set_var(buf, key, false)
   end)
 end
 
