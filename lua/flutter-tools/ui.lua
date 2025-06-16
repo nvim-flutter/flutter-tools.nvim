@@ -149,6 +149,7 @@ function M.open_win(opts, on_open)
   vim.bo[buf].filetype = opts.filetype
   vim.bo[buf].swapfile = false
   vim.bo[buf].buftype = "nofile"
+  vim.bo[buf].buflisted = false
   if on_open then on_open(buf, win) end
   if not opts.focus_on_open then
     -- Switch back to the previous window
