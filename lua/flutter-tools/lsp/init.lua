@@ -166,7 +166,15 @@ function M.restart()
 end
 
 ---@return string?
-function M.get_lsp_root_dir()
+function M.get_project_root_dir()
+  local conf = require("flutter-tools.config")
+  local current_buffer_path = path.current_buffer_path()
+  local root_path = lsp_utils.is_valid_path(current_buffer_path)
+      and path.find_root(conf.root_patterns, current_buffer_path)
+    or nil
+
+  if root_path ~= nil then return root_path end
+
   local client = lsp_utils.get_dartls_client()
   return client and client.config.root_dir or nil
 end
@@ -260,7 +268,7 @@ function M.attach()
   if not is_valid_path(buffer_path) then return end
 
   get_server_config(user_config, function(c)
-    c.root_dir = M.get_lsp_root_dir()
+    c.root_dir = M.get_project_root_dir()
       or fs.dirname(fs.find(conf.root_patterns, {
         path = buffer_path,
         upward = true,
