@@ -1,6 +1,7 @@
 local lazy = require("flutter-tools.lazy")
 local utils = lazy.require("flutter-tools.utils") ---@module "flutter-tools.utils"
 local path = lazy.require("flutter-tools.utils.path") ---@module "flutter-tools.utils.path"
+local ui = lazy.require("flutter-tools.ui") ---@module "flutter-tools.ui"
 local color = lazy.require("flutter-tools.lsp.color") ---@module "flutter-tools.lsp.color"
 local lsp_utils = lazy.require("flutter-tools.lsp.utils") ---@module "flutter-tools.lsp.utils"
 
@@ -216,6 +217,14 @@ local function get_server_config(user_config, callback)
   local executable = require("flutter-tools.executable")
   --- TODO: if a user specifies a command we do not need to call executable.get
   executable.get(function(paths)
+    if not paths then
+      ui.notify(
+        "Flutter executable could not be found, please make sure that flutter_path is given"
+          .. " or flutter_lookup_cmd is given or fvm is setup or that the flutter binary is "
+          .. "in your path"
+      )
+      return
+    end
     local defaults = get_defaults({ flutter_sdk = paths.flutter_sdk })
     local root_path = paths.dart_sdk
     local debug_log = create_debug_log(user_config.debug)
