@@ -231,7 +231,11 @@ local function get_server_config(user_config, callback)
     config.commands = merge_config(defaults.commands, config.commands)
 
     config.on_init = function(client, _)
-      return client.notify("workspace/didChangeConfiguration", { settings = config.settings })
+      if vim.fn.has("nvim-0.12") == 0 then
+        return client.notify("workspace/didChangeConfiguration", { settings = config.settings })
+      else
+        return client:notify("workspace/didChangeConfiguration", { settings = config.settings })
+      end
     end
     callback(config)
   end)
