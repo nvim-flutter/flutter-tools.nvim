@@ -12,6 +12,7 @@ local debugger_runner = lazy.require("flutter-tools.runners.debugger_runner") --
 local path = lazy.require("flutter-tools.utils.path") ---@module "flutter-tools.utils.path"
 local dev_log = lazy.require("flutter-tools.log") ---@module "flutter-tools.log"
 local parser = lazy.require("flutter-tools.utils.yaml_parser")
+local config_utils = lazy.require("flutter-tools.utils.config_utils") ---@module "flutter-tools.utils.config_utils"
 
 local M = {}
 
@@ -189,34 +190,6 @@ local function get_device_from_args(args)
   end
 end
 
-local function get_absolute_path(input_path)
-  -- Check if the provided path is an absolute path
-  if
-    vim.fn.isdirectory(input_path) == 1
-    and not input_path:match("^/")
-    and not input_path:match("^%a:[/\\]")
-  then
-    -- It's a relative path, so expand it to an absolute path
-    local absolute_path = vim.fn.fnamemodify(input_path, ":p")
-    return absolute_path
-  else
-    -- It's already an absolute path
-    return input_path
-  end
-end
-
----@param project_conf flutter.ProjectConfig?
-local function get_cwd(project_conf)
-  if project_conf and project_conf.cwd then
-    local resolved_path = get_absolute_path(project_conf.cwd)
-    if not vim.loop.fs_stat(resolved_path) then
-      return ui.notify("Provided cwd does not exist: " .. resolved_path, ui.ERROR)
-    end
-    return resolved_path
-  end
-  return lsp.get_lsp_root_dir()
-end
-
 --@return table?
 local function parse_yaml(str)
   local ok, yaml = pcall(parser.parse, str)
@@ -276,7 +249,7 @@ local function run(opts, project_conf, launch_config)
         project_conf.pre_run_callback(callback_args)
       end
     end
-    local cwd = get_cwd(project_conf)
+    local cwd = config_utils.get_cwd(project_conf)
     -- To determinate if the project is a flutter project we need to check if the pubspec.yaml
     -- file has a flutter dependency in it. We need to get cwd first to pick correct pubspec.yaml file.
     local is_flutter_project = has_flutter_dependency_in_pubspec(cwd)
@@ -333,7 +306,7 @@ local function attach(opts)
     local args = opts.cli_args or opts.args or {}
     if not use_debugger_runner() then table.insert(args, 1, "attach") end
 
-    local cwd = get_cwd()
+    local cwd = config_utils.get_cwd()
     ui.notify("Attaching flutter project...")
     runner = use_debugger_runner() and debugger_runner or job_runner
     runner:attach(paths, args, cwd, on_run_data, on_run_exit)
@@ -446,7 +419,7 @@ function M.pub_get()
         command = cmd,
         args = { "pub", "get" },
         -- stylua: ignore
-        cwd = lsp.get_lsp_root_dir() --[[@as string]],
+        cwd = lsp.get_project_root_dir() --[[@as string]],
       })
       pub_get_job:after_success(vim.schedule_wrap(function(j)
         on_pub_get(j:result())
@@ -482,7 +455,7 @@ function M.pub_upgrade(cmd_args)
         command = cmd,
         args = args,
         -- stylua: ignore
-        cwd = lsp.get_lsp_root_dir() --[[@as string]],
+        cwd = lsp.get_project_root_dir() --[[@as string]],
       })
       pub_upgrade_job:after_success(vim.schedule_wrap(function(j)
         ui.notify(utils.join(j:result()), nil, { timeout = notify_timeout })
@@ -590,7 +563,7 @@ function M.install()
           command = cmd,
           args = args,
           -- stylua: ignore
-          cwd = lsp.get_lsp_root_dir() --[[@as string]],
+          cwd = lsp.get_project_root_dir() --[[@as string]],
         })
         install_job:after_success(vim.schedule_wrap(function(j)
           ui.notify(utils.join(j:result()), nil, { timeout = notify_timeout })
@@ -621,7 +594,7 @@ function M.uninstall()
           command = cmd,
           args = args,
           -- stylua: ignore
-          cwd = lsp.get_lsp_root_dir() --[[@as string]],
+          cwd = lsp.get_project_root_dir() --[[@as string]],
         })
         uninstall_job:after_success(vim.schedule_wrap(function(j)
           ui.notify(utils.join(j:result()), nil, { timeout = notify_timeout })
