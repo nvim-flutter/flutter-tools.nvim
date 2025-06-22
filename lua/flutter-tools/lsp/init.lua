@@ -232,6 +232,10 @@ local function get_server_config(user_config, callback)
 
     config.cmd = config.cmd or { paths.dart_bin, "language-server", "--protocol=lsp" }
 
+    if config.analyzer_web_port then
+      table.insert(config.cmd, "--port=" .. tostring(config.analyzer_web_port))
+    end
+
     config.filetypes = { FILETYPE }
     config.capabilities = merge_config(defaults.capabilities, config.capabilities)
     config.init_options = merge_config(defaults.init_options, config.init_options)
