@@ -139,4 +139,14 @@ function M.get_absolute_path(input_path)
   end
 end
 
+function M.is_flutter_dependency_path(full_path)
+  local path_parts = { [[.pub-cache]], [[Pub\Cache]], [[/fvm/versions/]] }
+  if full_path then
+    for _, path_part in ipairs(path_parts) do
+      if full_path:find(path_part, nil, true) then return true end
+    end
+  end
+  return false
+end
+
 return M

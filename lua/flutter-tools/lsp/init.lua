@@ -170,12 +170,14 @@ end
 function M.get_project_root_dir()
   local conf = require("flutter-tools.config")
   local current_buffer_path = path.current_buffer_path()
-  local root_path = lsp_utils.is_valid_path(current_buffer_path)
-      and path.find_root(conf.root_patterns, current_buffer_path)
-    or nil
-
-  if root_path ~= nil then return root_path end
-
+  -- Check if path is flutter dependency. For dependencies we do not
+  -- search for a root directory as they are not projects.
+  if not path.is_flutter_dependency_path(current_buffer_path) then
+    local root_path = lsp_utils.is_valid_path(current_buffer_path)
+        and path.find_root(conf.root_patterns, current_buffer_path)
+      or nil
+    if root_path ~= nil then return root_path end
+  end
   local client = lsp_utils.get_dartls_client()
   return client and client.config.root_dir or nil
 end
