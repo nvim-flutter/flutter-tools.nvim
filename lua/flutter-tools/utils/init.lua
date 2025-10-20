@@ -98,9 +98,9 @@ function M.get_hl(name, attribute)
 end
 
 function M.open_command()
-  if path.is_mac then return "open" end
-  if path.is_linux then return "xdg-open" end
-  if path.is_windows then return "explorer" end
+  if path.is_mac then return "open", {} end
+  if path.is_linux then return "xdg-open", {} end
+  if path.is_windows then return "cmd.exe", { "/c", "start" } end
   return nil, nil
 end
 

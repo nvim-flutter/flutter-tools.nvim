@@ -45,17 +45,17 @@ end
 
 ---@param url string
 local function open_dev_tools(url)
-  local open_command = utils.open_command()
+  local open_command, args = utils.open_command()
   if not open_command then
     return ui.notify(
       "Sorry your Operating System is not supported, please raise an issue",
       ui.ERROR
     )
   end
-
+  table.insert(args, url)
   Job:new({
     command = open_command,
-    args = { url },
+    args = args,
     detached = true,
   }):start()
 end
