@@ -20,6 +20,8 @@ local service_activation_requests = {
   slow_animations = "ext.flutter.timeDilation",
   inspect_widget = "ext.flutter.inspector.show",
   paint_baselines = "ext.flutter.debugPaintBaselinesEnabled",
+  change_target_platform = "ext.flutter.platformOverride",
+  brightness = "ext.flutter.brightnessOverride",
 }
 
 local toggle_extension_state_keys = {
@@ -29,10 +31,27 @@ local toggle_extension_state_keys = {
   slow_animations = "timeDilation",
   inspect_widget = "enabled",
   paint_baselines = "enabled",
+  change_target_platform = "value",
+  brightness = "value",
+}
+
+local cicle_target_platform = {
+  linux = "fuchsia",
+  fuchsia = "android",
+  android = "iOS",
+  iOS = "windows",
+  windows = "macOS",
+  macOS = "linux",
 }
 
 local function toggle_value(request)
   local value = service_extensions_state[request]
+  if request == service_activation_requests.change_target_platform then
+    return cicle_target_platform[value] or "linux"
+  end
+  if request == service_activation_requests.brightness then
+    return "Brightness." .. (value == "Brightness.light" and "dark" or "light")
+  end
   if request == service_activation_requests.slow_animations then
     if value == "5.0" then
       return "1.0"
