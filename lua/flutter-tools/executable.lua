@@ -5,6 +5,29 @@ local ui = lazy.require("flutter-tools.ui") ---@module "flutter-tools.ui"
 local config = lazy.require("flutter-tools.config") ---@module "flutter-tools.config"
 local Job = require("plenary.job")
 
+---@class flutter.Paths
+---
+--- The path to the Flutter CLI.
+---@field flutter_bin string
+---
+--- The path to the root directory of the Flutter SDK.
+---@field flutter_sdk string
+---
+--- The path to the Dart CLI.
+---@field dart_bin string
+---
+--- The path to the root directory of the Dart SDK used by the Flutter SDK.
+---@field dart_sdk string
+---
+--- True if fvm provides the Flutter SDK, otherwise nil or false.
+---@field fvm boolean?
+
+---@private
+---@class flutter.internal.Paths
+---@field flutter_bin string
+---@field flutter_sdk string
+---@field dart_bin string
+
 local fn = vim.fn
 local fs = vim.fs
 local luv = vim.loop
@@ -13,12 +36,15 @@ local M = {}
 
 local dart_sdk = path.join("cache", "dart-sdk")
 
-local function _flutter_sdk_root(bin_path)
+---@type flutter.Paths?
+local cached_paths = nil
+
+local function flutter_sdk_root(bin_path)
   -- convert path/to/flutter/bin/flutter into path/to/flutter
   return fn.fnamemodify(bin_path, ":h:h")
 end
 
-local function _dart_sdk_root(paths)
+local function dart_sdk_root(paths)
   if paths.flutter_sdk then
     -- On Linux installations with snap the dart SDK can be further nested inside a bin directory
     -- so it's /bin/cache/dart-sdk whereas else where it is /cache/dart-sdk
@@ -42,33 +68,27 @@ local function _dart_sdk_root(paths)
   return ""
 end
 
-local function _flutter_sdk_dart_bin(flutter_sdk)
+local function flutter_sdk_dart_bin(flutter_sdk)
   -- retrieve the Dart binary from the Flutter SDK
   local binary_name = path.is_windows and "dart.bat" or "dart"
   return path.join(flutter_sdk, "bin", binary_name)
 end
 
----Get paths for flutter and dart based on the binary locations
----@return table<string, string>?
+--- Get paths for flutter and dart based on the binary locations.
+---@return flutter.internal.Paths?
 local function get_default_binaries()
   local flutter_bin = fn.resolve(fn.exepath("flutter"))
   if #flutter_bin <= 0 then return nil end
   return {
     flutter_bin = flutter_bin,
     dart_bin = fn.resolve(fn.exepath("dart")),
-    flutter_sdk = _flutter_sdk_root(flutter_bin),
+    flutter_sdk = flutter_sdk_root(flutter_bin),
   }
 end
 
----@type table<string, string>
-local _paths = nil
-
-function M.reset_paths() _paths = nil end
-
----Execute user's lookup command and pass it to the job callback
+--- Execute user's lookup command and pass it to the job callback.
 ---@param lookup_cmd string
----@param callback fun(t?: table<string, string>?)
----@return table<string, string>?
+---@param callback fun(paths:flutter.internal.Paths):nil
 local function path_from_lookup_cmd(lookup_cmd, callback)
   local paths = {}
   local parts = vim.split(lookup_cmd, " ")
@@ -76,6 +96,7 @@ local function path_from_lookup_cmd(lookup_cmd, callback)
   local args = vim.list_slice(parts, 2, #parts)
 
   local job = Job:new({ command = cmd, args = args })
+
   job:after_failure(
     vim.schedule_wrap(
       function()
@@ -83,11 +104,12 @@ local function path_from_lookup_cmd(lookup_cmd, callback)
       end
     )
   )
+
   job:after_success(vim.schedule_wrap(function(j, _)
     local result = j:result()
     local flutter_sdk_path = result[1]
     if flutter_sdk_path then
-      paths.dart_bin = _flutter_sdk_dart_bin(flutter_sdk_path)
+      paths.dart_bin = flutter_sdk_dart_bin(flutter_sdk_path)
       paths.flutter_bin = path.join(flutter_sdk_path, "bin", "flutter")
       paths.flutter_sdk = flutter_sdk_path
       callback(paths)
@@ -95,78 +117,99 @@ local function path_from_lookup_cmd(lookup_cmd, callback)
       paths = get_default_binaries()
       callback(paths)
     end
-    return paths
   end))
+
   job:start()
 end
 
-local function _flutter_bin_from_fvm()
+local function flutter_bin_from_fvm()
   local fvm_root =
     fs.dirname(fs.find(".fvm", { path = luv.cwd(), upward = true, type = "directory" })[1])
+
   local binary_name = path.is_windows and "flutter.bat" or "flutter"
   local flutter_bin_symlink = path.join(fvm_root, ".fvm", "flutter_sdk", "bin", binary_name)
   flutter_bin_symlink = fn.exepath(flutter_bin_symlink)
+
   local flutter_bin = luv.fs_realpath(flutter_bin_symlink)
   if path.exists(flutter_bin_symlink) and path.exists(flutter_bin) then return flutter_bin end
 end
 
----Fetch the paths to the users binaries.
----@param callback fun(paths?: table<string, string>)
----@return nil
+--- Reset the internally cached SDK paths.
+function M.reset_paths() cached_paths = nil end
+
+--- Fetch the paths to the users binaries.
+---@param callback fun(paths: flutter.Paths):nil
 function M.get(callback)
-  if _paths then return callback(_paths) end
+  if cached_paths then return callback(cached_paths) end
   if config.fvm then
-    local flutter_bin = _flutter_bin_from_fvm()
+    local flutter_bin = flutter_bin_from_fvm()
     if flutter_bin then
-      _paths = {
+      cached_paths = {
         flutter_bin = flutter_bin,
-        flutter_sdk = _flutter_sdk_root(flutter_bin),
+        flutter_sdk = flutter_sdk_root(flutter_bin),
         fvm = true,
+        -- Provide default values to make the linter happy.
+        dart_sdk = "",
+        dart_bin = "",
       }
-      _paths.dart_sdk = _dart_sdk_root(_paths)
-      _paths.dart_bin = _flutter_sdk_dart_bin(_paths.flutter_sdk)
-      return callback(_paths)
+      cached_paths.dart_sdk = dart_sdk_root(cached_paths)
+      cached_paths.dart_bin = flutter_sdk_dart_bin(cached_paths.flutter_sdk)
+      return callback(cached_paths)
     end
   end
 
   if config.flutter_path then
     local flutter_path = fn.resolve(config.flutter_path)
-    _paths = { flutter_bin = flutter_path, flutter_sdk = _flutter_sdk_root(flutter_path) }
-    _paths.dart_sdk = _dart_sdk_root(_paths)
-    _paths.dart_bin = _flutter_sdk_dart_bin(_paths.flutter_sdk)
-    return callback(_paths)
+    cached_paths = {
+      flutter_bin = flutter_path,
+      flutter_sdk = flutter_sdk_root(flutter_path),
+      -- Provide default values to make the linter happy.
+      dart_sdk = "",
+      dart_bin = "",
+    }
+    cached_paths.dart_sdk = dart_sdk_root(cached_paths)
+    cached_paths.dart_bin = flutter_sdk_dart_bin(cached_paths.flutter_sdk)
+    return callback(cached_paths)
   end
 
   if config.flutter_lookup_cmd then
     return path_from_lookup_cmd(config.flutter_lookup_cmd, function(paths)
-      if not paths then return end
-      _paths = paths
-      _paths.dart_sdk = _dart_sdk_root(_paths)
-      callback(_paths)
+      paths = {
+        flutter_bin = paths.flutter_bin,
+        flutter_sdk = paths.flutter_sdk,
+        dart_bin = paths.dart_bin,
+        dart_sdk = dart_sdk_root(paths),
+      }
+      callback(paths)
     end)
   end
 
-  local default_paths = get_default_binaries()
-
-  if not _paths and default_paths then
-    _paths = default_paths
-    _paths.dart_sdk = _dart_sdk_root(_paths)
-    if _paths.flutter_sdk then _paths.dart_bin = _flutter_sdk_dart_bin(_paths.flutter_sdk) end
+  if not cached_paths then
+    local internal_paths = get_default_binaries()
+    if internal_paths then
+      cached_paths = {
+        flutter_bin = internal_paths.flutter_bin,
+        flutter_sdk = internal_paths.flutter_sdk,
+        dart_bin = internal_paths.dart_bin,
+        dart_sdk = dart_sdk_root(internal_paths),
+      }
+      if cached_paths.flutter_sdk then
+        cached_paths.dart_bin = flutter_sdk_dart_bin(cached_paths.flutter_sdk)
+      end
+    end
   end
 
-  return callback(_paths)
+  return callback(cached_paths)
 end
 
----Fetch the path to the users flutter installation.
----@param callback fun(paths: string)
----@return nil
+--- Fetch the path to the users flutter installation.
+---@param callback fun(flutter_bin: string):nil
 function M.flutter(callback)
   M.get(function(paths) callback(paths.flutter_bin) end)
 end
 
----Fetch the path to the users dart installation.
----@param callback fun(paths: table<string, string>)
----@return nil
+--- Fetch the path to the users dart installation.
+---@param callback fun(dart_bin: string):nil
 function M.dart(callback)
   M.get(function(paths) callback(paths.dart_bin) end)
 end
