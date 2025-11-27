@@ -31,6 +31,8 @@ local function setup_commands()
   command("FlutterRestart", commands.restart)
   command("FlutterQuit", commands.quit)
   command("FlutterVisualDebug", commands.visual_debug)
+  command("FlutterChangeTargetPlatform", commands.change_target_platform)
+  command("FlutterToggleBrightness", commands.brightness)
   -- Lists
   command("FlutterDevices", devices.list_devices)
   command("FlutterEmulators", devices.list_emulators)
