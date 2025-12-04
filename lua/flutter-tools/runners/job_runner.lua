@@ -19,6 +19,8 @@ local command_keys = {
   paint_baselines = "p",
   open_dev_tools = "v",
   generate = "g",
+  change_target_platform = "o",
+  brightness = "b",
 }
 
 function JobRunner:is_running() return run_job ~= nil end

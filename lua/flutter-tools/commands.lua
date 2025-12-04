@@ -27,7 +27,7 @@ local current_device = nil
 ---@field is_running fun(runner: flutter.Runner):boolean
 ---@field run fun(runner: flutter.Runner, opts: RunOpts, paths:table, args:table, cwd:string, on_run_data:fun(is_err:boolean, data:string), on_run_exit:fun(data:string[], args: table, opts: RunOpts?, project_conf: flutter.ProjectConfig?,launch_config: dap.Configuration?),  is_flutter_project: boolean, project_conf: flutter.ProjectConfig?, launch_config: dap.Configuration?)
 ---@field cleanup fun(funner: flutter.Runner)
----@field send fun(runner: flutter.Runner, cmd:string, quiet: boolean?)
+---@field send fun(runner: flutter.Runner, cmd:string, quiet: boolean?, on_response: fun(response: any)|nil)
 ---@field attach fun(runner: flutter.Runner, paths:table, args:table, cwd:string, on_run_data:fun(is_err:boolean, data:string), on_run_exit:fun(data:string[], args: table, project_conf: flutter.ProjectConfig?,launch_config: dap.Configuration?))
 
 ---@type flutter.Runner?
@@ -341,9 +341,10 @@ end
 ---@param cmd string
 ---@param quiet boolean?
 ---@param on_send function|nil
-local function send(cmd, quiet, on_send)
+---@param on_response fun(response:any)|nil
+local function send(cmd, quiet, on_send, on_response)
   if M.is_running() and runner then
-    runner:send(cmd, quiet)
+    runner:send(cmd, quiet, on_response)
     if on_send then on_send() end
   elseif not quiet then
     ui.notify("Sorry! Flutter is not running")
@@ -369,6 +370,18 @@ function M.quit(quiet)
     end
   end)
 end
+
+---@param quiet boolean?
+function M.change_target_platform(quiet)
+  send("change_target_platform", quiet, nil, function(response)
+    if not quiet then
+      ui.notify("Changing platform to " .. response.value, nil, { timeout = 1500 })
+    end
+  end)
+end
+
+---@param quiet boolean?
+function M.brightness(quiet) send("brightness", quiet) end
 
 ---@param quiet boolean?
 function M.visual_debug(quiet) send("visual_debug", quiet) end

@@ -106,6 +106,22 @@ local function register_default_configurations(paths, is_flutter_project, projec
   end
 end
 
+local function get_current_value(cmd)
+  local service_activation_params = vm_service_extensions.get_request_params(cmd)
+  if
+    not service_activation_params
+    or not service_activation_params.params.isolateId
+  then return end
+
+  service_activation_params.params = {
+    isolateId = service_activation_params.params.isolateId
+  }
+  dap.session():request("callService", service_activation_params, function(err, result)
+    if err then return end
+    vm_service_extensions.set_service_extensions_state(result.method, result.value)
+  end)
+end
+
 local function register_dap_listeners(on_run_data, on_run_exit)
   local started = false
   local before_start_logs = {}
@@ -133,6 +149,11 @@ local function register_dap_listeners(on_run_data, on_run_exit)
   dap.listeners.before["event_dart.serviceExtensionAdded"][plugin_identifier] = function(_, body)
     if body and body.extensionRPC and body.isolateId then
       vm_service_extensions.set_isolate_id(body.extensionRPC, body.isolateId)
+      if body.extensionRPC == "ext.flutter.brightnessOverride" then
+        get_current_value("brightness")
+      elseif body.extensionRPC == "ext.flutter.platformOverride" then
+        get_current_value("change_target_platform")
+      end
     end
   end
 
@@ -280,7 +301,7 @@ function DebuggerRunner:attach(paths, args, cwd, on_run_data, on_run_exit)
   end
 end
 
-function DebuggerRunner:send(cmd, quiet)
+function DebuggerRunner:send(cmd, quiet, on_response)
   if cmd == "open_dev_tools" then
     dev_tools.open_dev_tools()
     return
@@ -292,10 +313,11 @@ function DebuggerRunner:send(cmd, quiet)
   end
   local service_activation_params = vm_service_extensions.get_request_params(cmd)
   if service_activation_params then
-    dap.session():request("callService", service_activation_params, function(err, _)
+    dap.session():request("callService", service_activation_params, function(err, response)
       if err and not quiet then
         ui.notify("Error calling service " .. cmd .. ": " .. err, ui.ERROR)
       end
+      if response and on_response then on_response(response) end
     end)
     return
   end
