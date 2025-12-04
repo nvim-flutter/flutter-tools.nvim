@@ -108,13 +108,10 @@ end
 
 local function get_current_value(cmd)
   local service_activation_params = vm_service_extensions.get_request_params(cmd)
-  if
-    not service_activation_params
-    or not service_activation_params.params.isolateId
-  then return end
+  if not service_activation_params or not service_activation_params.params.isolateId then return end
 
   service_activation_params.params = {
-    isolateId = service_activation_params.params.isolateId
+    isolateId = service_activation_params.params.isolateId,
   }
   dap.session():request("callService", service_activation_params, function(err, result)
     if err then return end
