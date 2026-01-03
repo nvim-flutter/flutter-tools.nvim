@@ -124,9 +124,9 @@ local function parse_pubspec(pubspec_path)
   local content = vim.fn.readfile(pubspec_path)
   if not content or #content == 0 then return nil end
   local joined_content = table.concat(content, "\n")
-  local ok, parsed = pcall(function()
-    return require("flutter-tools.utils.yaml_parser").parse(joined_content)
-  end)
+  local ok, parsed = pcall(
+    function() return require("flutter-tools.utils.yaml_parser").parse(joined_content) end
+  )
   if ok and parsed then return parsed end
   return nil
 end
@@ -158,9 +158,7 @@ function M.find_root(patterns, startpath)
   if not root then return nil end
 
   local pubspec_path = M.join(root, "pubspec.yaml")
-  if not is_pub_workspace_member(pubspec_path) then
-    return root
-  end
+  if not is_pub_workspace_member(pubspec_path) then return root end
 
   -- Workspace member, traverse upward to find the workspace root
   local parent = M.dirname(root)
@@ -168,9 +166,7 @@ function M.find_root(patterns, startpath)
 
   for dir in M.iterate_parents(parent) do
     local workspace_pubspec = M.join(dir, "pubspec.yaml")
-    if is_pub_workspace_root(workspace_pubspec) then
-      return dir
-    end
+    if is_pub_workspace_root(workspace_pubspec) then return dir end
   end
 
   return root

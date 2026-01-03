@@ -44,9 +44,7 @@ describe("path.find_root", function()
     }, standalone .. "/pubspec.yaml")
   end)
 
-  after_each(function()
-    vim.fn.delete(test_dir, "rf")
-  end)
+  after_each(function() vim.fn.delete(test_dir, "rf") end)
 
   local patterns = { "pubspec.yaml" }
 
