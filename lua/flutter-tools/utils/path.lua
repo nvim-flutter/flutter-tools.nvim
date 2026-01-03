@@ -108,13 +108,68 @@ function M.search_ancestors(startpath, func)
   end
 end
 
-function M.find_root(patterns, startpath)
+local function find_nearest_root(patterns, startpath)
   local function matcher(path)
     for _, pattern in ipairs(patterns) do
       if M.exists(vim.fn.glob(M.join(path, pattern))) then return path end
     end
   end
   return M.search_ancestors(startpath, matcher)
+end
+
+---@param pubspec_path string
+---@return table|nil
+local function parse_pubspec(pubspec_path)
+  if not M.is_file(pubspec_path) then return nil end
+  local content = vim.fn.readfile(pubspec_path)
+  if not content or #content == 0 then return nil end
+  local joined_content = table.concat(content, "\n")
+  local ok, parsed = pcall(
+    function() return require("flutter-tools.utils.yaml_parser").parse(joined_content) end
+  )
+  if ok and parsed then return parsed end
+  return nil
+end
+
+--- Checks for `resolution: workspace` in pubspec.yaml
+---@param pubspec_path string
+---@return boolean
+local function is_pub_workspace_member(pubspec_path)
+  local pubspec = parse_pubspec(pubspec_path)
+  if not pubspec then return false end
+  return pubspec.resolution == "workspace"
+end
+
+--- Checks for `workspace:` field in pubspec.yaml
+---@param pubspec_path string
+---@return boolean
+local function is_pub_workspace_root(pubspec_path)
+  local pubspec = parse_pubspec(pubspec_path)
+  if not pubspec then return false end
+  return pubspec.workspace ~= nil
+end
+
+--- Find project root, traversing up to workspace root if in a pub workspace
+---@param patterns string[]
+---@param startpath string
+---@return string|nil
+function M.find_root(patterns, startpath)
+  local root = find_nearest_root(patterns, startpath)
+  if not root then return nil end
+
+  local pubspec_path = M.join(root, "pubspec.yaml")
+  if not is_pub_workspace_member(pubspec_path) then return root end
+
+  -- Workspace member, traverse upward to find the workspace root
+  local parent = M.dirname(root)
+  if not parent or parent == root then return root end
+
+  for dir in M.iterate_parents(parent) do
+    local workspace_pubspec = M.join(dir, "pubspec.yaml")
+    if is_pub_workspace_root(workspace_pubspec) then return dir end
+  end
+
+  return root
 end
 
 function M.current_buffer_path()
