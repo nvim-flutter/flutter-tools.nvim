@@ -1,5 +1,72 @@
 # Changelog
 
+## [2.0.0](https://github.com/nvim-flutter/flutter-tools.nvim/compare/v1.14.0...v2.0.0) (2026-01-03)
+
+
+### ⚠ BREAKING CHANGES
+
+* **config:** allow to pass additional arguments to flutter run command ([#407](https://github.com/nvim-flutter/flutter-tools.nvim/issues/407))
+* **outline:** remove code actions from outline ([#387](https://github.com/nvim-flutter/flutter-tools.nvim/issues/387))
+
+### Features
+
+* add FlutterAttach command ([#425](https://github.com/nvim-flutter/flutter-tools.nvim/issues/425)) ([cf92ff1](https://github.com/nvim-flutter/flutter-tools.nvim/commit/cf92ff1f0c3d18c1599d3af684b9a08c825c58c8))
+* add FlutterDebug command ([#420](https://github.com/nvim-flutter/flutter-tools.nvim/issues/420)) ([da3682a](https://github.com/nvim-flutter/flutter-tools.nvim/commit/da3682a3bdd3e19ed42194381a53e7bbace7682a))
+* add option to disable ftplugin ([#417](https://github.com/nvim-flutter/flutter-tools.nvim/issues/417)) ([85492be](https://github.com/nvim-flutter/flutter-tools.nvim/commit/85492bee069af1155bb10bfbee90ac7d4168eced))
+* add possibility to set default run args ([#471](https://github.com/nvim-flutter/flutter-tools.nvim/issues/471)) ([d1022db](https://github.com/nvim-flutter/flutter-tools.nvim/commit/d1022db80dab2a565563993843e8c60b20a3df39))
+* add pub workspace support for LSP root detection ([#505](https://github.com/nvim-flutter/flutter-tools.nvim/issues/505)) ([2f26317](https://github.com/nvim-flutter/flutter-tools.nvim/commit/2f26317d001e715065889b15ab922b5ae16c9397))
+* adds analyzer_web_port config which starts the LSP analysis server with the given port ([#479](https://github.com/nvim-flutter/flutter-tools.nvim/issues/479)) ([ed9f78b](https://github.com/nvim-flutter/flutter-tools.nvim/commit/ed9f78bfd649c3d87238a20ebe08f72e46a3380a))
+* **config:** add ability to set web-browser-flag ([#406](https://github.com/nvim-flutter/flutter-tools.nvim/issues/406)) ([80770c6](https://github.com/nvim-flutter/flutter-tools.nvim/commit/80770c67aa2d9e1eccf6bb52fac78115831acd04))
+* **config:** allow to pass additional arguments to flutter run command ([#407](https://github.com/nvim-flutter/flutter-tools.nvim/issues/407)) ([4f48d8b](https://github.com/nvim-flutter/flutter-tools.nvim/commit/4f48d8b84bb09cfe66e13884f5fb1847b18d403f))
+* **devices:** add cold boot option for android emulators ([#412](https://github.com/nvim-flutter/flutter-tools.nvim/issues/412)) ([40f974b](https://github.com/nvim-flutter/flutter-tools.nvim/commit/40f974b15f82f9af498adda8d93aabd637f3ab58))
+* improves project root detection by always going up the directory tree until we find a project root marker ([#482](https://github.com/nvim-flutter/flutter-tools.nvim/issues/482)) ([3a3f6f5](https://github.com/nvim-flutter/flutter-tools.nvim/commit/3a3f6f5fadf7e1b976ba5f35df0219d1d4762a38))
+* **log:** add focus option for log window ([9ad676c](https://github.com/nvim-flutter/flutter-tools.nvim/commit/9ad676c61dfc590f3852955ed2030abacc54b0e1))
+* **log:** add toggle command for log buffer ([#411](https://github.com/nvim-flutter/flutter-tools.nvim/issues/411)) ([bc36e2e](https://github.com/nvim-flutter/flutter-tools.nvim/commit/bc36e2eb3f2d8be939aa5667615cc3aceebb5874))
+* open dev tools when running in debug mode ([#419](https://github.com/nvim-flutter/flutter-tools.nvim/issues/419)) ([2f9db8b](https://github.com/nvim-flutter/flutter-tools.nvim/commit/2f9db8b15133ab789cd1be913e2d081e19b1f88d))
+* **outline:** remove code actions from outline ([#387](https://github.com/nvim-flutter/flutter-tools.nvim/issues/387)) ([6610090](https://github.com/nvim-flutter/flutter-tools.nvim/commit/6610090a4e68d10fd73b68450004dafd26e7cc34))
+* resolve package urls when using `gf` or `gF` ([#392](https://github.com/nvim-flutter/flutter-tools.nvim/issues/392)) ([6bf887b](https://github.com/nvim-flutter/flutter-tools.nvim/commit/6bf887bb9442b80a67f36e7465a66de4202d8a3f))
+* setup plugin on `require("flutter-tools").setup_project` ([#408](https://github.com/nvim-flutter/flutter-tools.nvim/issues/408)) ([fb976f0](https://github.com/nvim-flutter/flutter-tools.nvim/commit/fb976f0e83296d011be95701085ff4711a89de94))
+* support passing args to FlutterAttach command ([#454](https://github.com/nvim-flutter/flutter-tools.nvim/issues/454)) ([a643f2f](https://github.com/nvim-flutter/flutter-tools.nvim/commit/a643f2ff012d5c3ec4322576d48bce1dea244841))
+
+
+### Bug Fixes
+
+* add conditional use of client.notify because of deprecation ([#481](https://github.com/nvim-flutter/flutter-tools.nvim/issues/481)) ([0fcb08a](https://github.com/nvim-flutter/flutter-tools.nvim/commit/0fcb08a4ae46fafff6cfd8f4af0207305e3bcf10))
+* add write permission to release workflow ([654c013](https://github.com/nvim-flutter/flutter-tools.nvim/commit/654c01335248a21be0b9d145103b3f40115ca63a))
+* Buffer is not 'modifiable' ([#477](https://github.com/nvim-flutter/flutter-tools.nvim/issues/477)) ([d4b0cb9](https://github.com/nvim-flutter/flutter-tools.nvim/commit/d4b0cb9cfcda4cb27e6b68bad20cba0be542b55b))
+* check for nil value when handle_log is called ([#436](https://github.com/nvim-flutter/flutter-tools.nvim/issues/436)) ([26c511d](https://github.com/nvim-flutter/flutter-tools.nvim/commit/26c511d5009c87c740a544e2c9d4139aff18a692))
+* **commands:** force debug with FlutterDebug command ([4a8aad2](https://github.com/nvim-flutter/flutter-tools.nvim/commit/4a8aad2839482fbe3bb3f14d8ac574f711fdfd53))
+* **commands:** make inspect widget command work in debug runner ([#413](https://github.com/nvim-flutter/flutter-tools.nvim/issues/413)) ([824faf5](https://github.com/nvim-flutter/flutter-tools.nvim/commit/824faf57964c77ae8a80c9e642e5124d0e5c28e9))
+* correct vim API reference in color utils ([1d6b57f](https://github.com/nvim-flutter/flutter-tools.nvim/commit/1d6b57f8f9622218f775063e9bc465863ea3099e))
+* correct vim.fn.has() comparisons to use explicit == 1 ([6faf2c7](https://github.com/nvim-flutter/flutter-tools.nvim/commit/6faf2c70bd56f1fe78620591a2bb73f4dc6f4870))
+* **dap:** improve debugger integration with nvim-dap ([#455](https://github.com/nvim-flutter/flutter-tools.nvim/issues/455)) ([8edcdab](https://github.com/nvim-flutter/flutter-tools.nvim/commit/8edcdabfe982c77482ebde2ba3f46f2adc677e64))
+* **devices:** filter out unwanted device lines ([1787090](https://github.com/nvim-flutter/flutter-tools.nvim/commit/1787090d66482552505a6498e3d2f06fb4290f96))
+* do not start new LSP client when navigating to flutter dependency file ([#483](https://github.com/nvim-flutter/flutter-tools.nvim/issues/483)) ([65b7399](https://github.com/nvim-flutter/flutter-tools.nvim/commit/65b7399804315a1160933b64292d3c5330aa4e9f))
+* **docs:** remove misleading debugger instructions ([377f21c](https://github.com/nvim-flutter/flutter-tools.nvim/commit/377f21c46c2e5092d79ad50d48816280c0262539))
+* **docs:** update repo name ([#400](https://github.com/nvim-flutter/flutter-tools.nvim/issues/400)) ([3d6979b](https://github.com/nvim-flutter/flutter-tools.nvim/commit/3d6979b900c8787906427fece1344a25c8e17eba))
+* error on color ext marks set ([fdca1cf](https://github.com/nvim-flutter/flutter-tools.nvim/commit/fdca1cf1ee1f02347b0b7f627cc73e04c6854484))
+* fix dap crash on BufWritePost ([#427](https://github.com/nvim-flutter/flutter-tools.nvim/issues/427)) ([197c547](https://github.com/nvim-flutter/flutter-tools.nvim/commit/197c547954155b9eb81ddc7eac47c90c198fbca5))
+* fixes error when no flutter binary was present and notifies user that we could not find the executable ([#480](https://github.com/nvim-flutter/flutter-tools.nvim/issues/480)) ([8a761c6](https://github.com/nvim-flutter/flutter-tools.nvim/commit/8a761c6a8a3e6796158fee529bd4c0f8c7cff69c))
+* **flutter-debug:** pass run options to runner callbacks ([#444](https://github.com/nvim-flutter/flutter-tools.nvim/issues/444)) ([d135e1d](https://github.com/nvim-flutter/flutter-tools.nvim/commit/d135e1d02f6a3a8808efc2b58950ab1fdd49d000))
+* **fvm/windows:** append .bat extension on fvm command ([#469](https://github.com/nvim-flutter/flutter-tools.nvim/issues/469)) ([93e64d4](https://github.com/nvim-flutter/flutter-tools.nvim/commit/93e64d423784f473468e98dc7f29ace5cae8194e))
+* **fvm/windows:** append '.bat' extention to flutter path ([#468](https://github.com/nvim-flutter/flutter-tools.nvim/issues/468)) ([f33c5b2](https://github.com/nvim-flutter/flutter-tools.nvim/commit/f33c5b2b94b7442c7b96a60e09319d71afb265bc))
+* keep LSP attached and auto-save buffers after LSP rename operations ([8fa438f](https://github.com/nvim-flutter/flutter-tools.nvim/commit/8fa438f36fa6cb747a93557d67ec30ef63715c20))
+* **log:** correct buffer variable in append function ([9955c98](https://github.com/nvim-flutter/flutter-tools.nvim/commit/9955c98d1587ee92bd452e0c6f39cbd18de5cad9))
+* **log:** ensure autoscroll finds correct window ([f06ac07](https://github.com/nvim-flutter/flutter-tools.nvim/commit/f06ac0714e60c596af4d27efcf9f754919c58a8b))
+* **log:** handle nil when clearing log ([7e6d861](https://github.com/nvim-flutter/flutter-tools.nvim/commit/7e6d8611d8606efca64cb8cf1ca07550b7087d1c))
+* **log:** remove redundant autoscroll call in toggle ([e5a3998](https://github.com/nvim-flutter/flutter-tools.nvim/commit/e5a399895ab92a66ad5f8c0c91b7980858d7e924))
+* **lsp:** restore dart go to super functionality ([#438](https://github.com/nvim-flutter/flutter-tools.nvim/issues/438)) ([b2ec4e0](https://github.com/nvim-flutter/flutter-tools.nvim/commit/b2ec4e0e1cc8df188c9ae9d4a0332acb020508dd))
+* **outline:** improve outline URI handling ([#447](https://github.com/nvim-flutter/flutter-tools.nvim/issues/447)) ([8199f8b](https://github.com/nvim-flutter/flutter-tools.nvim/commit/8199f8b3b2234a534e518a7a4054364dcf6369c8))
+* parse fvm command json output ([#421](https://github.com/nvim-flutter/flutter-tools.nvim/issues/421)) ([54314bc](https://github.com/nvim-flutter/flutter-tools.nvim/commit/54314bcb6856dfd31a500226587c95402122e29f))
+* **project_config:** show project config selector once on start ([#423](https://github.com/nvim-flutter/flutter-tools.nvim/issues/423)) ([a5a6036](https://github.com/nvim-flutter/flutter-tools.nvim/commit/a5a6036d9a1a9dc4e32c526444c6cdfd349b9c86))
+* select device only once when starting ([#424](https://github.com/nvim-flutter/flutter-tools.nvim/issues/424)) ([a526c30](https://github.com/nvim-flutter/flutter-tools.nvim/commit/a526c30f1941a7472509aaedda13758f943c968e))
+* toggling of boolean flutter dev tools commands ([#460](https://github.com/nvim-flutter/flutter-tools.nvim/issues/460)) ([07e1603](https://github.com/nvim-flutter/flutter-tools.nvim/commit/07e1603ef7e585d7944c14a7662ddc95e23cd3b7))
+* update github actions ([cb09e56](https://github.com/nvim-flutter/flutter-tools.nvim/commit/cb09e56b0a2fce36a260c933b766609eb0ed49a4))
+* use new vim.validate only in nvim v0.11 ([49be6d4](https://github.com/nvim-flutter/flutter-tools.nvim/commit/49be6d474c0cf9af089ff981be5ae22514f10c9c))
+* use yaml parser for flutter dependency detection in pubspec.yaml ([#389](https://github.com/nvim-flutter/flutter-tools.nvim/issues/389)) ([ce18f5d](https://github.com/nvim-flutter/flutter-tools.nvim/commit/ce18f5da5f9c458cd26eef5c3accb0c37b2263c2))
+* user proper names for validation function ([2d91a86](https://github.com/nvim-flutter/flutter-tools.nvim/commit/2d91a86a43a1ae1303e48aac55542f57b5731990))
+* **windows:** devtools opening ([#492](https://github.com/nvim-flutter/flutter-tools.nvim/issues/492)) ([69db9cd](https://github.com/nvim-flutter/flutter-tools.nvim/commit/69db9cdac65ce536e20a8fc9a83002f007cc049c))
+
 ## [1.14.0](https://github.com/akinsho/flutter-tools.nvim/compare/v1.13.0...v1.14.0) (2024-08-29)
 
 
