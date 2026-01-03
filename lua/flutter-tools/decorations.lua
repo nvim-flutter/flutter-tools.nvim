@@ -13,9 +13,9 @@ local fn, api = vim.fn, vim.api
 ---Asynchronously read the data in the pubspec yaml and pass the results to a callback
 ---@param callback fun(data: string):nil
 local function read_pubspec(callback)
-  local root_patterns = { ".git", "pubspec.yaml" }
+  local conf = require("flutter-tools.config")
   local current_dir = fn.expand("%:p:h")
-  local root_dir = path.find_root(root_patterns, current_dir) or current_dir
+  local root_dir = path.find_root(conf.root_patterns, current_dir) or current_dir
   local pubspec_path = path.join(root_dir, "pubspec.yaml")
   local pubspec = Path:new(pubspec_path)
   pubspec:read(callback)
