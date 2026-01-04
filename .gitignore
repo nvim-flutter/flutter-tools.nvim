@@ -40,3 +40,4 @@ luac.out
 *.hex
 
 .tests/
+doc/tags

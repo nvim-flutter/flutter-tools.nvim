@@ -5,6 +5,7 @@ local config = lazy.require("flutter-tools.config") ---@module "flutter-tools.co
 local utils = lazy.require("flutter-tools.utils") ---@module "flutter-tools.utils"
 local path = lazy.require("flutter-tools.utils.path") ---@module "flutter-tools.utils.path"
 local vm_service_extensions = lazy.require("flutter-tools.runners.vm_service_extensions") ---@module "flutter-tools.runners.vm_service_extensions"
+local vm_service = lazy.require("flutter-tools.vm_service") ---@module "flutter-tools.vm_service"
 local success, dap = pcall(require, "dap")
 if not success then
   ui.notify(string.format("nvim-dap is not installed!\n%s", dap), ui.ERROR)
@@ -119,6 +120,45 @@ local function get_current_value(cmd)
   end)
 end
 
+local function handle_inspect_event(isolate_id)
+  local session = dap.session()
+  if not session or not isolate_id then return end
+
+  local inspector_group = "flutter-tools-inspector"
+
+  local params = {
+    method = "ext.flutter.inspector.getSelectedSummaryWidget",
+    params = {
+      previousSelectionId = vim.NIL,
+      objectGroup = inspector_group,
+      isolateId = isolate_id,
+    },
+  }
+
+  session:request("callService", params, function(err, result)
+    if err or not result then return end
+
+    local widget_data = result.result or result
+    local location = widget_data.creationLocation
+    if not location and widget_data.children and widget_data.children[1] then
+      location = widget_data.children[1].creationLocation
+    end
+
+    if location and location.file and location.line then
+      local file = location.file:gsub("^file://", "")
+      vim.schedule(function()
+        vim.cmd("edit " .. vim.fn.fnameescape(file))
+        vim.api.nvim_win_set_cursor(0, { location.line, (location.column or 1) - 1 })
+      end)
+    end
+
+    session:request("callService", {
+      method = "ext.flutter.inspector.disposeGroup",
+      params = { objectGroup = inspector_group, isolateId = isolate_id },
+    }, function() end)
+  end)
+end
+
 local function register_dap_listeners(on_run_data, on_run_exit)
   local started = false
   local before_start_logs = {}
@@ -128,6 +168,7 @@ local function register_dap_listeners(on_run_data, on_run_exit)
 
   local handle_termination = function()
     if next(before_start_logs) ~= nil then on_run_exit(before_start_logs) end
+    if vm_service.is_connected() then vm_service.disconnect() end
   end
 
   dap.listeners.before["event_exited"][plugin_identifier] = function(_, _) handle_termination() end
@@ -140,7 +181,17 @@ local function register_dap_listeners(on_run_data, on_run_exit)
   end
 
   dap.listeners.before["event_dart.debuggerUris"][plugin_identifier] = function(_, body)
-    if body and body.vmServiceUri then dev_tools.register_profiler_url(body.vmServiceUri) end
+    if body and body.vmServiceUri then
+      dev_tools.register_profiler_url(body.vmServiceUri)
+
+      vm_service.connect(body.vmServiceUri, function()
+        vm_service.stream_listen("Debug", function(event)
+          if event and event.kind == "Inspect" and event.isolate and event.isolate.id then
+            handle_inspect_event(event.isolate.id)
+          end
+        end)
+      end)
+    end
   end
 
   dap.listeners.before["event_dart.serviceExtensionAdded"][plugin_identifier] = function(_, body)
