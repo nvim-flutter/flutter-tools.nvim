@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.1.0](https://github.com/nvim-flutter/flutter-tools.nvim/compare/v2.0.0...v2.1.0) (2026-01-04)
+
+
+### Features
+
+* implement automatic widget inspector navigation ([#507](https://github.com/nvim-flutter/flutter-tools.nvim/issues/507)) ([685321f](https://github.com/nvim-flutter/flutter-tools.nvim/commit/685321f6de92a57d2c38be96dcc885237b40bd04)), closes [#503](https://github.com/nvim-flutter/flutter-tools.nvim/issues/503)
+
 ## [2.0.0](https://github.com/nvim-flutter/flutter-tools.nvim/compare/v1.14.0...v2.0.0) (2026-01-03)
 
 
