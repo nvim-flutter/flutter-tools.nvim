@@ -218,6 +218,12 @@ function M.commands(opts)
       command = require("flutter-tools.log").clear,
     },
     {
+      id = "flutter-tools-toggle-dev-log",
+      label = "Toggle Dev Log",
+      hint = "Toggle the dev log buffer",
+      command = require("flutter-tools.log").toggle,
+    },
+    {
       id = "flutter-tools-install-app",
       label = "Install app",
       hint = "Install a Flutter app on an attached device.",
