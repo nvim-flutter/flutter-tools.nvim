@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.2.0](https://github.com/nvim-flutter/flutter-tools.nvim/compare/v2.1.0...v2.2.0) (2026-01-08)
+
+
+### Features
+
+* Add Inspect Widget command ([#509](https://github.com/nvim-flutter/flutter-tools.nvim/issues/509)) ([5e863a2](https://github.com/nvim-flutter/flutter-tools.nvim/commit/5e863a2325ad216c36e88e860eedbb9e23ad4aa6))
+* add Toggle Dev Log in telescope menu ([#511](https://github.com/nvim-flutter/flutter-tools.nvim/issues/511)) ([ad5fd81](https://github.com/nvim-flutter/flutter-tools.nvim/commit/ad5fd8149e5a376c80afb17805bdaee6f6742ac8))
+
 ## [2.1.0](https://github.com/nvim-flutter/flutter-tools.nvim/compare/v2.0.0...v2.1.0) (2026-01-04)
 
 
