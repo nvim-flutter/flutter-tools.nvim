@@ -146,6 +146,10 @@ local function handle_inspect_event(isolate_id)
 
     if location and location.file and location.line then
       local file = location.file:gsub("^file://", "")
+      if vim.loop.os_uname().sysname == "Windows_NT" then
+        -- On Windows, the file URI may start with an extra slash
+        file = file:gsub("^/", "")
+      end
       vim.schedule(function()
         vim.cmd("edit " .. vim.fn.fnameescape(file))
         vim.api.nvim_win_set_cursor(0, { location.line, (location.column or 1) - 1 })
