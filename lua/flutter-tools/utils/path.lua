@@ -117,36 +117,32 @@ local function find_nearest_root(patterns, startpath)
   return M.search_ancestors(startpath, matcher)
 end
 
----@param pubspec_path string
----@return table|nil
-local function parse_pubspec(pubspec_path)
-  if not M.is_file(pubspec_path) then return nil end
-  local content = vim.fn.readfile(pubspec_path)
-  if not content or #content == 0 then return nil end
-  local joined_content = table.concat(content, "\n")
-  local ok, parsed = pcall(
-    function() return require("flutter-tools.utils.yaml_parser").parse(joined_content) end
-  )
-  if ok and parsed then return parsed end
-  return nil
-end
-
 --- Checks for `resolution: workspace` in pubspec.yaml
+--- Pattern matches VS Code Dart extension: /^resolution\s*:\s*workspace/im
 ---@param pubspec_path string
 ---@return boolean
 local function is_pub_workspace_member(pubspec_path)
-  local pubspec = parse_pubspec(pubspec_path)
-  if not pubspec then return false end
-  return pubspec.resolution == "workspace"
+  if not M.is_file(pubspec_path) then return false end
+  local content = vim.fn.readfile(pubspec_path)
+  if not content then return false end
+  for _, line in ipairs(content) do
+    if line:lower():match("^resolution%s*:%s*workspace") then return true end
+  end
+  return false
 end
 
 --- Checks for `workspace:` field in pubspec.yaml
+--- Pattern matches VS Code Dart extension: /^workspace\s*:/im
 ---@param pubspec_path string
 ---@return boolean
 local function is_pub_workspace_root(pubspec_path)
-  local pubspec = parse_pubspec(pubspec_path)
-  if not pubspec then return false end
-  return pubspec.workspace ~= nil
+  if not M.is_file(pubspec_path) then return false end
+  local content = vim.fn.readfile(pubspec_path)
+  if not content then return false end
+  for _, line in ipairs(content) do
+    if line:lower():match("^workspace%s*:") then return true end
+  end
+  return false
 end
 
 --- Find project root, traversing up to workspace root if in a pub workspace
@@ -164,8 +160,12 @@ function M.find_root(patterns, startpath)
   local parent = M.dirname(root)
   if not parent or parent == root then return root end
 
+  -- Check parent directly first (iterate_parents skips the starting path)
+  local workspace_pubspec = M.join(parent, "pubspec.yaml")
+  if is_pub_workspace_root(workspace_pubspec) then return parent end
+
   for dir in M.iterate_parents(parent) do
-    local workspace_pubspec = M.join(dir, "pubspec.yaml")
+    workspace_pubspec = M.join(dir, "pubspec.yaml")
     if is_pub_workspace_root(workspace_pubspec) then return dir end
   end
 
