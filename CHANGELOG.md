@@ -1,5 +1,19 @@
 # Changelog
 
+## [2.2.0](https://github.com/nvim-flutter/flutter-tools.nvim/compare/v2.1.0...v2.2.0) (2026-01-14)
+
+
+### Features
+
+* Add Inspect Widget command ([#509](https://github.com/nvim-flutter/flutter-tools.nvim/issues/509)) ([5e863a2](https://github.com/nvim-flutter/flutter-tools.nvim/commit/5e863a2325ad216c36e88e860eedbb9e23ad4aa6))
+* add Toggle Dev Log in telescope menu ([#511](https://github.com/nvim-flutter/flutter-tools.nvim/issues/511)) ([ad5fd81](https://github.com/nvim-flutter/flutter-tools.nvim/commit/ad5fd8149e5a376c80afb17805bdaee6f6742ac8))
+* **debugger:** fix file URI handling for Windows in inspect event ([#514](https://github.com/nvim-flutter/flutter-tools.nvim/issues/514)) ([3b2f652](https://github.com/nvim-flutter/flutter-tools.nvim/commit/3b2f652e4f15c859d421f7520e15c74b9abde836))
+
+
+### Bug Fixes
+
+* **lsp:** use regex for pub workspace detection instead of YAML parsing ([#516](https://github.com/nvim-flutter/flutter-tools.nvim/issues/516)) ([6d040bc](https://github.com/nvim-flutter/flutter-tools.nvim/commit/6d040bc2606ce7e3b194dfaf0e70146162852eb6)), closes [#515](https://github.com/nvim-flutter/flutter-tools.nvim/issues/515)
+
 ## [2.1.0](https://github.com/nvim-flutter/flutter-tools.nvim/compare/v2.0.0...v2.1.0) (2026-01-04)
 
 
