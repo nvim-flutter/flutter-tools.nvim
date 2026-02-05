@@ -287,8 +287,12 @@ function M.attach()
   if not is_valid_path(buffer_path) then return end
 
   get_server_config(user_config, function(c)
+    local root_patterns = conf.root_patterns
+    if conf.fvm then
+      root_patterns = vim.tbl_map(function(pattern) return ".fvm" .. pattern end, root_patterns)
+    end
     c.root_dir = M.get_project_root_dir()
-      or fs.dirname(fs.find(conf.root_patterns, {
+      or fs.dirname(fs.find(root_patterns, {
         path = buffer_path,
         upward = true,
       })[1])
