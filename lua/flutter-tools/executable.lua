@@ -21,6 +21,7 @@ local Job = require("plenary.job")
 ---
 --- True if fvm provides the Flutter SDK, otherwise nil or false.
 ---@field fvm boolean?
+---@field emulator_bin string
 
 ---@private
 ---@class flutter.internal.Paths
@@ -83,6 +84,7 @@ local function get_default_binaries()
     flutter_bin = flutter_bin,
     dart_bin = fn.resolve(fn.exepath("dart")),
     flutter_sdk = flutter_sdk_root(flutter_bin),
+    emulator_bin = fn.resolve(fn.exepath("emulator")),
   }
 end
 
@@ -151,6 +153,7 @@ function M.get(callback)
         -- Provide default values to make the linter happy.
         dart_sdk = "",
         dart_bin = "",
+        emulator_bin = fn.exepath("emulator") or "",
       }
       cached_paths.dart_sdk = dart_sdk_root(cached_paths)
       cached_paths.dart_bin = flutter_sdk_dart_bin(cached_paths.flutter_sdk)
@@ -166,6 +169,7 @@ function M.get(callback)
       -- Provide default values to make the linter happy.
       dart_sdk = "",
       dart_bin = "",
+      emulator_bin = fn.exepath("emulator") or "",
     }
     cached_paths.dart_sdk = dart_sdk_root(cached_paths)
     cached_paths.dart_bin = flutter_sdk_dart_bin(cached_paths.flutter_sdk)
@@ -179,6 +183,7 @@ function M.get(callback)
         flutter_sdk = paths.flutter_sdk,
         dart_bin = paths.dart_bin,
         dart_sdk = dart_sdk_root(paths),
+        emulator_bin = fn.exepath("emulator") or "",
       }
       callback(paths)
     end)
@@ -192,6 +197,7 @@ function M.get(callback)
         flutter_sdk = internal_paths.flutter_sdk,
         dart_bin = internal_paths.dart_bin,
         dart_sdk = dart_sdk_root(internal_paths),
+        emulator_bin = fn.exepath("emulator") or "",
       }
       if cached_paths.flutter_sdk then
         cached_paths.dart_bin = flutter_sdk_dart_bin(cached_paths.flutter_sdk)
@@ -206,6 +212,12 @@ end
 ---@param callback fun(flutter_bin: string):nil
 function M.flutter(callback)
   M.get(function(paths) callback(paths.flutter_bin) end)
+end
+
+--- Fetch the path to the users androidSdk -> emulator installation.
+---@param callback fun(emulator_bin: string):nil
+function M.emulator(callback)
+  M.get(function(paths) callback(paths.emulator_bin) end)
 end
 
 --- Fetch the path to the users dart installation.

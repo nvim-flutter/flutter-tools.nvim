@@ -18,10 +18,17 @@ local DEVICE = 2
 
 ---@param result string[]
 ---@param type integer
-local function get_devices(result, type)
+---@param is_avds boolean
+local function get_devices(result, type, is_avds)
+  local parse_avds = is_avds == true
   local devices = {}
   for _, line in pairs(result) do
-    local device = M.parse(line, type)
+    local device
+    if parse_avds then
+      device = M.parse_avds(line, type)
+    else
+      device = M.parse(line, type)
+    end
     if device then
       table.insert(devices, device)
       if type == EMULATOR and device.system and device.system == "android" then
@@ -32,6 +39,24 @@ local function get_devices(result, type)
     end
   end
   return devices
+end
+
+---@param line string
+---@param device_type number
+---@return Device?
+function M.parse_avds(line, device_type)
+  local parts = vim.split(line, "•")
+  local name_index = 1
+  local id_index = 1
+  return {
+    name = vim.trim(parts[name_index]),
+    id = vim.trim(parts[id_index]),
+    platform = "Android",
+    system = "dunno",
+    -- platform = vim.trim(parts[3]),
+    -- system = vim.trim(parts[4]),
+    type = device_type,
+  }
 end
 
 ---@param line string
@@ -59,11 +84,12 @@ end
 --- return the parsed list and the found devices if any
 ---@param result string[]
 ---@param device_type integer?
+---@param is_avds boolean
 ---@return SelectionEntry[]
-function M.to_selection_entries(result, device_type)
+function M.to_selection_entries(result, device_type, is_avds)
   if not result or #result < 1 then return {} end
   if not device_type then device_type = DEVICE end
-  local devices = get_devices(result, device_type)
+  local devices = get_devices(result, device_type, is_avds)
   if #devices == 0 then vim.tbl_map(function(item) return { text = item } end, result) end
   return vim.tbl_map(function(device)
     local has_platform = device.platform and device.platform ~= ""
@@ -87,6 +113,17 @@ function M.close_emulator()
 end
 
 ---@param emulator table
+function M.launch_emulator_avd(emulator)
+  if not emulator then return end
+  executable.emulator(function(cmd)
+    args = { "@" .. emulator.id, "-gpu", "host", "-accel", "on" }
+    if emulator.cold_boot then table.insert(args, "-no-snapshot-load") end
+    M.emulator_job = Job:new({ command = cmd, args = args })
+    M.emulator_job:after_success(vim.schedule_wrap(handle_launch))
+    M.emulator_job:start()
+  end)
+end
+---@param emulator table
 function M.launch_emulator(emulator)
   if not emulator then return end
   executable.flutter(function(cmd)
@@ -99,15 +136,37 @@ function M.launch_emulator(emulator)
 end
 
 ---@param result string[]
-local function show_emulators(result)
-  local lines = M.to_selection_entries(result, EMULATOR)
+---@param is_avds boolean
+local function show_emulators(result, is_avds)
+  local lines = M.to_selection_entries(result, EMULATOR, is_avds)
   if #lines > 0 then
+    local on_select
+    if is_avds then
+      on_select = function(emulator) M.launch_emulator_avd(emulator) end
+    else
+      on_select = function(emulator) M.launch_emulator(emulator) end
+    end
     ui.select({
       title = "Flutter emulators",
       lines = lines,
-      on_select = function(emulator) M.launch_emulator(emulator) end,
+      on_select = on_select,
     })
+  else
+    print("no emulators")
   end
+end
+
+function M.list_emulators_avds()
+  executable.emulator(function(cmd)
+    local job = Job:new({ command = cmd, args = { "-list-avds" } })
+    job:after_success(vim.schedule_wrap(function(j) show_emulators(j:result(), true) end))
+    job:after_failure(
+      vim.schedule_wrap(
+        function(j) return ui.notify(utils.join(j:stderr_result()), ui.ERROR, { timeout = 5000 }) end
+      )
+    )
+    job:start()
+  end)
 end
 
 function M.list_emulators()
