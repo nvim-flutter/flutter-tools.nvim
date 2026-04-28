@@ -233,6 +233,7 @@ function M.get_profiler_url()
 end
 
 function M.on_flutter_shutdown()
+  M.stop()
   profiler_url = nil
   devtools_profiler_url = nil
 end
