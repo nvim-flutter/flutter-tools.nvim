@@ -200,6 +200,12 @@ function M.commands(opts)
       command = require("flutter-tools.devices").list_emulators,
     },
     {
+      id = "flutter-tools-list-emulators-avd",
+      label = "List Emulator avds",
+      hint = "Show the available avds",
+      command = require("flutter-tools.devices").list_emulators_avds,
+    },
+    {
       id = "flutter-tools-open-outline",
       label = "Open Outline",
       hint = "Show the current files widget tree",

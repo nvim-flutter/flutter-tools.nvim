@@ -36,6 +36,7 @@ local function setup_commands()
   -- Lists
   command("FlutterDevices", devices.list_devices)
   command("FlutterEmulators", devices.list_emulators)
+  command("FlutterEmulatorsAvds", devices.list_emulators_avds)
   --- Outline
   command("FlutterOutlineOpen", outline.open)
   command("FlutterOutlineToggle", outline.toggle)
