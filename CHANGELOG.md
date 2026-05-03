@@ -1,5 +1,21 @@
 # Changelog
 
+## [3.0.0](https://github.com/nvim-flutter/flutter-tools.nvim/compare/v2.2.0...v3.0.0) (2026-05-03)
+
+
+### ⚠ BREAKING CHANGES
+
+* remove support to older than 0.11 nvim versions ([#525](https://github.com/nvim-flutter/flutter-tools.nvim/issues/525))
+
+### Features
+
+* remove support to older than 0.11 nvim versions ([#525](https://github.com/nvim-flutter/flutter-tools.nvim/issues/525)) ([417304b](https://github.com/nvim-flutter/flutter-tools.nvim/commit/417304b5c83633a60c353f64ad6ba090fda6eab0))
+
+
+### Bug Fixes
+
+* **devtools:** stop DevTools server on flutter shutdown ([#521](https://github.com/nvim-flutter/flutter-tools.nvim/issues/521)) ([1f532b5](https://github.com/nvim-flutter/flutter-tools.nvim/commit/1f532b515cffd45ea6dc2d9399e06622515f42e7))
+
 ## [2.2.0](https://github.com/nvim-flutter/flutter-tools.nvim/compare/v2.1.0...v2.2.0) (2026-01-14)
 
 
