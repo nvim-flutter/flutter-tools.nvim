@@ -65,13 +65,16 @@ function M.to_selection_entries(result, device_type)
   if not device_type then device_type = DEVICE end
   local devices = get_devices(result, device_type)
   if #devices == 0 then
-    return vim.tbl_map(function(item)
-      return {
-        text = item,
-        type = ui.entry_type.INFO,
-        data = nil,
-      }
-    end, result)
+    return vim.tbl_map(
+      function(item)
+        return {
+          text = item,
+          type = ui.entry_type.INFO,
+          data = nil,
+        }
+      end,
+      result
+    )
   end
   return vim.tbl_map(function(device)
     local has_platform = device.platform and device.platform ~= ""

@@ -166,9 +166,10 @@ local deprecations = {
 }
 
 local function notify_deprecation(key, message)
-  vim.defer_fn(function()
-    ui.notify(fmt("%s is deprecated: %s", key, message), ui.WARN, { once = true })
-  end, 1000)
+  vim.defer_fn(
+    function() ui.notify(fmt("%s is deprecated: %s", key, message), ui.WARN, { once = true }) end,
+    1000
+  )
 end
 
 local function should_notify_deprecation(deprecation)
