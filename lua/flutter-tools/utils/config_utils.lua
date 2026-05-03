@@ -11,7 +11,7 @@ local lsp = lazy.require("flutter-tools.lsp") ---@module "flutter-tools.utils"
 function M.get_cwd(project_conf)
   if project_conf and project_conf.cwd then
     local resolved_path = path.get_absolute_path(project_conf.cwd)
-    if not vim.loop.fs_stat(resolved_path) then
+    if not vim.uv.fs_stat(resolved_path) then
       return ui.notify("Provided cwd does not exist: " .. resolved_path, ui.ERROR)
     end
     return resolved_path

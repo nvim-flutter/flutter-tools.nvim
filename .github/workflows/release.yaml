@@ -42,7 +42,7 @@ jobs:
         uses: kdheepak/panvimdoc@main
         with:
           vimdoc: flutter-tools
-          version: "Neovim >= 0.8.0"
+          version: "Neovim >= 0.11"
           demojify: true
           treesitter: true
       - name: Push changes

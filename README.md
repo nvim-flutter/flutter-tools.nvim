@@ -32,8 +32,7 @@ nnoremap K <Cmd>lua vim.lsp.buf.hover()<CR>
 nnoremap gd <Cmd>lua vim.lsp.buf.definition()<CR>
  " Open code actions using the default lsp UI, if you want to change this please see the plugins above
 nnoremap <leader>ca <Cmd>lua vim.lsp.buf.code_action()<CR>
- " Open code actions for the selected visual range
-xnoremap <leader>ca <Cmd>lua vim.lsp.buf.range_code_action()<CR>
+xnoremap <leader>ca <Cmd>lua vim.lsp.buf.code_action()<CR>
 ```
 
 Please note this is not a replacement for reading the documentation, this is only to show new users what
@@ -41,7 +40,7 @@ some basic setup might look like.
 
 ## Prerequisites
 
-- neovim 0.8.0+
+- Neovim 0.11+
 
 ## Installation
 
@@ -159,14 +158,21 @@ require("flutter-tools").setup {} -- use defaults
 - `FlutterDetach` - Ends a running session locally but keeps the process running on the device.
 - `FlutterOutlineToggle` - Toggle the outline window showing the widget tree for the given file.
 - `FlutterOutlineOpen` - Opens an outline window showing the widget tree for the given file.
+- `FlutterVisualDebug` - Toggle Flutter visual debugging.
+- `FlutterChangeTargetPlatform` - Cycle the target platform override for the running app.
+- `FlutterToggleBrightness` - Toggle the app brightness override.
 - `FlutterDevTools` - Starts a Dart Dev Tools server.
 - `FlutterDevToolsActivate` - Activates a Dart Dev Tools server.
+- `FlutterOpenDevTools` - Open the currently connected DevTools page.
+- `FlutterInspectWidget` - Toggle widget inspection for the running app.
 - `FlutterCopyProfilerUrl` - Copies the profiler url to your system clipboard (+ register). Note that commands `FlutterRun` and
   `FlutterDevTools` must be executed first.
+- `FlutterPubGet` - Run `flutter pub get` in the project root.
+- `FlutterPubUpgrade [args]` - Run `flutter pub upgrade` with optional extra arguments.
 - `FlutterLspRestart` - This command restarts the dart language server, and is intended for situations where it begins to work incorrectly.
 - `FlutterSuper` - Go to super class, method using custom LSP method `dart/textDocument/super`.
 - `FlutterReanalyze` - Forces LSP server reanalyze using custom LSP method `dart/reanalyze`.
-- `FlutterRename` - Renames and updates imports if `lsp.settings.renameFilesWithClasses == "always"`
+- `FlutterRename` - Rename a symbol and update imports if `lsp.settings.renameFilesWithClasses == "always"`.
 - `FlutterLogClear` - Clears the log buffer.
 - `FlutterLogToggle` - Toggles the log buffer.
 

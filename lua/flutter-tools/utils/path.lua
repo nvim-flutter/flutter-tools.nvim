@@ -2,12 +2,12 @@
 local lazy = require("flutter-tools.lazy")
 local utils = lazy.require("flutter-tools.utils") ---@module "flutter-tools.utils"
 
-local luv = vim.loop
+local uv = vim.uv
 local api = vim.api
 local M = {}
 
 function M.exists(filename)
-  local stat = luv.fs_stat(filename)
+  local stat = uv.fs_stat(filename)
   return stat and stat.type or false
 end
 
@@ -15,7 +15,7 @@ function M.is_dir(filename) return M.exists(filename) == "directory" end
 
 function M.is_file(filename) return M.exists(filename) == "file" end
 
-local uname = luv.os_uname()
+local uname = uv.os_uname()
 M.is_mac = uname.sysname == "Darwin"
 M.is_linux = uname.sysname == "Linux"
 ---@type boolean
@@ -60,7 +60,7 @@ end
 
 -- Traverse the path calling cb along the way.
 function M.traverse_parents(path, cb)
-  path = luv.fs_realpath(path)
+  path = uv.fs_realpath(path)
   local dir = path
   -- Just in case our algo is buggy, don't infinite loop.
   for _ = 1, 100 do
@@ -74,7 +74,7 @@ end
 
 -- Iterate the path until we find the rootdir.
 function M.iterate_parents(path)
-  path = luv.fs_realpath(path)
+  path = uv.fs_realpath(path)
   local function it(_, v)
     if not v then return end
     if is_fs_root(v) then return end
@@ -97,11 +97,7 @@ function M.is_descendant(root, path)
 end
 
 function M.search_ancestors(startpath, func)
-  if vim.fn.has("nvim-0.11") == 1 then
-    vim.validate("func", func, "function")
-  else
-    vim.validate({ func = { func, "function" } })
-  end
+  vim.validate("func", func, "function")
   if func(startpath) then return startpath end
   for path in M.iterate_parents(startpath) do
     if func(path) then return path end

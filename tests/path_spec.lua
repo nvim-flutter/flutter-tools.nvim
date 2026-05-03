@@ -11,7 +11,7 @@ describe("path.find_root", function()
     -- Use realpath to normalize (handles /var -> /private/var symlink on macOS)
     local temp_base = vim.fn.tempname()
     vim.fn.mkdir(temp_base, "p")
-    test_dir = vim.loop.fs_realpath(temp_base)
+    test_dir = vim.uv.fs_realpath(temp_base)
     workspace_root = test_dir .. "/workspace"
     package_a = workspace_root .. "/packages/package_a"
     package_b = workspace_root .. "/packages/package_b"
