@@ -4,8 +4,7 @@ local lsp = vim.lsp
 
 M.SERVER_NAME = "dartls"
 
--- TODO: Remove after compatibility with Neovim=0.9 is dropped
-local get_clients = vim.fn.has("nvim-0.10") == 1 and lsp.get_clients or lsp.get_active_clients
+local get_clients = lsp.get_clients
 
 ---@param bufnr number?
 ---@return vim.lsp.Client?

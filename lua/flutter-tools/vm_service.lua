@@ -2,7 +2,7 @@
 --- WebSocket framing per RFC 6455:
 --- Client frames must be masked with a 4-byte key
 --- Frame format: [FIN/opcode][mask/length][mask-key][payload]
-local uv = vim.uv or vim.loop
+local uv = vim.uv
 
 local M = {}
 

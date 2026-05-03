@@ -207,7 +207,7 @@ end
 
 function M.stop()
   if devtools_pid then
-    local uv = vim.loop
+    local uv = vim.uv
     uv.kill(devtools_pid, uv.constants.SIGTERM)
     devtools_pid = nil
     devtools_url = nil

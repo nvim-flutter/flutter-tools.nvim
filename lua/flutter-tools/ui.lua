@@ -5,6 +5,7 @@ local fmt = string.format
 local entry_type = {
   CODE_ACTION = 1,
   DEVICE = 2,
+  INFO = 3,
 }
 
 ---@generic T
@@ -109,6 +110,12 @@ local function get_telescope_picker_config(items, title, on_select)
           hint = data.platform,
           command = function() on_select(data) end,
         }
+      elseif item.type == entry_type.INFO then
+        return {
+          id = item.text,
+          label = item.text,
+          command = function() end,
+        }
       end
     end, filtered),
     { title = title }
@@ -129,7 +136,7 @@ function M.select(opts)
     -- custom key for dressing.nvim
     telescope = get_telescope_picker_config(lines, title, on_select),
   }, function(item)
-    if not item then return end
+    if not item or item.data == nil then return end
     on_select(item.data)
   end)
 end

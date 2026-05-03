@@ -30,7 +30,7 @@ local Job = require("plenary.job")
 
 local fn = vim.fn
 local fs = vim.fs
-local luv = vim.loop
+local uv = vim.uv
 
 local M = {}
 
@@ -124,13 +124,13 @@ end
 
 local function flutter_bin_from_fvm()
   local fvm_root =
-    fs.dirname(fs.find(".fvm", { path = luv.cwd(), upward = true, type = "directory" })[1])
+    fs.dirname(fs.find(".fvm", { path = uv.cwd(), upward = true, type = "directory" })[1])
 
   local binary_name = path.is_windows and "flutter.bat" or "flutter"
   local flutter_bin_symlink = path.join(fvm_root, ".fvm", "flutter_sdk", "bin", binary_name)
   flutter_bin_symlink = fn.exepath(flutter_bin_symlink)
 
-  local flutter_bin = luv.fs_realpath(flutter_bin_symlink)
+  local flutter_bin = uv.fs_realpath(flutter_bin_symlink)
   if path.exists(flutter_bin_symlink) and path.exists(flutter_bin) then return flutter_bin end
 end
 

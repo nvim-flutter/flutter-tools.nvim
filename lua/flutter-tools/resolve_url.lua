@@ -2,9 +2,11 @@
 -- https://github.com/dart-lang/dart-vim-plugin/blob/4bdc04e2540edf90fda2812434c11d19dc04bc8f/autoload/dart.vim#L94
 local M = {}
 
+local uv = vim.uv
+
 local function resolve(path)
-  -- Use vim.loop.fs_realpath to resolve symbolic links and get the absolute path
-  local real_path = vim.loop.fs_realpath(path)
+  -- Use vim.uv.fs_realpath to resolve symbolic links and get the absolute path
+  local real_path = uv.fs_realpath(path)
   -- If the path cannot be resolved, return the original
   return real_path or path
 end
