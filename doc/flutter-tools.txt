@@ -1,5 +1,5 @@
 *flutter-tools.txt*
-                              For Neovim >= 0.11    Last change: 2026 May 03
+                                For Neovim >= 0.11    Last change: 2026 May 03
 
 ==============================================================================
 Table of Contents                            *flutter-tools-table-of-contents*
@@ -62,8 +62,8 @@ A minimal native LSP configuration might look like:
      " Jump to definition
     nnoremap gd <Cmd>lua vim.lsp.buf.definition()<CR>
      " Open code actions using the default lsp UI, if you want to change this please see the plugins above
-     nnoremap <leader>ca <Cmd>lua vim.lsp.buf.code_action()<CR>
-     xnoremap <leader>ca <Cmd>lua vim.lsp.buf.code_action()<CR>
+    nnoremap <leader>ca <Cmd>lua vim.lsp.buf.code_action()<CR>
+    xnoremap <leader>ca <Cmd>lua vim.lsp.buf.code_action()<CR>
 <
 
 Please note this is not a replacement for reading the documentation, this is
@@ -353,7 +353,7 @@ On Neovim `0.12+`, use the built-in LSP document color support instead:
     })
 <
 
-If you want to opt out of Neovim's built-in document colors for some buffers:
+If you want to opt out of Neovim’s built-in document colors for some buffers:
 
 >lua
     vim.api.nvim_create_autocmd("LspAttach", {
