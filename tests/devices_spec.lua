@@ -38,7 +38,10 @@ INFO    | Storing crashdata in: /tmp/android-ts/emu-crash-34.2.14.db, detection 
     end)
 
     it("should fall back to raw output when no devices are parsed", function()
-      local result = { "No supported devices connected.", "Run 'flutter emulators' to list and start any available device emulators." }
+      local result = {
+        "No supported devices connected.",
+        "Run 'flutter emulators' to list and start any available device emulators.",
+      }
       local entries = devices.to_selection_entries(result)
 
       assert.equal(2, #entries)
