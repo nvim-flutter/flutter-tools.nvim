@@ -276,14 +276,6 @@ require("flutter-tools").setup {
     auto_open = false -- if true this will open the outline automatically when it is first populated
   },
   lsp = {
-    color = { -- show the derived colours for dart variables
-      enabled = false, -- whether or not to highlight color variables at all, only supported on flutter >= 2.10
-      background = false, -- highlight the background
-      background_color = nil, -- required, when background is transparent (i.e. background_color = { r = 19, g = 17, b = 24},)
-      foreground = false, -- highlight the foreground
-      virtual_text = true, -- show the highlight using virtual text
-      virtual_text_str = "■", -- the virtual text character to highlight
-    },
     on_attach = my_custom_on_attach,
     capabilities = my_custom_capabilities, -- e.g. lsp_status capabilities
     --- OR you can specify a function to deactivate or change or control how the config is created
@@ -307,6 +299,30 @@ require("flutter-tools").setup {
 
 You can override any options available in the `lspconfig` setup, this call essentially wraps
 it and adds some extra `flutter` specific handlers and utilisation options.
+
+### Document colors
+
+Plugin-managed `lsp.color` rendering is deprecated and will be removed when flutter-tools.nvim requires Neovim `0.12+`.
+
+On Neovim `0.12+`, use the built-in LSP document color support instead:
+
+```lua
+vim.api.nvim_create_autocmd("LspAttach", {
+  callback = function(ev)
+    vim.lsp.document_color.enable(true, { bufnr = ev.buf })
+  end,
+})
+```
+
+If you want to opt out of Neovim's built-in document colors for some buffers:
+
+```lua
+vim.api.nvim_create_autocmd("LspAttach", {
+  callback = function(ev)
+    vim.lsp.document_color.enable(false, { bufnr = ev.buf })
+  end,
+})
+```
 
 **NOTE:**
 By default this plugin excludes analysis of the packages in the flutter SDK. If for example

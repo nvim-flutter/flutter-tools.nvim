@@ -155,15 +155,46 @@ local deprecations = {
     fallback = "widget_guides",
     message = "please use 'widget_guides' instead",
   },
+  lsp = {
+    nested = {
+      color = {
+        when = function() return vim.fn.has("nvim-0.12") == 1 end,
+        message = "plugin-managed document colors are deprecated and will be removed when flutter-tools.nvim requires Neovim 0.12+. On Neovim 0.12+, use vim.lsp.document_color.enable() instead",
+      },
+    },
+  },
 }
+
+local function notify_deprecation(key, message)
+  vim.defer_fn(function()
+    ui.notify(fmt("%s is deprecated: %s", key, message), ui.WARN, { once = true })
+  end, 1000)
+end
+
+local function should_notify_deprecation(deprecation)
+  return not deprecation.when or deprecation.when()
+end
+
+local function handle_nested_deprecation(prefix, value, deprecation)
+  if type(value) ~= "table" or type(deprecation.nested) ~= "table" then return end
+  for key, nested_value in pairs(value) do
+    local nested_deprecation = deprecation.nested[key]
+    if nested_deprecation then
+      if nested_deprecation.message and should_notify_deprecation(nested_deprecation) then
+        notify_deprecation(("%s.%s"):format(prefix, key), nested_deprecation.message)
+      end
+      handle_nested_deprecation(("%s.%s"):format(prefix, key), nested_value, nested_deprecation)
+    end
+  end
+end
 
 local function handle_deprecation(key, value, conf)
   local deprecation = deprecations[key]
   if not deprecation then return end
-  vim.defer_fn(
-    function() ui.notify(fmt("%s is deprecated: %s", key, deprecation.message), ui.WARN) end,
-    1000
-  )
+  if deprecation.message and should_notify_deprecation(deprecation) then
+    notify_deprecation(key, deprecation.message)
+  end
+  handle_nested_deprecation(key, value, deprecation)
   if deprecation.fallback then conf[deprecation.fallback] = value end
 end
 
