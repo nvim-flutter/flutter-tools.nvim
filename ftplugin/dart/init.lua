@@ -1,8 +1,10 @@
 -- See section 'DISABLING' in :h ftplugin
+
+require("flutter-tools.lsp").attach()
+
 if vim.b.flutter_tools_did_ftplugin then return end
 vim.b.flutter_tools_did_ftplugin = 1
 
-require("flutter-tools.lsp").attach()
 local path = require("flutter-tools.utils.path")
 
 vim.opt_local.comments = [[sO:*\ -,mO:*\ \ ,exO:*/,s1:/*,mb:*,ex:*/,:///,://]]
