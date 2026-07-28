@@ -128,7 +128,7 @@ end
 ---@param data string
 ---@param _ Job
 local function handle_start(_, data, _)
-  if #data <= 0 then return end
+  if not data or #data <= 0 then return end
 
   local json = fn.json_decode(data)
   if not json or not json.params then return end
@@ -146,6 +146,7 @@ end
 ---@param data string
 ---@param _ Job
 local function handle_error(_, data, _)
+  if not data then return end
   if not data:match("No active package devtools") then
     ui.notify(utils.join({ "Sorry! devtools couldn't be opened", vim.inspect(data) }), ui.ERROR)
     return
