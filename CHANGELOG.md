@@ -1,5 +1,14 @@
 # Changelog
 
+## [3.0.1](https://github.com/nvim-flutter/flutter-tools.nvim/compare/v3.0.0...v3.0.1) (2026-08-06)
+
+
+### Bug Fixes
+
+* **dev_tools:** prevent nil data error on app termination ([#528](https://github.com/nvim-flutter/flutter-tools.nvim/issues/528)) ([f9c8816](https://github.com/nvim-flutter/flutter-tools.nvim/commit/f9c8816002ef4b99469c45d30274194cf027d2fc))
+* **lsp:** attach dartls to the buffer that requested it ([#530](https://github.com/nvim-flutter/flutter-tools.nvim/issues/530)) ([3b8e1c5](https://github.com/nvim-flutter/flutter-tools.nvim/commit/3b8e1c599cc20b205d872e3c002ccbcbe38358a4))
+* reattach LSP on file rename/reload ([#527](https://github.com/nvim-flutter/flutter-tools.nvim/issues/527)) ([2450aa2](https://github.com/nvim-flutter/flutter-tools.nvim/commit/2450aa2c846f522cda1933b6341f93e2b37fc580))
+
 ## [3.0.0](https://github.com/nvim-flutter/flutter-tools.nvim/compare/v2.2.0...v3.0.0) (2026-05-03)
 
 
