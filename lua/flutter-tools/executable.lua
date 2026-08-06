@@ -174,13 +174,13 @@ function M.get(callback)
 
   if config.flutter_lookup_cmd then
     return path_from_lookup_cmd(config.flutter_lookup_cmd, function(paths)
-      paths = {
+      cached_paths = {
         flutter_bin = paths.flutter_bin,
         flutter_sdk = paths.flutter_sdk,
         dart_bin = paths.dart_bin,
         dart_sdk = dart_sdk_root(paths),
       }
-      callback(paths)
+      callback(cached_paths)
     end)
   end
 

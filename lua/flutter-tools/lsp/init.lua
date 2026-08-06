@@ -287,12 +287,15 @@ function M.attach()
   if not is_valid_path(buffer_path) then return end
 
   get_server_config(user_config, function(c)
+    -- This callback can run asynchronously, by which point the user may have
+    -- switched to or deleted the buffer we were asked to attach to.
+    if not api.nvim_buf_is_valid(buf) then return end
     c.root_dir = M.get_project_root_dir()
       or fs.dirname(fs.find(conf.root_patterns, {
         path = buffer_path,
         upward = true,
       })[1])
-    vim.lsp.start(c)
+    vim.lsp.start(c, { bufnr = buf })
   end)
 end
 
