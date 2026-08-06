@@ -6,6 +6,10 @@ widget guides, an outline view of your widgets, and hot reloading.
 
 This plugin draws inspiration from [`emacs-lsp/lsp-dart`](https://github.com/emacs-lsp/lsp-dart), [`coc-flutter`](https://github.com/iamcco/coc-flutter) and [`nvim-metals`](https://github.com/scalameta/nvim-metals).
 
+## Related plugins
+
+- [flutter-icons.nvim](https://github.com/sidlatau/flutter-icons.nvim) - inline Material icon previews for `Icons.*` and `Symbols.*`, rendered in completion docs, LSP hovers and inline in your code.
+
 ## New to Neovim's LSP Client?
 
 _Skip this section if you have already configured nvim lsp._
@@ -44,26 +48,6 @@ some basic setup might look like.
 
 ## Installation
 
-using `vim-plug`
-
-```vim
-Plug 'nvim-lua/plenary.nvim'
-Plug 'stevearc/dressing.nvim' " optional for vim.ui.select
-Plug 'nvim-flutter/flutter-tools.nvim'
-```
-
-using `packer.nvim`
-
-```lua
-use {
-    'nvim-flutter/flutter-tools.nvim',
-    requires = {
-        'nvim-lua/plenary.nvim',
-        'stevearc/dressing.nvim', -- optional for vim.ui.select
-    },
-}
-```
-
 using `lazy.nvim`
 
 ```lua
@@ -76,6 +60,18 @@ using `lazy.nvim`
     },
     config = true,
 }
+```
+
+using `vim.pack` (built into Neovim 0.12+, see `:h vim.pack`)
+
+```lua
+vim.pack.add({
+    'https://github.com/nvim-lua/plenary.nvim',
+    'https://github.com/stevearc/dressing.nvim', -- optional for vim.ui.select
+    'https://github.com/nvim-flutter/flutter-tools.nvim',
+})
+
+require('flutter-tools').setup {}
 ```
 
 This plugin depends on [plenary.nvim](https://github.com/nvim-lua/plenary.nvim), please make sure it is installed.
@@ -182,7 +178,7 @@ require("flutter-tools").setup {} -- use defaults
 ### `FlutterRun`
 
 The flutter run command can also optionally take arguments that you might otherwise pass on the commandline
-such as `:FlutterRun --flavor <tasty>`, `:FlutterRun --no-sound-null-safety`.
+such as `:FlutterRun --flavor <tasty>`, `:FlutterRun --dart-define=API_URL=https://example.com`.
 
 <hr/>
 
@@ -206,10 +202,6 @@ require("flutter-tools").setup {
     -- the border type to use for all floating windows, the same options/formats
     -- used for ":h nvim_open_win" e.g. "single" | "shadow" | {<table-of-eight-chars>}
     border = "rounded",
-    -- This determines whether notifications are show with `vim.notify` or with the plugin's custom UI
-    -- please note that this option is eventually going to be deprecated and users will need to
-    -- depend on plugins like `nvim-notify` instead.
-    notification_style = 'native' | 'plugin'
   },
   decorations = {
     statusline = {
@@ -247,6 +239,7 @@ require("flutter-tools").setup {
   root_patterns = { ".git", "pubspec.yaml" }, -- patterns to find the root of your flutter project
   fvm = false, -- takes priority over path, uses <workspace>/.fvm/flutter_sdk if enabled
   default_run_args= nil, -- Default options for run command (i.e `{ flutter = "--no-version-check" }`). Configured separately for `dart run` and `flutter run`.
+  analyzer_web_port = nil, -- if set, the analysis server is started with `--port=<value>` so it can be inspected in the browser
   widget_guides = {
     enabled = false,
   },
@@ -419,6 +412,7 @@ The currently supported decorations are:
 
 - App version - The current version of the app from the `pubspec.yaml`.
 - Device - the device passed to the flutter run command
+- Project config - the name of the currently selected project configuration
 
 To add them to your config you can do something like
 
