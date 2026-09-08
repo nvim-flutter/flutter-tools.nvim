@@ -10,7 +10,7 @@ function M.document_color()
 
   local client = lsp_utils.get_dartls_client()
   if client and client.server_capabilities.colorProvider then
-    client.request("textDocument/documentColor", params, nil, 0)
+    client:request("textDocument/documentColor", params, nil, 0)
   end
 end
 

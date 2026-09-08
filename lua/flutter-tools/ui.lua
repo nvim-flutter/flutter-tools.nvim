@@ -30,6 +30,16 @@ local api = vim.api
 local namespace_id = api.nvim_create_namespace("flutter_tools_popups")
 M.entry_type = entry_type
 
+---Highlight group for de-emphasised text (closing tags, outline chrome, menu hints).
+---Nvim 0.13 ships a core `Dimmed` group for exactly this; below that we fall back to
+---`Comment`, which is what `Dimmed` itself links to by default. Declared with
+---`default = true` so a colorscheme or user definition always wins.
+M.DIM_HL = "FlutterToolsDimmed"
+utils.highlight(M.DIM_HL, {
+  default = true,
+  link = vim.fn.has("nvim-0.13") == 1 and "Dimmed" or "Comment",
+})
+
 function M.clear_highlights(buf_id, ns_id, line_start, line_end)
   line_start = line_start or 0
   line_end = line_end or -1
@@ -44,14 +54,14 @@ function M.add_highlights(buf_id, lines, ns_id)
   ns_id = ns_id or namespace_id
   if not lines then return end
   for _, line in ipairs(lines) do
-    api.nvim_buf_add_highlight(
-      buf_id,
-      ns_id,
-      line.highlight,
-      line.line_number,
-      line.column_start,
-      line.column_end
-    )
+    -- NOTE: `strict = false` so an end column past the end of the line is clamped
+    -- rather than raising, matching the behaviour callers relied on previously.
+    api.nvim_buf_set_extmark(buf_id, ns_id, line.line_number, line.column_start, {
+      end_row = line.line_number,
+      end_col = line.column_end,
+      hl_group = line.highlight,
+      strict = false,
+    })
   end
 end
 

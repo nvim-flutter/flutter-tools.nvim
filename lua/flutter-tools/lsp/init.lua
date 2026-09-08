@@ -119,15 +119,9 @@ local function get_defaults(opts)
     handlers = {
       -- TODO: can this be replaced with the initialized capability
       ["$/progress"] = handle_progress,
-      ["dart/textDocument/publishClosingLabels"] = utils.lsp_handler(
-        require("flutter-tools.labels").closing_tags
-      ),
-      ["dart/textDocument/publishOutline"] = utils.lsp_handler(
-        require("flutter-tools.outline").document_outline
-      ),
-      ["dart/textDocument/publishFlutterOutline"] = utils.lsp_handler(
-        require("flutter-tools.guides").widget_guides
-      ),
+      ["dart/textDocument/publishClosingLabels"] = require("flutter-tools.labels").closing_tags,
+      ["dart/textDocument/publishOutline"] = require("flutter-tools.outline").document_outline,
+      ["dart/textDocument/publishFlutterOutline"] = require("flutter-tools.guides").widget_guides,
       ["textDocument/documentColor"] = require("flutter-tools.lsp.color").on_document_color,
       ["dart/reanalyze"] = function() end, -- returns: None
       ["dart/textDocument/super"] = handle_super,
@@ -156,13 +150,15 @@ end
 
 function M.restart()
   local client = lsp_utils.get_dartls_client()
-  if client then
-    local bufs = lsp.get_buffers_by_client_id(client.id)
-    lsp.stop_client(client.id)
-    local client_id = lsp.start_client(client.config)
-    for _, buf in pairs(bufs) do
-      if client_id then lsp.buf_attach_client(buf, client_id) end
-    end
+  if not client then return end
+  local client_config = client.config
+  local bufs = vim.tbl_keys(client.attached_buffers)
+  client:stop()
+  -- `Client:stop()` marks the client as stopping synchronously, so the default
+  -- `reuse_client` predicate will not hand the dying client back to us here. The
+  -- first `start` spawns the replacement, the rest attach to it.
+  for _, buf in ipairs(bufs) do
+    if api.nvim_buf_is_valid(buf) then lsp.start(client_config, { bufnr = buf }) end
   end
 end
 
@@ -215,7 +211,7 @@ function M.dart_lsp_super()
       character = lsp_col, -- 0-based character position
     },
   }
-  client.request("dart/textDocument/super", params, nil, 0)
+  client:request("dart/textDocument/super", params, nil, 0)
 end
 
 function M.dart_reanalyze() lsp.buf_request(0, "dart/reanalyze") end
@@ -254,11 +250,7 @@ local function get_server_config(user_config, callback)
     config.commands = merge_config(defaults.commands, config.commands)
 
     config.on_init = function(client, _)
-      if vim.fn.has("nvim-0.12") == 0 then
-        return client.notify("workspace/didChangeConfiguration", { settings = config.settings })
-      else
-        return client:notify("workspace/didChangeConfiguration", { settings = config.settings })
-      end
+      return client:notify("workspace/didChangeConfiguration", { settings = config.settings })
     end
     callback(config)
   end)

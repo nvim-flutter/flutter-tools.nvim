@@ -109,7 +109,7 @@ end
 ---@param start_pos number
 ---@param end_pos number
 local function hl_range(bufnr, namespace, hlname, start_pos, end_pos)
-  local hl = vim.highlight
+  local hl = vim.hl
   hl.range(bufnr, namespace, hlname, start_pos, end_pos, { priority = hl.priorities.user })
 end
 

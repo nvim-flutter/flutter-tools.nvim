@@ -67,7 +67,7 @@ function M.rename(new_name, opts)
     local params = util.make_position_params(win, client.offset_encoding) --[[@as lsp.RenameParams]]
     params.newName = name
     local handler = client.handlers["textDocument/rename"] or lsp.handlers["textDocument/rename"]
-    client.request("textDocument/rename", params, function(...)
+    client:request("textDocument/rename", params, function(...)
       handler(...)
       if result then lsp.util.apply_workspace_edit(result, client.offset_encoding) end
 
@@ -93,7 +93,7 @@ function M.rename(new_name, opts)
         },
       }
 
-      client.request("workspace/willRenameFiles", params, function(err, result)
+      client:request("workspace/willRenameFiles", params, function(err, result)
         if err then
           ui.notify(err.message or "Error on getting lsp rename results!", ui.ERROR)
           return
@@ -106,9 +106,9 @@ function M.rename(new_name, opts)
   end
 
   -- Try to use prepare rename first
-  if client.supports_method("textDocument/prepareRename") then
+  if client:supports_method("textDocument/prepareRename") then
     local params = util.make_position_params(win, client.offset_encoding)
-    client.request("textDocument/prepareRename", params, function(err, result)
+    client:request("textDocument/prepareRename", params, function(err, result)
       if err or result == nil then
         if err then
           ui.notify(("Error on prepareRename: %s"):format(err.message), ui.ERROR)
@@ -142,7 +142,7 @@ function M.rename(new_name, opts)
       end)
     end, bufnr)
   else
-    assert(client.supports_method("textDocument/rename"), "Client must support textDocument/rename")
+    assert(client:supports_method("textDocument/rename"), "Client must support textDocument/rename")
     if new_name then
       rename_fix_imports(new_name)
       return

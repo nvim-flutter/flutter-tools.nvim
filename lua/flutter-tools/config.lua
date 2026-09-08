@@ -115,7 +115,7 @@ local config = {
     register_configurations = nil,
   },
   closing_tags = {
-    highlight = "Comment",
+    highlight = ui.DIM_HL,
     prefix = "// ",
     priority = 10,
     enabled = true,

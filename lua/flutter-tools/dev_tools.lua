@@ -45,19 +45,8 @@ end
 
 ---@param url string
 local function open_dev_tools(url)
-  local open_command, args = utils.open_command()
-  if not open_command then
-    return ui.notify(
-      "Sorry your Operating System is not supported, please raise an issue",
-      ui.ERROR
-    )
-  end
-  table.insert(args, url)
-  Job:new({
-    command = open_command,
-    args = args,
-    detached = true,
-  }):start()
+  local _, err = vim.ui.open(url)
+  if err then return ui.notify(err, ui.ERROR) end
 end
 
 local function start_browser()

@@ -39,7 +39,7 @@ local function command_entry_maker(max_width)
     })
 
     local items = { { en.label, "Type" } }
-    if has_hint then table.insert(items, { en.hint, "Comment" }) end
+    if has_hint then table.insert(items, { en.hint, ui.DIM_HL }) end
     return displayer(items)
   end
   return function(entry)

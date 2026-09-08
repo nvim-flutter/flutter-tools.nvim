@@ -56,7 +56,7 @@ local icon_highlights = {
   [icons.GETTER] = { name = "Getter", link = "Function" },
   [icons.ENUM] = { name = "Enum", link = "Type" },
   [icons.ENUM_CONSTANT] = { name = "EnumConstant", link = "Type" },
-  [icons.DEFAULT] = { name = "Default", link = "Comment" },
+  [icons.DEFAULT] = { name = "Default", link = ui.DIM_HL },
 }
 
 api.nvim_set_hl(0, MARKER_HL, { default = true, link = "NonText" })
@@ -149,7 +149,7 @@ local function parse_outline(result, node, indent, marker)
   local length = #table.concat(display_str, " ")
 
   local return_type = element.returnType and element.returnType .. " "
-  length = add_segment(text, hl, return_type, "Comment", length)
+  length = add_segment(text, hl, return_type, ui.DIM_HL, length)
   length = add_segment(text, hl, element.name, "None", length)
   length = add_segment(text, hl, element.typeParameters, "Type", length)
   length = add_segment(text, hl, element.parameters, "Bold", length)

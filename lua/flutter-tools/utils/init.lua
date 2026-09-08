@@ -3,7 +3,6 @@ local fn = vim.fn
 local api = vim.api
 
 local lazy = require("flutter-tools.lazy")
-local path = lazy.require("flutter-tools.utils.path") ---@module "flutter-tools.utils.path"
 
 --- if every item in a table is an empty value return true
 function M.list_is_empty(tbl)
@@ -82,53 +81,12 @@ function M.executable(bin) return fn.executable(bin) > 0 end
 ---Get the attribute value of a specified highlight
 ---@param name string
 ---@param attribute string
----@return string?
-function M.get_hl(name, attribute)
-  if api.nvim_get_hl then
-    local hl = api.nvim_get_hl(0, { name = name })
-    return hl[attribute]
-  else
-    local ok, hl = pcall(api.nvim_get_hl_by_name, name, true)
-    if not ok then return end
-    hl.foreground = hl.foreground and "#" .. bit.tohex(hl.foreground, 6)
-    hl.background = hl.background and "#" .. bit.tohex(hl.background, 6)
-    local attr = ({ bg = "background", fg = "foreground" })[attribute] or attribute
-    return hl[attr]
-  end
-end
-
-function M.open_command()
-  if path.is_mac then return "open", {} end
-  if path.is_linux then return "xdg-open", {} end
-  if path.is_windows then return "cmd.exe", { "/c", "start" } end
-  return nil, nil
-end
+---@return string|integer|boolean|nil
+function M.get_hl(name, attribute) return api.nvim_get_hl(0, { name = name })[attribute] end
 
 ---@param lines string[]
 ---@return string
 function M.join(lines) return table.concat(lines, "\n") end
-
----Create an lsp handler compatible with the new handler signature
----see: https://github.com/neovim/neovim/pull/15504/
----@param func function
----@return function
-function M.lsp_handler(func)
-  return function(...)
-    local config_or_client_id = select(4, ...)
-    local is_new = type(config_or_client_id) ~= "number"
-    if is_new then
-      func(...)
-    else
-      local err = select(1, ...)
-      local method = select(2, ...)
-      local result = select(3, ...)
-      local client_id = select(4, ...)
-      local bufnr = select(5, ...)
-      local config = select(6, ...)
-      func(err, result, { method = method, client_id = client_id, bufnr = bufnr }, config)
-    end
-  end
-end
 
 ---@enum Events
 M.events = {

@@ -9,7 +9,7 @@ local path = require("flutter-tools.utils.path")
 
 vim.opt_local.comments = [[sO:*\ -,mO:*\ \ ,exO:*/,s1:/*,mb:*,ex:*/,:///,://]]
 vim.opt_local.commentstring = [[//%s]]
-vim.opt.includeexpr = "v:lua.require('flutter-tools.resolve_url').resolve_url(v:fname)"
+vim.opt_local.includeexpr = "v:lua.require('flutter-tools.resolve_url').resolve_url(v:fname)"
 
 local full_path = vim.fn.expand("%:p")
 -- Prevent writes to files in the pub cache and FVM folder.

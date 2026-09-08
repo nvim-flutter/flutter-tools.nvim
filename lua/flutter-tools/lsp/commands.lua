@@ -19,7 +19,7 @@ function M.refactor_perform(command, ctx)
     prompt = "Enter a name for the variable: "
     default = "newVariable"
   else
-    client.request("workspace/executeCommand", command)
+    client:request("workspace/executeCommand", command)
     return
   end
 
@@ -34,7 +34,7 @@ function M.refactor_perform(command, ctx)
     -- see more: https://github.com/dart-lang/sdk/blob/e995cb5f7cd67d39c1ee4bdbe95c8241db36725f/pkg/analysis_server/lib/src/lsp/handlers/commands/perform_refactor.dart#L53
     local optionsIndex = 6
     command.arguments[optionsIndex] = { name = name }
-    client.request("workspace/executeCommand", command)
+    client:request("workspace/executeCommand", command)
   end)
 end
 

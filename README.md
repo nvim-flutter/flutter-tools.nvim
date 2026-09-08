@@ -398,6 +398,8 @@ which is where this is usually installed by `snap`.
 Highlight groups that are user configurable to change the appearance of certain UI elements.
 
 - `FlutterToolsOutlineIndentGuides` - indent guides for the outline window
+- `FlutterToolsDimmed` - de-emphasised text: closing tags, outline return types and menu hints.
+  Links to Nvim 0.13's built-in `Dimmed` group where available, and to `Comment` otherwise.
 
 #### Widget guides
 
