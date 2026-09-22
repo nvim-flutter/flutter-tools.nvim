@@ -56,4 +56,53 @@ INFO    | Storing crashdata in: /tmp/android-ts/emu-crash-34.2.14.db, detection 
       assert.same({}, devices.to_selection_entries(nil))
     end)
   end)
+
+  describe("default device resolution - ", function()
+    local devices = require("flutter-tools.devices")
+
+    local function machine_output(entries) return { vim.json.encode(entries) } end
+
+    it("should pick the only supported device", function()
+      local device = devices.resolve_default_device(machine_output({
+        { name = "macOS", id = "macos", isSupported = true, targetPlatform = "darwin" },
+      }))
+
+      assert.equal("macos", device.id)
+      assert.equal("macOS", device.name)
+      assert.equal("darwin", device.platform)
+    end)
+
+    it("should prefer the single ephemeral device over desktop and web", function()
+      local device = devices.resolve_default_device(machine_output({
+        { name = "iPhone 16", id = "sim-id", isSupported = true, targetPlatform = "ios" },
+        { name = "macOS", id = "macos", isSupported = true, targetPlatform = "darwin" },
+        { name = "Chrome", id = "chrome", isSupported = true, targetPlatform = "web-javascript" },
+      }))
+
+      assert.equal("sim-id", device.id)
+    end)
+
+    it("should ignore unsupported devices", function()
+      local device = devices.resolve_default_device(machine_output({
+        { name = "iPhone 16", id = "sim-id", isSupported = false, targetPlatform = "ios" },
+        { name = "macOS", id = "macos", isSupported = true, targetPlatform = "darwin" },
+      }))
+
+      assert.equal("macos", device.id)
+    end)
+
+    it("should return nil when several ephemeral devices are connected", function()
+      local device = devices.resolve_default_device(machine_output({
+        { name = "iPhone 16", id = "sim-id", isSupported = true, targetPlatform = "ios" },
+        { name = "Pixel 8", id = "emulator-5554", isSupported = true, targetPlatform = "android" },
+      }))
+
+      assert.is_nil(device)
+    end)
+
+    it("should return nil for no devices or invalid output", function()
+      assert.is_nil(devices.resolve_default_device(machine_output({})))
+      assert.is_nil(devices.resolve_default_device({ "not json" }))
+    end)
+  end)
 end)

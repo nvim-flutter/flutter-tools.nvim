@@ -47,6 +47,21 @@ local function use_debugger_runner(force_debug)
   return false
 end
 
+---@param device Device?
+local function set_current_device(device)
+  current_device = device
+  utils.emit_event(utils.events.DEVICE_CHANGED, { data = device })
+end
+
+---Resolve the device name from the `Launching ... on <device> in <mode> mode` output line
+---@param line string
+local function update_device_from_output(line)
+  local name = line:match("^Launching .+ on (.+) in %w+ mode")
+  if not name then return end
+  local device = vim.tbl_extend("force", current_device or {}, { name = vim.trim(name) })
+  set_current_device(device)
+end
+
 function M.current_device() return current_device end
 
 function M.is_running() return runner ~= nil and runner:is_running() end
@@ -76,13 +91,14 @@ end
 ---@param is_err boolean if this is stdout or stderr
 local function on_run_data(is_err, data)
   if is_err and config.dev_log.notify_errors then ui.notify(data, ui.ERROR, { timeout = 5000 }) end
+  update_device_from_output(data)
   dev_log.log(data)
 end
 
 local function shutdown()
   if runner then runner:cleanup() end
   runner = nil
-  current_device = nil
+  set_current_device(nil)
   utils.emit_event(utils.events.PROJECT_CONFIG_CHANGED)
   dev_tools.on_flutter_shutdown()
 end
@@ -240,7 +256,7 @@ local function run(opts, project_conf, launch_config)
   executable.get(function(paths)
     local args = opts.cli_args or get_run_args(opts, project_conf)
 
-    current_device = opts.device or get_device_from_args(args)
+    set_current_device(opts.device or get_device_from_args(args))
     if project_conf then
       if project_conf.pre_run_callback then
         local callback_args = {
@@ -642,6 +658,7 @@ end
 if __TEST then
   M.__run = run
   M.__get_run_args = get_run_args
+  M.__update_device_from_output = update_device_from_output
 end
 
 return M
