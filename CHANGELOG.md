@@ -1,5 +1,22 @@
 # Changelog
 
+## [3.1.0](https://github.com/nvim-flutter/flutter-tools.nvim/compare/v3.0.1...v3.1.0) (2026-09-25)
+
+
+### Features
+
+* **widget_preview:** add Flutter widget preview support ([#542](https://github.com/nvim-flutter/flutter-tools.nvim/issues/542)) ([3d061f8](https://github.com/nvim-flutter/flutter-tools.nvim/commit/3d061f84437884cf2cb2d3b91dcef4fb50d85d54))
+
+
+### Bug Fixes
+
+* **commands:** prevent false positive "Flutter is already running!" ([fc914d4](https://github.com/nvim-flutter/flutter-tools.nvim/commit/fc914d497a9a267c8882240edcc517d7447489df))
+* **decorations:** keep the statusline device decoration in sync ([#536](https://github.com/nvim-flutter/flutter-tools.nvim/issues/536)) ([0049439](https://github.com/nvim-flutter/flutter-tools.nvim/commit/0049439b4583a264a08307ea1a48d212d4a3e837))
+* **decorations:** only offer default devices the project can run on ([#537](https://github.com/nvim-flutter/flutter-tools.nvim/issues/537)) ([7e99933](https://github.com/nvim-flutter/flutter-tools.nvim/commit/7e99933ee40e46b6fd93fd0974faf31d3552b012))
+* **lsp:** exclude the real pub cache from analysis ([#538](https://github.com/nvim-flutter/flutter-tools.nvim/issues/538)) ([c9a9802](https://github.com/nvim-flutter/flutter-tools.nvim/commit/c9a98020b3de7d027c805b2367c362c74a0ca375)), closes [#533](https://github.com/nvim-flutter/flutter-tools.nvim/issues/533)
+* **lsp:** stop enabling onlyAnalyzeProjectsWithOpenFiles by default ([#541](https://github.com/nvim-flutter/flutter-tools.nvim/issues/541)) ([d3254ee](https://github.com/nvim-flutter/flutter-tools.nvim/commit/d3254eef934915a5b972d304cbe175a46c11ac47)), closes [#540](https://github.com/nvim-flutter/flutter-tools.nvim/issues/540)
+* **lsp:** treat files in any Flutter SDK as dependencies ([#539](https://github.com/nvim-flutter/flutter-tools.nvim/issues/539)) ([48a2a7c](https://github.com/nvim-flutter/flutter-tools.nvim/commit/48a2a7cb47cf957ab4e32cddce94b98451382c10)), closes [#534](https://github.com/nvim-flutter/flutter-tools.nvim/issues/534)
+
 ## [3.0.1](https://github.com/nvim-flutter/flutter-tools.nvim/compare/v3.0.0...v3.0.1) (2026-08-06)
 
 
