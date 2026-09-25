@@ -35,6 +35,38 @@ local function create_debug_log(level)
   end
 end
 
+local ANALYZING_TOKEN = "ANALYZING"
+
+---@type table<integer, {analyzed: boolean, analyzing: boolean}>
+local analysis_state = {}
+
+---@type table<integer, fun()[]>
+local analysis_waiters = {}
+
+---@param client_id integer
+local function track_analysis(client_id, kind)
+  local state = analysis_state[client_id] or { analyzed = false, analyzing = false }
+  analysis_state[client_id] = state
+  state.analyzing = kind ~= "end"
+  if kind ~= "end" then return end
+  state.analyzed = true
+  local waiters = analysis_waiters[client_id] or {}
+  analysis_waiters[client_id] = nil
+  for _, waiter in ipairs(waiters) do
+    waiter()
+  end
+end
+
+---Calls `callback` once the client is idle after its first analysis.
+---@param client_id integer
+---@param callback fun()
+function M.when_analyzed(client_id, callback)
+  local state = analysis_state[client_id]
+  if state and state.analyzed and not state.analyzing then return callback() end
+  analysis_waiters[client_id] = analysis_waiters[client_id] or {}
+  table.insert(analysis_waiters[client_id], callback)
+end
+
 ---Handle progress notifications from the server
 ---@param err table
 ---@param result table
@@ -45,6 +77,9 @@ local function handle_progress(err, result, ctx)
   if api.nvim_get_mode().mode ~= "i" then vim.lsp.handlers["$/progress"](err, result, ctx) end
   -- NOTE: this event gets called whenever the analysis server has completed some work
   -- rather than just when the server has started.
+  if result and result.token == ANALYZING_TOKEN and result.value then
+    track_analysis(ctx.client_id, result.value.kind)
+  end
   if result and result.value and result.value.kind == "end" then
     utils.emit_event(utils.events.LSP_ANALYSIS_COMPLETED)
   end

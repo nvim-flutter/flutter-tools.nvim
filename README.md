@@ -171,6 +171,8 @@ require("flutter-tools").setup {} -- use defaults
 - `FlutterRename` - Rename a symbol and update imports if `lsp.settings.renameFilesWithClasses == "always"`.
 - `FlutterLogClear` - Clears the log buffer.
 - `FlutterLogToggle` - Toggles the log buffer.
+- `FlutterWidgetPreview [dir]` - Starts the [widget previewer](https://docs.flutter.dev/tools/widget-previewer) for the current project (the pub workspace root in a workspace), or for `dir`, and opens it. When it is already running, opens it again.
+- `FlutterWidgetPreviewStop` - Stops the widget previewer.
 
 
 <hr/>
@@ -179,6 +181,21 @@ require("flutter-tools").setup {} -- use defaults
 
 The flutter run command can also optionally take arguments that you might otherwise pass on the commandline
 such as `:FlutterRun --flavor <tasty>`, `:FlutterRun --dart-define=API_URL=https://example.com`.
+
+<hr/>
+
+### `FlutterWidgetPreview`
+
+Runs `flutter widget-preview start` (Flutter 3.38+, Neovim 0.12+) and connects it to Neovim:
+
+- The previewer reuses the running dart language server instead of starting a second analysis server,
+  and the DevTools server started with `FlutterDevTools`, if any.
+- The previewer's "filter by selected file" option follows the Dart buffer you are editing.
+- Selecting a widget in the previewer's widget inspector, or a stack frame of a failing preview,
+  jumps to the code in Neovim.
+
+The previewer opens in your default browser, themed after your colorscheme. Set
+`widget_preview.web_server = false` to let Flutter launch it in its own Chrome window instead.
 
 <hr/>
 
@@ -263,6 +280,9 @@ require("flutter-tools").setup {
   dev_tools = {
     autostart = false, -- autostart devtools server if not detected
     auto_open_browser = false, -- Automatically opens devtools in the browser
+  },
+  widget_preview = {
+    web_server = true, -- open the widget previewer with vim.ui.open; false lets Flutter launch its own Chrome
   },
   outline = {
     open_cmd = "30vnew", -- command to use to open the outline buffer

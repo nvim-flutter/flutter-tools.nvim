@@ -43,6 +43,7 @@ local utils = lazy.require("flutter-tools.utils") ---@module "flutter-tools.util
 ---@field outline? {auto_open: boolean, open_cmd?: string}
 ---@field dev_log? flutter.DevLogOpts
 ---@field dev_tools? {autostart: boolean, auto_open_browser: boolean}
+---@field widget_preview? {web_server: boolean}
 ---@field analyzer_web_port? number
 
 local M = {}
@@ -147,6 +148,9 @@ local config = {
   dev_tools = {
     autostart = false,
     auto_open_browser = false,
+  },
+  widget_preview = {
+    web_server = true,
   },
 }
 

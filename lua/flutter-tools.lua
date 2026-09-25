@@ -13,6 +13,7 @@ local lsp = lazy.require("flutter-tools.lsp") ---@module "flutter-tools.lsp"
 local outline = lazy.require("flutter-tools.outline") ---@module "flutter-tools.outline"
 local devices = lazy.require("flutter-tools.devices") ---@module "flutter-tools.devices"
 local utils = lazy.require("flutter-tools.utils") ---@module "flutter-tools.utils"
+local widget_preview = lazy.require("flutter-tools.widget_preview") ---@module "flutter-tools.widget_preview"
 
 local api = vim.api
 
@@ -49,6 +50,13 @@ local function setup_commands()
   command("FlutterPubUpgrade", function(data) commands.pub_upgrade_command(data.args) end, {
     nargs = "*",
   })
+  --- Widget preview
+  command(
+    "FlutterWidgetPreview",
+    function(data) widget_preview.show(data.args) end,
+    { nargs = "?", complete = "dir" }
+  )
+  command("FlutterWidgetPreviewStop", widget_preview.stop)
   --- Log
   command("FlutterLogClear", log.clear)
   command("FlutterLogToggle", log.toggle)
@@ -117,7 +125,10 @@ local function setup_autocommands()
   autocmd({ "VimLeavePre" }, {
     group = AUGROUP,
     pattern = { "*" },
-    callback = function() dev_tools.stop() end,
+    callback = function()
+      dev_tools.stop()
+      if package.loaded["flutter-tools.widget_preview"] then widget_preview.on_exit() end
+    end,
   })
 end
 
