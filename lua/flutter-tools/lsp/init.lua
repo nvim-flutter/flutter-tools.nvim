@@ -100,7 +100,6 @@ local function get_defaults(opts)
     or opts.flutter_sdk
   local config = {
     init_options = {
-      onlyAnalyzeProjectsWithOpenFiles = true,
       suggestFromUnimportedLibraries = true,
       closingLabels = true,
       outline = true,
@@ -175,7 +174,7 @@ function M.get_project_root_dir(buffer_path)
     local root_path = lsp_utils.is_valid_path(buffer_path)
         and path.find_root(conf.root_patterns, buffer_path)
       or nil
-    if root_path ~= nil then return root_path end
+    if root_path ~= nil and not path.is_home_or_fs_root(root_path) then return root_path end
   end
   local client = lsp_utils.get_dartls_client()
   return client and client.config.root_dir or nil
@@ -285,11 +284,14 @@ function M.attach()
     -- This callback can run asynchronously, by which point the user may have
     -- switched to or deleted the buffer we were asked to attach to.
     if not api.nvim_buf_is_valid(buf) then return end
-    c.root_dir = M.get_project_root_dir(buffer_path)
+    local root_dir = M.get_project_root_dir(buffer_path)
       or fs.dirname(fs.find(conf.root_patterns, {
         path = buffer_path,
         upward = true,
       })[1])
+    -- Without a root, dartls analyses only the packages of the open files
+    -- instead of everything under the home directory or filesystem root.
+    if root_dir and not path.is_home_or_fs_root(root_dir) then c.root_dir = root_dir end
     vim.lsp.start(c, { bufnr = buf })
   end)
 end

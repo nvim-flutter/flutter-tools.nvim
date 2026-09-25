@@ -156,3 +156,22 @@ describe("path.is_flutter_dependency_path", function()
     assert.is_false(path.is_flutter_dependency_path(""))
   end)
 end)
+
+describe("path.is_home_or_fs_root", function()
+  it(
+    "should reject the home directory",
+    function() assert.is_true(path.is_home_or_fs_root(vim.uv.os_homedir())) end
+  )
+
+  it("should reject the filesystem root", function()
+    local fs_root = path.is_windows and "C:\\" or "/"
+    assert.is_true(path.is_home_or_fs_root(fs_root))
+  end)
+
+  it("should accept a project directory", function()
+    local project = vim.fn.tempname()
+    vim.fn.mkdir(project, "p")
+    assert.is_false(path.is_home_or_fs_root(project))
+    vim.fn.delete(project, "rf")
+  end)
+end)

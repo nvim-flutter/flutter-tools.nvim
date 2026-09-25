@@ -202,6 +202,15 @@ end
 
 ---@param dir string
 ---@return boolean
+function M.is_home_or_fs_root(dir)
+  local real_dir = vim.fs.normalize(uv.fs_realpath(dir) or dir)
+  if vim.fs.dirname(real_dir) == real_dir then return true end
+  local home = uv.os_homedir()
+  return home ~= nil and real_dir == vim.fs.normalize(uv.fs_realpath(home) or home)
+end
+
+---@param dir string
+---@return boolean
 local function is_flutter_sdk_root(dir)
   return M.is_file(M.join(dir, "bin", "flutter"))
     and M.is_dir(M.join(dir, "bin", "cache", "dart-sdk"))
