@@ -147,6 +147,8 @@ require("flutter-tools").setup {} -- use defaults
 - `FlutterDebug` - Force run current project in debug mode.
 - `FlutterDevices` - Brings up a list of connected devices to select from.
 - `FlutterEmulators` - Similar to devices but shows a list of emulators to choose from.
+  Set `emulators.launcher` to start the selected emulator with your own command instead of
+  `flutter emulator --launch`, see the [full configuration](#full-configuration).
 - `FlutterReload` - Reload the running project.
 - `FlutterRestart` - Restart the current project.
 - `FlutterQuit` - Ends a running session.
@@ -283,6 +285,16 @@ require("flutter-tools").setup {
   },
   widget_preview = {
     web_server = true, -- open the widget previewer with vim.ui.open; false lets Flutter launch its own Chrome
+  },
+  emulators = {
+    -- optional function to launch the emulator picked in `FlutterEmulators` with your own command,
+    -- e.g. the Android SDK `emulator` binary with extra flags; return nil to use `flutter emulator --launch`
+    -- launcher = function(emulator, paths)
+    --   if emulator.system ~= "android" then return nil end
+    --   local args = { "@" .. emulator.id, "-gpu", "host", "-accel", "on" }
+    --   if emulator.cold_boot then table.insert(args, "-no-snapshot-load") end
+    --   return { command = "emulator", args = args }
+    -- end,
   },
   outline = {
     open_cmd = "30vnew", -- command to use to open the outline buffer
