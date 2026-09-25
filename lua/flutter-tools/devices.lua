@@ -16,6 +16,17 @@ local M = {
 local EMULATOR = 1
 local DEVICE = 2
 
+local NON_EPHEMERAL_PLATFORMS = {
+  ["darwin"] = true,
+  ["darwin-arm64"] = true,
+  ["darwin-x64"] = true,
+  ["linux-arm64"] = true,
+  ["linux-x64"] = true,
+  ["windows-arm64"] = true,
+  ["windows-x64"] = true,
+  ["web-javascript"] = true,
+}
+
 ---@param result string[]
 ---@param type integer
 local function get_devices(result, type)
@@ -84,6 +95,51 @@ function M.to_selection_entries(result, device_type)
       data = device,
     }
   end, devices)
+end
+
+---@param entry table
+---@return Device
+local function to_device(entry)
+  return {
+    name = entry.name,
+    id = entry.id,
+    platform = entry.targetPlatform,
+    system = entry.sdk,
+    type = DEVICE,
+  }
+end
+
+---Pick the device `flutter run` would use without an explicit `-d` argument.
+---Mirrors flutter's own resolution: a single supported device wins, otherwise
+---a single ephemeral (non desktop/web) device wins, otherwise flutter prompts.
+---@param result string[]
+---@return Device?
+function M.resolve_default_device(result)
+  local ok, decoded = pcall(vim.json.decode, table.concat(result, "\n"))
+  if not ok or type(decoded) ~= "table" then return end
+
+  local supported = vim.tbl_filter(function(entry) return entry.isSupported ~= false end, decoded)
+  if #supported == 0 then return end
+  if #supported == 1 then return to_device(supported[1]) end
+
+  local ephemeral = vim.tbl_filter(
+    function(entry) return not NON_EPHEMERAL_PLATFORMS[entry.targetPlatform] end,
+    supported
+  )
+  if #ephemeral == 1 then return to_device(ephemeral[1]) end
+end
+
+---Asynchronously get the device `flutter run` would default to
+---@param callback fun(device: Device?)
+function M.get_default_device(callback)
+  executable.flutter(function(cmd)
+    local job = Job:new({ command = cmd, args = { "devices", "--machine" } })
+    job:after(vim.schedule_wrap(function(j, code)
+      if code ~= 0 then return callback(nil) end
+      callback(M.resolve_default_device(j:result()))
+    end))
+    job:start()
+  end)
 end
 
 -----------------------------------------------------------------------------//

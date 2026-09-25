@@ -413,7 +413,7 @@ dictionary that is created if you have set any of the decorations to `true` in y
 The currently supported decorations are:
 
 - App version - The current version of the app from the `pubspec.yaml`.
-- Device - the device passed to the flutter run command
+- Device - the running device, or, while nothing is running, the device `flutter run` would default to
 - Project config - the name of the currently selected project configuration
 
 To add them to your config you can do something like

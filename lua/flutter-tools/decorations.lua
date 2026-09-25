@@ -1,5 +1,6 @@
 local lazy = require("flutter-tools.lazy")
 local commands = lazy.require("flutter-tools.commands") ---@module "flutter-tools.commands"
+local devices = lazy.require("flutter-tools.devices") ---@module "flutter-tools.devices"
 local path = lazy.require("flutter-tools.utils.path") ---@module "flutter-tools.utils.path"
 local utils = lazy.require("flutter-tools.utils") ---@module "flutter-tools.utils"
 local Path = require("plenary.path")
@@ -32,12 +33,17 @@ end
 
 local function device_show()
   local device = commands.current_device()
-  if device then set_decoration_item("device", device) end
+  if device then return set_decoration_item("device", device) end
+  devices.get_default_device(function(default_device)
+    if commands.current_device() then return end
+    set_decoration_item("device", default_device)
+  end)
 end
 
 function M.statusline.device()
+  device_show()
   api.nvim_create_autocmd("User", {
-    pattern = utils.events.APP_STARTED,
+    pattern = { utils.events.APP_STARTED, utils.events.DEVICE_CHANGED },
     callback = device_show,
   })
 end

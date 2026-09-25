@@ -92,6 +92,7 @@ function M.join(lines) return table.concat(lines, "\n") end
 M.events = {
   PROJECT_CONFIG_CHANGED = "FlutterToolsProjectConfigChanged",
   APP_STARTED = "FlutterToolsAppStarted",
+  DEVICE_CHANGED = "FlutterToolsDeviceChanged",
   OUTLINE_CHANGED = "FlutterToolsOutlineChanged",
   LSP_ANALYSIS_COMPLETED = "FlutterToolsLspAnalysisCompleted",
 }

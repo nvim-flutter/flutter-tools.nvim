@@ -86,4 +86,25 @@ describe("commands", function()
       )
     end
   )
+
+  it("should pick up the device name from the run output", function()
+    commands.__update_device_from_output(
+      "Launching lib/main.dart on iPhone 16 Pro in debug mode..."
+    )
+
+    assert.equal("iPhone 16 Pro", commands.current_device().name)
+  end)
+
+  it("should keep the device id when the name is parsed from the run output", function()
+    commands.__update_device_from_output("Launching lib/main.dart on macOS in debug mode...")
+
+    local device = commands.current_device()
+    assert.equal("macOS", device.name)
+  end)
+
+  it("should ignore unrelated output lines", function()
+    commands.__update_device_from_output('Running "flutter pub get" in example...')
+
+    assert.is_nil(commands.current_device())
+  end)
 end)
