@@ -144,4 +144,84 @@ INFO    | Storing crashdata in: /tmp/android-ts/emu-crash-34.2.14.db, detection 
       assert.is_nil(devices.resolve_default_device({ "not json" }))
     end)
   end)
+
+  describe("emulator launch - ", function()
+    local devices
+    local config
+    local jobs
+    local modules = {
+      "flutter-tools.devices",
+      "flutter-tools.config",
+      "flutter-tools.executable",
+      "plenary.job",
+    }
+    local paths = { flutter_bin = "/sdk/bin/flutter" }
+    local emulator = { id = "Pixel_8", name = "Pixel 8", system = "android", type = 1 }
+
+    before_each(function()
+      jobs = {}
+      for _, name in ipairs(modules) do
+        package.loaded[name] = nil
+      end
+      package.loaded["plenary.job"] = {
+        new = function(_, opts)
+          local job = { opts = opts, started = false }
+          function job:after_success() end
+          function job:after_failure() end
+          function job:start() self.started = true end
+          table.insert(jobs, job)
+          return job
+        end,
+      }
+      package.loaded["flutter-tools.executable"] = {
+        get = function(callback) callback(paths) end,
+      }
+      config = require("flutter-tools.config")
+      devices = require("flutter-tools.devices")
+    end)
+
+    after_each(function()
+      for _, name in ipairs(modules) do
+        package.loaded[name] = nil
+      end
+    end)
+
+    it("should launch through flutter by default", function()
+      devices.launch_emulator(vim.tbl_extend("force", emulator, { cold_boot = true }))
+
+      assert.equal(1, #jobs)
+      assert.equal("/sdk/bin/flutter", jobs[1].opts.command)
+      assert.same({ "emulator", "--launch", "Pixel_8", "--cold" }, jobs[1].opts.args)
+      assert.is_true(jobs[1].started)
+    end)
+
+    it("should use the command returned by a custom launcher", function()
+      local received
+      config.set({
+        emulators = {
+          launcher = function(e, p)
+            received = { emulator = e, paths = p }
+            return { command = "emulator", args = { "@" .. e.id, "-gpu", "host" } }
+          end,
+        },
+      })
+
+      devices.launch_emulator(emulator)
+
+      assert.equal(emulator, received.emulator)
+      assert.equal(paths, received.paths)
+      assert.equal("emulator", jobs[1].opts.command)
+      assert.same({ "@Pixel_8", "-gpu", "host" }, jobs[1].opts.args)
+      assert.is_true(jobs[1].started)
+    end)
+
+    it("should fall back to flutter when the launcher returns nil", function()
+      config.set({ emulators = { launcher = function() return nil end } })
+
+      devices.launch_emulator(emulator)
+
+      assert.equal("/sdk/bin/flutter", jobs[1].opts.command)
+      assert.same({ "emulator", "--launch", "Pixel_8" }, jobs[1].opts.args)
+    end)
+  end)
 end)

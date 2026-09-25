@@ -4,14 +4,12 @@ local ui = lazy.require("flutter-tools.ui") ---@module "flutter-tools.ui"
 local utils = lazy.require("flutter-tools.utils") ---@module "flutter-tools.utils"
 local commands = lazy.require("flutter-tools.commands") ---@module "flutter-tools.commands"
 local executable = lazy.require("flutter-tools.executable") ---@module "flutter-tools.executable"
+local config = lazy.require("flutter-tools.config") ---@module "flutter-tools.config"
 local fmt = string.format
 
 ---@alias Device {name: string, id: string, platform: string, system: string, type: integer, cold_boot: boolean}
 
-local M = {
-  ---@type Job
-  emulator_job = nil,
-}
+local M = {}
 
 local EMULATOR = 1
 local DEVICE = 2
@@ -180,19 +178,35 @@ end
 ---@param job Job
 local function handle_launch(job) ui.notify(utils.join(job:result())) end
 
-function M.close_emulator()
-  if M.emulator_job then M.emulator_job:shutdown() end
+---@param emulator Device
+---@param paths flutter.Paths
+---@return flutter.EmulatorLaunchSpec?
+local function custom_launch_spec(emulator, paths)
+  local launcher = config.emulators.launcher
+  if not launcher then return end
+  return launcher(emulator, paths)
 end
 
----@param emulator table
+---@param emulator Device
 function M.launch_emulator(emulator)
   if not emulator then return end
-  executable.flutter(function(cmd)
-    args = { "emulator", "--launch", emulator.id }
-    if emulator.cold_boot then table.insert(args, "--cold") end
-    M.emulator_job = Job:new({ command = cmd, args = args })
-    M.emulator_job:after_success(vim.schedule_wrap(handle_launch))
-    M.emulator_job:start()
+  executable.get(function(paths)
+    local spec = custom_launch_spec(emulator, paths)
+    local job
+    if spec then
+      job = Job:new({ command = spec.command, args = spec.args })
+      job:after_failure(
+        vim.schedule_wrap(
+          function(j) ui.notify(utils.join(j:stderr_result()), ui.ERROR, { timeout = 5000 }) end
+        )
+      )
+    else
+      local args = { "emulator", "--launch", emulator.id }
+      if emulator.cold_boot then table.insert(args, "--cold") end
+      job = Job:new({ command = paths.flutter_bin, args = args })
+      job:after_success(vim.schedule_wrap(handle_launch))
+    end
+    job:start()
   end)
 end
 
