@@ -200,14 +200,29 @@ function M.pub_cache_dir()
   return vim.env.HOME and M.join(vim.env.HOME, ".pub-cache")
 end
 
-function M.is_flutter_dependency_path(full_path)
-  local path_parts = { [[.pub-cache]], [[Pub\Cache]], [[/fvm/versions/]] }
-  if full_path then
-    for _, path_part in ipairs(path_parts) do
-      if full_path:find(path_part, nil, true) then return true end
-    end
+---@param dir string
+---@return boolean
+local function is_flutter_sdk_root(dir)
+  return M.is_file(M.join(dir, "bin", "flutter"))
+    and M.is_dir(M.join(dir, "bin", "cache", "dart-sdk"))
+end
+
+---@param full_path string
+---@return boolean
+local function is_inside_flutter_sdk(full_path)
+  for dir in vim.fs.parents(full_path) do
+    if is_flutter_sdk_root(dir) then return true end
   end
   return false
+end
+
+function M.is_flutter_dependency_path(full_path)
+  if not full_path or full_path == "" then return false end
+  local path_parts = { [[.pub-cache]], [[Pub\Cache]], [[/fvm/versions/]] }
+  for _, path_part in ipairs(path_parts) do
+    if full_path:find(path_part, nil, true) then return true end
+  end
+  return is_inside_flutter_sdk(full_path)
 end
 
 return M

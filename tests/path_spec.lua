@@ -109,3 +109,50 @@ describe("path.pub_cache_dir", function()
     assert.are.equal(expected, path.pub_cache_dir())
   end)
 end)
+
+describe("path.is_flutter_dependency_path", function()
+  local test_dir
+  local sdk
+  local project
+
+  before_each(function()
+    local temp_base = vim.fn.tempname()
+    vim.fn.mkdir(temp_base, "p")
+    test_dir = vim.uv.fs_realpath(temp_base)
+    sdk = test_dir .. "/mise/installs/flutter/3.47.1"
+    project = test_dir .. "/my_app"
+
+    vim.fn.mkdir(sdk .. "/bin/cache/dart-sdk", "p")
+    vim.fn.writefile({}, sdk .. "/bin/flutter")
+    vim.fn.mkdir(sdk .. "/packages/flutter/lib/src/widgets", "p")
+    vim.fn.mkdir(project .. "/lib", "p")
+  end)
+
+  after_each(function() vim.fn.delete(test_dir, "rf") end)
+
+  it("should detect files inside a Flutter SDK installed anywhere", function()
+    local file_path = sdk .. "/packages/flutter/lib/src/widgets/basic.dart"
+    assert.is_true(path.is_flutter_dependency_path(file_path))
+  end)
+
+  it("should not detect a directory without a Dart SDK as a Flutter SDK", function()
+    vim.fn.delete(sdk .. "/bin/cache", "rf")
+    local file_path = sdk .. "/packages/flutter/lib/src/widgets/basic.dart"
+    assert.is_false(path.is_flutter_dependency_path(file_path))
+  end)
+
+  it(
+    "should not detect project files",
+    function() assert.is_false(path.is_flutter_dependency_path(project .. "/lib/main.dart")) end
+  )
+
+  it("should detect pub cache files", function()
+    local file_path = "/home/user/.pub-cache/hosted/pub.dev/http-1.2.0/lib/http.dart"
+    assert.is_true(path.is_flutter_dependency_path(file_path))
+  end)
+
+  it("should handle missing paths", function()
+    assert.is_false(path.is_flutter_dependency_path(nil))
+    assert.is_false(path.is_flutter_dependency_path(""))
+  end)
+end)
