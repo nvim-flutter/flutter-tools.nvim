@@ -100,6 +100,45 @@ INFO    | Storing crashdata in: /tmp/android-ts/emu-crash-34.2.14.db, detection 
       assert.is_nil(device)
     end)
 
+    it("should treat every desktop architecture as non-ephemeral", function()
+      local device = devices.resolve_default_device(machine_output({
+        {
+          name = "Pixel 8",
+          id = "emulator-5554",
+          isSupported = true,
+          targetPlatform = "android-arm64",
+        },
+        { name = "Linux", id = "linux", isSupported = true, targetPlatform = "linux-riscv64" },
+      }))
+
+      assert.equal("emulator-5554", device.id)
+    end)
+
+    it("should skip devices whose platform directory is missing from the project", function()
+      local project_root = vim.fn.tempname()
+      vim.fn.mkdir(vim.fs.joinpath(project_root, "macos"), "p")
+
+      local device = devices.resolve_default_device(
+        machine_output({
+          { name = "iPhone 16", id = "sim-id", isSupported = true, targetPlatform = "ios" },
+          { name = "macOS", id = "macos", isSupported = true, targetPlatform = "darwin" },
+        }),
+        project_root
+      )
+      vim.fn.delete(project_root, "rf")
+
+      assert.equal("macos", device.id)
+    end)
+
+    it("should skip notices printed before the JSON output", function()
+      local output = machine_output({
+        { name = "macOS", id = "macos", isSupported = true, targetPlatform = "darwin" },
+      })
+      table.insert(output, 1, "Waiting for another flutter command to release the startup lock...")
+
+      assert.equal("macos", devices.resolve_default_device(output).id)
+    end)
+
     it("should return nil for no devices or invalid output", function()
       assert.is_nil(devices.resolve_default_device(machine_output({})))
       assert.is_nil(devices.resolve_default_device({ "not json" }))

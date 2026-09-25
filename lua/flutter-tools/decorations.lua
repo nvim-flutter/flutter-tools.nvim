@@ -34,7 +34,9 @@ end
 local function device_show()
   local device = commands.current_device()
   if device then return set_decoration_item("device", device) end
-  devices.get_default_device(function(default_device)
+  local project_root = vim.fs.root(0, "pubspec.yaml")
+  if not project_root then return set_decoration_item("device", nil) end
+  devices.get_default_device(project_root, function(default_device)
     if commands.current_device() then return end
     set_decoration_item("device", default_device)
   end)

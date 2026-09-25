@@ -96,9 +96,11 @@ describe("commands", function()
   end)
 
   it("should keep the device id when the name is parsed from the run output", function()
+    commands.__set_current_device({ id = "macos" })
     commands.__update_device_from_output("Launching lib/main.dart on macOS in debug mode...")
 
     local device = commands.current_device()
+    assert.equal("macos", device.id)
     assert.equal("macOS", device.name)
   end)
 
