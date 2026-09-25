@@ -324,6 +324,19 @@ you jump to the definition of `StatelessWidget`, the lsp will not try and index 
 files in that directory. If for some reason you would like this behaviour set `analysisExcludedFolders = {}`
 You cannot/should not edit the files in the sdk directly so diagnostic analysis of these file is pointless.
 
+The analysis server analyses the whole project found via `root_patterns` (or the whole
+[pub workspace](https://dart.dev/tools/pub/workspaces)). If you would rather it only analysed the
+packages of the files you have open, you can enable `onlyAnalyzeProjectsWithOpenFiles`, at the cost of
+the server rebuilding its analysis roots every time a file is opened or closed:
+
+```lua
+lsp = {
+  init_options = {
+    onlyAnalyzeProjectsWithOpenFiles = true,
+  },
+}
+```
+
 #### Project Configuration
 
 It is possible to configure how each project is run using neovim's `exrc` functionality (see `:help exrc`).
