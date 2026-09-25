@@ -164,15 +164,16 @@ function M.restart()
   end
 end
 
+---@param buffer_path string? defaults to the current buffer's path
 ---@return string?
-function M.get_project_root_dir()
+function M.get_project_root_dir(buffer_path)
   local conf = require("flutter-tools.config")
-  local current_buffer_path = path.current_buffer_path()
+  buffer_path = buffer_path or path.current_buffer_path()
   -- Check if path is flutter dependency. For dependencies we do not
   -- search for a root directory as they are not projects.
-  if not path.is_flutter_dependency_path(current_buffer_path) then
-    local root_path = lsp_utils.is_valid_path(current_buffer_path)
-        and path.find_root(conf.root_patterns, current_buffer_path)
+  if not path.is_flutter_dependency_path(buffer_path) then
+    local root_path = lsp_utils.is_valid_path(buffer_path)
+        and path.find_root(conf.root_patterns, buffer_path)
       or nil
     if root_path ~= nil then return root_path end
   end
@@ -284,7 +285,7 @@ function M.attach()
     -- This callback can run asynchronously, by which point the user may have
     -- switched to or deleted the buffer we were asked to attach to.
     if not api.nvim_buf_is_valid(buf) then return end
-    c.root_dir = M.get_project_root_dir()
+    c.root_dir = M.get_project_root_dir(buffer_path)
       or fs.dirname(fs.find(conf.root_patterns, {
         path = buffer_path,
         upward = true,
