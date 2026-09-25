@@ -96,7 +96,8 @@ end
 ---@param opts table
 ---@return table
 local function get_defaults(opts)
-  local flutter_sdk_path = opts.flutter_sdk
+  local flutter_sdk_path = opts.flutter_sdk and vim.uv.fs_realpath(opts.flutter_sdk)
+    or opts.flutter_sdk
   local config = {
     init_options = {
       onlyAnalyzeProjectsWithOpenFiles = true,
@@ -112,6 +113,7 @@ local function get_defaults(opts)
         analysisExcludedFolders = {
           path.join(flutter_sdk_path, "packages"),
           path.join(flutter_sdk_path, ".pub-cache"),
+          path.pub_cache_dir(),
         },
         updateImportsOnRename = true,
       },
