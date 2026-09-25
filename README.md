@@ -318,14 +318,11 @@ vim.api.nvim_create_autocmd("LspAttach", {
 ```
 
 **NOTE:**
-By default this plugin excludes analysis of the packages in the flutter SDK. If for example
+By default this plugin excludes analysis of the packages in the flutter SDK and in the pub cache
+(`$PUB_CACHE`, or `~/.pub-cache` / `%LOCALAPPDATA%\Pub\Cache` when it is unset). If for example
 you jump to the definition of `StatelessWidget`, the lsp will not try and index the 100s (maybe 1000s) of
 files in that directory. If for some reason you would like this behaviour set `analysisExcludedFolders = {}`
 You cannot/should not edit the files in the sdk directly so diagnostic analysis of these file is pointless.
-
-**Exclude Note for Windows:**
-To ignore packages installed with pub, consider adding `vim.fn.expand("$HOME/AppData/Local/Pub/Cache")` to
-`analysisExcludedFolders` if you are using PowerShell.
 
 #### Project Configuration
 

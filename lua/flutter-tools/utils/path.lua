@@ -190,6 +190,16 @@ function M.get_absolute_path(input_path)
   end
 end
 
+---Directory where pub stores downloaded packages
+---@return string?
+function M.pub_cache_dir()
+  if vim.env.PUB_CACHE and vim.env.PUB_CACHE ~= "" then return vim.env.PUB_CACHE end
+  if M.is_windows then
+    return vim.env.LOCALAPPDATA and M.join(vim.env.LOCALAPPDATA, "Pub", "Cache")
+  end
+  return vim.env.HOME and M.join(vim.env.HOME, ".pub-cache")
+end
+
 function M.is_flutter_dependency_path(full_path)
   local path_parts = { [[.pub-cache]], [[Pub\Cache]], [[/fvm/versions/]] }
   if full_path then

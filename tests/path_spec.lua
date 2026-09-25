@@ -81,3 +81,31 @@ describe("path.find_root", function()
     assert.are.equal(workspace_root, path.find_root(patterns, file_path))
   end)
 end)
+
+describe("path.pub_cache_dir", function()
+  local original_pub_cache
+  local original_home
+
+  before_each(function()
+    original_pub_cache = vim.env.PUB_CACHE
+    original_home = vim.env.HOME
+  end)
+
+  after_each(function()
+    vim.env.PUB_CACHE = original_pub_cache
+    vim.env.HOME = original_home
+  end)
+
+  it("should use PUB_CACHE when it is set", function()
+    vim.env.PUB_CACHE = "/custom/pub-cache"
+    assert.are.equal("/custom/pub-cache", path.pub_cache_dir())
+  end)
+
+  it("should fall back to the default location when PUB_CACHE is unset", function()
+    vim.env.PUB_CACHE = nil
+    vim.env.HOME = "/home/user"
+    local expected = path.is_windows and path.join(vim.env.LOCALAPPDATA, "Pub", "Cache")
+      or "/home/user/.pub-cache"
+    assert.are.equal(expected, path.pub_cache_dir())
+  end)
+end)
