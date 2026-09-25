@@ -659,6 +659,7 @@ if __TEST then
   M.__run = run
   M.__get_run_args = get_run_args
   M.__update_device_from_output = update_device_from_output
+  M.__set_current_device = set_current_device
 end
 
 return M

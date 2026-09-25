@@ -16,15 +16,13 @@ local M = {
 local EMULATOR = 1
 local DEVICE = 2
 
-local NON_EPHEMERAL_PLATFORMS = {
-  ["darwin"] = true,
-  ["darwin-arm64"] = true,
-  ["darwin-x64"] = true,
-  ["linux-arm64"] = true,
-  ["linux-x64"] = true,
-  ["windows-arm64"] = true,
-  ["windows-x64"] = true,
-  ["web-javascript"] = true,
+local PLATFORM_DIRECTORIES = {
+  { prefix = "android", directory = "android", ephemeral = true },
+  { prefix = "ios", directory = "ios", ephemeral = true },
+  { prefix = "darwin", directory = "macos", ephemeral = false },
+  { prefix = "linux", directory = "linux", ephemeral = false },
+  { prefix = "windows", directory = "windows", ephemeral = false },
+  { prefix = "web", directory = "web", ephemeral = false },
 }
 
 ---@param result string[]
@@ -109,34 +107,67 @@ local function to_device(entry)
   }
 end
 
+---@param target_platform string?
+local function platform_info(target_platform)
+  if not target_platform then return end
+  for _, info in ipairs(PLATFORM_DIRECTORIES) do
+    if vim.startswith(target_platform, info.prefix) then return info end
+  end
+end
+
+---@param entry table
+---@param project_root string?
+local function is_supported(entry, project_root)
+  if entry.isSupported == false then return false end
+  local info = platform_info(entry.targetPlatform)
+  if not project_root or not info then return true end
+  return vim.uv.fs_stat(vim.fs.joinpath(project_root, info.directory)) ~= nil
+end
+
 ---Pick the device `flutter run` would use without an explicit `-d` argument.
 ---Mirrors flutter's own resolution: a single supported device wins, otherwise
 ---a single ephemeral (non desktop/web) device wins, otherwise flutter prompts.
+---A device only counts as supported if the project has its platform directory.
 ---@param result string[]
+---@param project_root string?
 ---@return Device?
-function M.resolve_default_device(result)
-  local ok, decoded = pcall(vim.json.decode, table.concat(result, "\n"))
+function M.resolve_default_device(result, project_root)
+  -- flutter can print notices such as the startup lock message before the JSON
+  local json_start
+  for index, line in ipairs(result) do
+    if vim.startswith(line, "[") then
+      json_start = index
+      break
+    end
+  end
+  if not json_start then return end
+  local json = table.concat(vim.list_slice(result, json_start), "\n")
+  local ok, decoded = pcall(vim.json.decode, json)
   if not ok or type(decoded) ~= "table" then return end
 
-  local supported = vim.tbl_filter(function(entry) return entry.isSupported ~= false end, decoded)
+  local supported = vim.tbl_filter(
+    function(entry) return is_supported(entry, project_root) end,
+    decoded
+  )
   if #supported == 0 then return end
   if #supported == 1 then return to_device(supported[1]) end
 
-  local ephemeral = vim.tbl_filter(
-    function(entry) return not NON_EPHEMERAL_PLATFORMS[entry.targetPlatform] end,
-    supported
-  )
+  local ephemeral = vim.tbl_filter(function(entry)
+    local info = platform_info(entry.targetPlatform)
+    return not info or info.ephemeral
+  end, supported)
   if #ephemeral == 1 then return to_device(ephemeral[1]) end
 end
 
 ---Asynchronously get the device `flutter run` would default to
+---@param project_root string
 ---@param callback fun(device: Device?)
-function M.get_default_device(callback)
+function M.get_default_device(project_root, callback)
   executable.flutter(function(cmd)
     local job = Job:new({ command = cmd, args = { "devices", "--machine" } })
     job:after(vim.schedule_wrap(function(j, code)
       if code ~= 0 then return callback(nil) end
-      callback(M.resolve_default_device(j:result()))
+      callback(M.resolve_default_device(j:result(), project_root))
     end))
     job:start()
   end)

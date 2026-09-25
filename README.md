@@ -209,8 +209,8 @@ require("flutter-tools").setup {
       -- this will show the current version of the flutter app from the pubspec.yaml file
       app_version = false,
       -- set to true to be able use the 'flutter_tools_decorations.device' in your statusline
-      -- this will show the currently running device if an application was started with a specific
-      -- device
+      -- this will show the running device, or, while nothing is running in a Flutter project,
+      -- the device `flutter run` would pick by default
       device = false,
       -- set to true to be able use the 'flutter_tools_decorations.project_config' in your statusline
       -- this will show the currently selected project configuration
@@ -413,7 +413,7 @@ dictionary that is created if you have set any of the decorations to `true` in y
 The currently supported decorations are:
 
 - App version - The current version of the app from the `pubspec.yaml`.
-- Device - the running device, or, while nothing is running, the device `flutter run` would default to
+- Device - the running device, or, while nothing is running in a Flutter project, the device `flutter run` would pick by default (nothing when it would prompt for one)
 - Project config - the name of the currently selected project configuration
 
 To add them to your config you can do something like
