@@ -1,5 +1,5 @@
 *flutter-tools.txt*
-                          For Neovim >= 0.11    Last change: 2026 September 08
+                          For Neovim >= 0.11    Last change: 2026 September 25
 
 ==============================================================================
 Table of Contents                            *flutter-tools-table-of-contents*
@@ -105,7 +105,7 @@ using `vim.pack` (built into Neovim 0.12+, see |vim.pack|)
         'https://github.com/stevearc/dressing.nvim', -- optional for vim.ui.select
         'https://github.com/nvim-flutter/flutter-tools.nvim',
     })
-    
+
     require('flutter-tools').setup {}
 <
 
@@ -233,7 +233,7 @@ These two keys are two ways of solving the same problem so will conflict if
 both are set.
 
 >lua
-    
+
     -- alternatively you can override the default configs
     require("flutter-tools").setup {
       ui = {
@@ -470,7 +470,7 @@ the decorations to `true` in your configuration.
 The currently supported decorations are:
 
 - App version - The current version of the app from the `pubspec.yaml`.
-- Device - the device passed to the flutter run command
+- Device - the running device, or, while nothing is running, the device `flutter run` would default to
 - Project config - the name of the currently selected project configuration
 
 To add them to your config you can do something like
