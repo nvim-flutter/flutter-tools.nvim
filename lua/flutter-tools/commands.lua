@@ -12,7 +12,6 @@ local debugger_runner = lazy.require("flutter-tools.runners.debugger_runner") --
 local path = lazy.require("flutter-tools.utils.path") ---@module "flutter-tools.utils.path"
 local dev_log = lazy.require("flutter-tools.log") ---@module "flutter-tools.log"
 local banner = lazy.require("flutter-tools.banner") ---@module "flutter-tools.banner"
-local parser = lazy.require("flutter-tools.utils.yaml_parser")
 local config_utils = lazy.require("flutter-tools.utils.config_utils") ---@module "flutter-tools.utils.config_utils"
 
 local M = {}
@@ -150,6 +149,19 @@ local function on_run_exit(result, cli_args, opts, project_config, launch_config
   end
 end
 
+---Route dart debug sessions started outside flutter-tools, e.g. via `dap.continue()`, through
+---the debugger runner so logs and commands like reload work for them
+function M.track_debug_sessions()
+  debugger_runner.on_untracked_session(function()
+    if runner and runner ~= debugger_runner and runner:is_running() then return end
+    runner = debugger_runner
+    return {
+      on_run_data = on_run_data,
+      on_run_exit = function(before_start_logs) on_run_exit(before_start_logs, {}) end,
+    }
+  end)
+end
+
 --- Take arguments from the commandline and pass
 --- them to the run command
 ---@param args string
@@ -230,45 +242,6 @@ local function get_device_from_args(args)
   end
 end
 
---@return table?
-local function parse_yaml(str)
-  local ok, yaml = pcall(parser.parse, str)
-  if not ok then return nil end
-  return yaml
-end
-
----@param cwd string
-local function has_flutter_dependency_in_pubspec(cwd)
-  -- As this plugin is tailored for flutter projects,
-  -- we assume that the project is a flutter project.
-  local default_has_flutter_dependency = true
-  local pubspec_path = vim.fn.glob(path.join(cwd, "pubspec.yaml"))
-  if pubspec_path == "" then return default_has_flutter_dependency end
-  local pubspec_content = vim.fn.readfile(pubspec_path)
-  local joined_content = table.concat(pubspec_content, "\n")
-  local pubspec = parse_yaml(joined_content)
-  if not pubspec then return default_has_flutter_dependency end
-  --https://github.com/Dart-Code/Dart-Code/blob/43914cd2709d77668e19a4edf3500f996d5c307b/src/shared/utils/fs.ts#L183
-  return (
-    pubspec.dependencies
-    and (
-      pubspec.dependencies.flutter
-      or pubspec.dependencies.flutter_test
-      or pubspec.dependencies.sky_engine
-      or pubspec.dependencies.flutter_goldens
-    )
-  )
-    or (
-      pubspec.devDependencies
-      and (
-        pubspec.devDependencies.flutter
-        or pubspec.devDependencies.flutter_test
-        or pubspec.devDependencies.sky_engine
-        or pubspec.devDependencies.flutter_goldens
-      )
-    )
-end
-
 ---@param opts RunOpts
 ---@param project_conf flutter.ProjectConfig?
 ---@param launch_config dap.Configuration?
@@ -295,7 +268,7 @@ local function run(opts, project_conf, launch_config)
     -- To determinate if the project is a flutter project we need to check if
     -- the pubspec.yaml file has a flutter dependency in it. We need to get
     -- cwd first to pick correct pubspec.yaml file.
-    local is_flutter_project = has_flutter_dependency_in_pubspec(cwd)
+    local is_flutter_project = config_utils.has_flutter_dependency_in_pubspec(cwd)
 
     local default_run_args = config.default_run_args
     local run_args

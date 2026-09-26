@@ -62,7 +62,8 @@ end
 ---@param paths table<string, string>
 ---@param is_flutter_project boolean
 ---@param project_config flutter.ProjectConfig?
-local function register_default_configurations(paths, is_flutter_project, project_config)
+---@param cwd string?
+local function register_default_configurations(paths, is_flutter_project, project_config, cwd)
   local program
   if is_flutter_project then
     if project_config and project_config.target then
@@ -78,6 +79,7 @@ local function register_default_configurations(paths, is_flutter_project, projec
         dartSdkPath = paths.dart_sdk,
         flutterSdkPath = paths.flutter_sdk,
         program = program,
+        cwd = cwd,
       },
       {
         type = "dart",
@@ -86,6 +88,7 @@ local function register_default_configurations(paths, is_flutter_project, projec
         dartSdkPath = paths.dart_sdk,
         flutterSdkPath = paths.flutter_sdk,
         program = program,
+        cwd = cwd,
       },
     }
   else
@@ -102,6 +105,7 @@ local function register_default_configurations(paths, is_flutter_project, projec
         name = "Launch dart",
         dartSdkPath = paths.dart_sdk,
         program = program,
+        cwd = cwd,
       },
     }
   end
@@ -163,11 +167,34 @@ local function handle_inspect_event(isolate_id)
   end)
 end
 
+local listened_events = {
+  { "after", "event_output" },
+  { "before", "event_exited" },
+  { "before", "event_terminated" },
+  { "before", "event_app.started" },
+  { "before", "event_dart.debuggerUris" },
+  { "before", "event_dart.serviceExtensionAdded" },
+  { "before", "event_flutter.serviceExtensionStateChanged" },
+}
+
+local function unregister_dap_listeners()
+  for _, event in ipairs(listened_events) do
+    dap.listeners[event[1]][event[2]][plugin_identifier] = nil
+  end
+end
+
+---@param on_run_data fun(is_err: boolean, line: string)
+---@param on_run_exit fun(before_start_logs: string[])
 local function register_dap_listeners(on_run_data, on_run_exit)
+  vm_service_extensions.reset()
   local started = false
   local before_start_logs = {}
   dap.listeners.after["event_output"][plugin_identifier] = function(_, body)
-    on_run_data(started, before_start_logs, body)
+    if not body or not body.output then return end
+    for line in body.output:gmatch("[^\r\n]+") do
+      if not started then table.insert(before_start_logs, line) end
+      on_run_data(body.category == "stderr", line)
+    end
   end
 
   local handle_termination = function()
@@ -219,6 +246,60 @@ local function register_dap_listeners(on_run_data, on_run_exit)
   end
 end
 
+---@class flutter.DebuggerListeners
+---@field on_run_data fun(is_err: boolean, line: string)
+---@field on_run_exit fun(before_start_logs: string[])
+
+---Listeners for the session the next `dap.run` call starts
+---@type flutter.DebuggerListeners?
+local pending_listeners = nil
+
+---@type fun(): flutter.DebuggerListeners?
+local get_untracked_session_listeners = function() end
+
+local tracked_session_id = nil
+
+---@param launch_config dap.Configuration
+---@param listeners flutter.DebuggerListeners
+local function start_session(launch_config, listeners)
+  pending_listeners = listeners
+  dap.run(launch_config)
+end
+
+dap.listeners.on_session[plugin_identifier] = function(_, session)
+  if not session or session.config.type ~= "dart" or session.id == tracked_session_id then
+    return
+  end
+  tracked_session_id = session.id
+  local listeners = pending_listeners or get_untracked_session_listeners()
+  pending_listeners = nil
+  if listeners then
+    register_dap_listeners(listeners.on_run_data, listeners.on_run_exit)
+  else
+    unregister_dap_listeners()
+  end
+end
+
+---Set the listeners for dart sessions started outside flutter-tools, e.g. via `dap.continue()`
+---@param get_listeners fun(): flutter.DebuggerListeners?
+function DebuggerRunner.on_untracked_session(get_listeners)
+  get_untracked_session_listeners = get_listeners
+end
+
+---Register the adapter and launch configurations up front so `dap.continue()` works before any
+---flutter-tools command has run. Adapters and configurations the user defined are left in place.
+---@param paths table<string, string>
+---@param is_flutter_project boolean
+---@param project_config flutter.ProjectConfig?
+---@param cwd string?
+function DebuggerRunner.register_defaults(paths, is_flutter_project, project_config, cwd)
+  if not dap.adapters.dart then register_debug_adapter(paths, is_flutter_project) end
+  if not dap.configurations.dart then
+    register_default_configurations(paths, is_flutter_project, project_config, cwd)
+  end
+  if config.debugger.register_configurations then config.debugger.register_configurations(paths) end
+end
+
 function DebuggerRunner:run(
   opts,
   paths,
@@ -230,32 +311,25 @@ function DebuggerRunner:run(
   project_config,
   last_launch_config
 )
-  vm_service_extensions.reset()
   ---@type dap.Configuration
   local selected_launch_config = nil
 
-  register_dap_listeners(
-    function(started, before_start_logs, body)
-      if body and body.output then
-        for line in body.output:gmatch("[^\r\n]+") do
-          if not started then table.insert(before_start_logs, line) end
-          on_run_data(body.category == "stderr", line)
-        end
-      end
-    end,
-    function(before_start_logs)
+  ---@type flutter.DebuggerListeners
+  local listeners = {
+    on_run_data = on_run_data,
+    on_run_exit = function(before_start_logs)
       on_run_exit(before_start_logs, args, opts, project_config, selected_launch_config)
-    end
-  )
+    end,
+  }
 
   register_debug_adapter(paths, is_flutter_project)
   local launch_configurations = {}
   local launch_configuration_count = 0
   if last_launch_config then
-    dap.run(last_launch_config)
+    start_session(last_launch_config, listeners)
     return
   else
-    register_default_configurations(paths, is_flutter_project, project_config)
+    register_default_configurations(paths, is_flutter_project, project_config, cwd)
     if config.debugger.register_configurations then
       config.debugger.register_configurations(paths)
     end
@@ -293,27 +367,23 @@ function DebuggerRunner:run(
           launch_config.evaluateToStringInDebugViews = true
         end
         selected_launch_config = launch_config
-        dap.run(launch_config)
+        start_session(launch_config, listeners)
       end
     )
   end
 end
 
 function DebuggerRunner:attach(paths, args, cwd, on_run_data, on_run_exit)
-  vm_service_extensions.reset()
-  register_dap_listeners(function(started, before_start_logs, body)
-    if body and body.output then
-      for line in body.output:gmatch("[^\r\n]+") do
-        if not started then table.insert(before_start_logs, line) end
-        on_run_data(body.category == "stderr", line)
-      end
-    end
-  end, function(before_start_logs) on_run_exit(before_start_logs, args) end)
+  ---@type flutter.DebuggerListeners
+  local listeners = {
+    on_run_data = on_run_data,
+    on_run_exit = function(before_start_logs) on_run_exit(before_start_logs, args) end,
+  }
 
   register_debug_adapter(paths, true)
   local launch_configurations = {}
   local launch_configuration_count = 0
-  register_default_configurations(paths, true)
+  register_default_configurations(paths, true, nil, cwd)
   if config.debugger.register_configurations then config.debugger.register_configurations(paths) end
   local all_configurations = require("dap").configurations.dart
   if not all_configurations then
@@ -347,7 +417,7 @@ function DebuggerRunner:attach(paths, args, cwd, on_run_data, on_run_exit)
         if config.debugger.evaluate_to_string_in_debug_views then
           launch_config.evaluateToStringInDebugViews = true
         end
-        dap.run(launch_config)
+        start_session(launch_config, listeners)
       end
     )
   end

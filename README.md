@@ -500,7 +500,7 @@ return  { 'mfussenegger/nvim-dap' }
 
 This plugin integrates with [nvim-dap](https://github.com/mfussenegger/nvim-dap) to provide debug capabilities for Flutter and Dart applications.
 
-The plugin will automatically set up `nvim-dap` for Flutter/Dart debugging.
+The plugin will automatically set up `nvim-dap` for Flutter/Dart debugging. The `dart` adapter and launch configurations are registered when the plugin starts, so `require("dap").continue()` works without running `:FlutterRun` or `:FlutterDebug` first. An adapter or configurations you define yourself are kept.
 
 Also see:
 
