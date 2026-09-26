@@ -149,25 +149,42 @@ INFO    | Storing crashdata in: /tmp/android-ts/emu-crash-34.2.14.db, detection 
     local devices
     local config
     local jobs
+    local notifications
     local modules = {
       "flutter-tools.devices",
       "flutter-tools.config",
       "flutter-tools.executable",
+      "flutter-tools.ui",
       "plenary.job",
     }
     local paths = { flutter_bin = "/sdk/bin/flutter" }
     local emulator = { id = "Pixel_8", name = "Pixel 8", system = "android", type = 1 }
 
+    local function finish(job, callback, stdout, stderr)
+      job.stdout, job.stderr = stdout or {}, stderr or {}
+      job.callbacks[callback](job)
+      vim.wait(100, function() return #notifications > 0 end)
+    end
+
     before_each(function()
       jobs = {}
+      notifications = {}
       for _, name in ipairs(modules) do
         package.loaded[name] = nil
       end
+      package.loaded["flutter-tools.ui"] = {
+        ERROR = vim.log.levels.ERROR,
+        notify = function(msg, level)
+          if msg ~= "" then table.insert(notifications, { msg = msg, level = level }) end
+        end,
+      }
       package.loaded["plenary.job"] = {
         new = function(_, opts)
-          local job = { opts = opts, started = false }
-          function job:after_success() end
-          function job:after_failure() end
+          local job = { opts = opts, started = false, callbacks = {} }
+          function job:after_success(cb) self.callbacks.success = cb end
+          function job:after_failure(cb) self.callbacks.failure = cb end
+          function job:result() return self.stdout end
+          function job:stderr_result() return self.stderr end
           function job:start() self.started = true end
           table.insert(jobs, job)
           return job
@@ -193,6 +210,35 @@ INFO    | Storing crashdata in: /tmp/android-ts/emu-crash-34.2.14.db, detection 
       assert.equal("/sdk/bin/flutter", jobs[1].opts.command)
       assert.same({ "emulator", "--launch", "Pixel_8", "--cold" }, jobs[1].opts.args)
       assert.is_true(jobs[1].started)
+    end)
+
+    it("should report a launch that exits cleanly but writes to stderr as an error", function()
+      devices.launch_emulator(emulator)
+
+      finish(jobs[1], "success", {}, { "The Android emulator exited with code 1 during startup" })
+
+      assert.same({
+        {
+          msg = "The Android emulator exited with code 1 during startup",
+          level = vim.log.levels.ERROR,
+        },
+      }, notifications)
+    end)
+
+    it("should show stdout of a clean launch", function()
+      devices.launch_emulator(emulator)
+
+      finish(jobs[1], "success", { "No emulator found that matches 'Pixel_8'." })
+
+      assert.same({ { msg = "No emulator found that matches 'Pixel_8'." } }, notifications)
+    end)
+
+    it("should report stderr when the flutter launch fails", function()
+      devices.launch_emulator(emulator)
+
+      finish(jobs[1], "failure", {}, { "boom" })
+
+      assert.same({ { msg = "boom", level = vim.log.levels.ERROR } }, notifications)
     end)
 
     it("should use the command returned by a custom launcher", function()
