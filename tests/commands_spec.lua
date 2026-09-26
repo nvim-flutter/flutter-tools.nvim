@@ -109,4 +109,23 @@ describe("commands", function()
 
     assert.is_nil(commands.current_device())
   end)
+
+  it("should batch consecutive error lines into one notification", function()
+    local config = require("flutter-tools.config")
+    local ui = require("flutter-tools.ui")
+    local original_notify = ui.notify
+    local notifications = {}
+    ui.notify = function(msg) table.insert(notifications, msg) end
+    config.dev_log.notify_errors = true
+
+    commands.__on_run_data(true, "Error: first line")
+    commands.__on_run_data(true, "second line")
+    commands.__on_run_data(false, "regular output")
+    commands.__on_run_data(true, "third line")
+    vim.wait(1000, function() return #notifications > 0 end)
+
+    config.dev_log.notify_errors = false
+    ui.notify = original_notify
+    assert.are.same({ { "Error: first line", "second line", "third line" } }, notifications)
+  end)
 end)

@@ -87,10 +87,31 @@ local function has_recoverable_error(lines)
   return false, nil
 end
 
+local ERROR_NOTIFY_DELAY_MS = 200
+---@type string[]
+local pending_errors = {}
+local error_timer = nil
+
+local function flush_errors()
+  if #pending_errors == 0 then return end
+  local lines = pending_errors
+  pending_errors = {}
+  ui.notify(lines, ui.ERROR, { timeout = 5000 })
+end
+
+---stderr arrives one line at a time, so collect a burst of lines into a single notification
+---@param line string
+local function queue_error_notification(line)
+  table.insert(pending_errors, line)
+  if not error_timer then error_timer = assert(vim.uv.new_timer()) end
+  error_timer:stop()
+  error_timer:start(ERROR_NOTIFY_DELAY_MS, 0, vim.schedule_wrap(flush_errors))
+end
+
 ---Handle output from flutter run command
 ---@param is_err boolean if this is stdout or stderr
 local function on_run_data(is_err, data)
-  if is_err and config.dev_log.notify_errors then ui.notify(data, ui.ERROR, { timeout = 5000 }) end
+  if is_err and config.dev_log.notify_errors then queue_error_notification(data) end
   update_device_from_output(data)
   dev_log.log(data)
 end
@@ -660,6 +681,7 @@ if __TEST then
   M.__get_run_args = get_run_args
   M.__update_device_from_output = update_device_from_output
   M.__set_current_device = set_current_device
+  M.__on_run_data = on_run_data
 end
 
 return M

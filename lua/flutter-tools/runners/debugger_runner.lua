@@ -239,7 +239,7 @@ function DebuggerRunner:run(
       if body and body.output then
         for line in body.output:gmatch("[^\r\n]+") do
           if not started then table.insert(before_start_logs, line) end
-          on_run_data(body.category == "sterr", line)
+          on_run_data(body.category == "stderr", line)
         end
       end
     end,
@@ -305,7 +305,7 @@ function DebuggerRunner:attach(paths, args, cwd, on_run_data, on_run_exit)
     if body and body.output then
       for line in body.output:gmatch("[^\r\n]+") do
         if not started then table.insert(before_start_logs, line) end
-        on_run_data(body.category == "sterr", line)
+        on_run_data(body.category == "stderr", line)
       end
     end
   end, function(before_start_logs) on_run_exit(before_start_logs, args) end)
