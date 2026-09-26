@@ -176,7 +176,17 @@ end
 -----------------------------------------------------------------------------//
 
 ---@param job Job
-local function handle_launch(job) ui.notify(utils.join(job:result())) end
+local function notify_launch_error(job)
+  ui.notify(utils.join(job:stderr_result()), ui.ERROR, { timeout = 5000 })
+end
+
+-- `flutter emulators --launch` exits 0 even when the emulator dies during
+-- startup, reporting the failure only on stderr.
+---@param job Job
+local function handle_launch(job)
+  if #job:stderr_result() > 0 then return notify_launch_error(job) end
+  ui.notify(utils.join(job:result()))
+end
 
 ---@param emulator Device
 ---@param paths flutter.Paths
@@ -195,17 +205,13 @@ function M.launch_emulator(emulator)
     local job
     if spec then
       job = Job:new({ command = spec.command, args = spec.args })
-      job:after_failure(
-        vim.schedule_wrap(
-          function(j) ui.notify(utils.join(j:stderr_result()), ui.ERROR, { timeout = 5000 }) end
-        )
-      )
     else
       local args = { "emulator", "--launch", emulator.id }
       if emulator.cold_boot then table.insert(args, "--cold") end
       job = Job:new({ command = paths.flutter_bin, args = args })
       job:after_success(vim.schedule_wrap(handle_launch))
     end
+    job:after_failure(vim.schedule_wrap(notify_launch_error))
     job:start()
   end)
 end
