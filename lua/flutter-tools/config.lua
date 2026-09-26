@@ -47,7 +47,7 @@ local utils = lazy.require("flutter-tools.utils") ---@module "flutter-tools.util
 ---@field debugger? {enabled: boolean, exception_breakpoints?: table, evaluate_to_string_in_debug_views?: boolean, register_configurations?: fun(paths: table)}
 ---@field closing_tags? {highlight: string, prefix: string, priority: number, enabled: boolean}
 ---@field lsp? {debug?: number, color?: {enabled: boolean, background: boolean, foreground: boolean, virtual_text: boolean, virtual_text_str: string, background_color?: string}, settings?: table}
----@field outline? {auto_open: boolean, open_cmd?: string}
+---@field outline? {auto_open: boolean, open_cmd?: string, icons?: boolean|table<string, string>}
 ---@field dev_log? flutter.DevLogOpts
 ---@field dev_tools? {autostart: boolean, auto_open_browser: boolean}
 ---@field widget_preview? {web_server: boolean}
@@ -75,6 +75,9 @@ local function validate_prefs(prefs)
     )
   end
   vim.validate("outline", prefs.outline, "table", true)
+  if prefs.outline then
+    vim.validate("outline.icons", prefs.outline.icons, { "boolean", "table" }, true)
+  end
   vim.validate("dev_log", prefs.dev_log, "table", true)
   vim.validate("closing_tags", prefs.closing_tags, "table", true)
 end
@@ -142,6 +145,7 @@ local config = {
   },
   outline = setmetatable({
     auto_open = false,
+    icons = true,
   }, {
     __index = function(_, k) return k == "open_cmd" and get_split_cmd(0.3, 40) or nil end,
   }),

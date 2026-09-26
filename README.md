@@ -300,7 +300,8 @@ require("flutter-tools").setup {
   },
   outline = {
     open_cmd = "30vnew", -- command to use to open the outline buffer
-    auto_open = false -- if true this will open the outline automatically when it is first populated
+    auto_open = false, -- if true this will open the outline automatically when it is first populated
+    icons = true, -- false hides the icons (e.g. without a Nerd Font); a table overrides icons per kind, e.g. { CLASS = "C", DEFAULT = "*" }
   },
   lsp = {
     on_attach = my_custom_on_attach,
