@@ -11,6 +11,8 @@ local M = {
   buf = nil,
   --@type integer
   win = nil,
+  --@type boolean
+  shown = false,
 }
 
 M.filename = "__FLUTTER_DEV_LOG__"
@@ -28,7 +30,15 @@ local function close_dev_log()
   M.win = nil
 end
 
+local function track_wipeout(buf)
+  api.nvim_create_autocmd("BufWipeout", {
+    buffer = buf,
+    callback = close_dev_log,
+  })
+end
+
 local function create(config)
+  M.shown = true
   local opts = {
     filename = M.filename,
     filetype = "log",
@@ -42,11 +52,21 @@ local function create(config)
     end
     M.buf = buf
     M.win = win
-    api.nvim_create_autocmd("BufWipeout", {
-      buffer = buf,
-      callback = close_dev_log,
-    })
+    track_wipeout(buf)
   end)
+end
+
+local function create_hidden()
+  local buf = vim.fn.bufadd(M.filename)
+  vim.bo[buf].swapfile = false
+  vim.bo[buf].buftype = "nofile"
+  vim.bo[buf].buflisted = false
+  vim.fn.bufload(buf)
+  vim.bo[buf].filetype = "log"
+  vim.bo[buf].modifiable = false
+  M.buf = buf
+  M.win = nil
+  track_wipeout(buf)
 end
 
 function M.get_content()
@@ -95,7 +115,13 @@ end
 function M.log(data)
   local opts = config.dev_log
   if opts.enabled then
-    if not exists() then create(opts) end
+    if not exists() then
+      if M.shown then
+        create_hidden()
+      else
+        create(opts)
+      end
+    end
     if opts.filter and not opts.filter(data) then return end
     append(M.buf, { data })
     autoscroll(M.buf, M.win)
