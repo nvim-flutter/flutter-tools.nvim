@@ -1,5 +1,22 @@
 # Changelog
 
+## [3.2.0](https://github.com/nvim-flutter/flutter-tools.nvim/compare/v3.1.0...v3.2.0) (2026-09-26)
+
+
+### Features
+
+* **emulators:** add emulators.launcher to override the emulator launch command ([#544](https://github.com/nvim-flutter/flutter-tools.nvim/issues/544)) ([9f6009d](https://github.com/nvim-flutter/flutter-tools.nvim/commit/9f6009d1f805ec1ae26767c62d4e87c6d28b1769))
+* **menu:** add FlutterCommands and FlutterFvm pickers using vim.ui.select ([#547](https://github.com/nvim-flutter/flutter-tools.nvim/issues/547)) ([f7abf1d](https://github.com/nvim-flutter/flutter-tools.nvim/commit/f7abf1d2e80ef874d29b6a2fcab5ffc23258af88))
+* **outline:** allow disabling or overriding outline icons ([#549](https://github.com/nvim-flutter/flutter-tools.nvim/issues/549)) ([1b24928](https://github.com/nvim-flutter/flutter-tools.nvim/commit/1b24928241fc1fb1018c3238f666497dd3568529)), closes [#90](https://github.com/nvim-flutter/flutter-tools.nvim/issues/90)
+
+
+### Bug Fixes
+
+* **dap:** register adapter and configurations at startup ([#475](https://github.com/nvim-flutter/flutter-tools.nvim/issues/475)) ([#550](https://github.com/nvim-flutter/flutter-tools.nvim/issues/550)) ([294fa80](https://github.com/nvim-flutter/flutter-tools.nvim/commit/294fa80c0c59c3eacb5b47d00dda02fe8b42aec7))
+* **emulators:** show errors when an emulator fails to start ([#548](https://github.com/nvim-flutter/flutter-tools.nvim/issues/548)) ([c0f6a14](https://github.com/nvim-flutter/flutter-tools.nvim/commit/c0f6a145842f38bce74b5eb3e4f2806205d8dd8c)), closes [#365](https://github.com/nvim-flutter/flutter-tools.nvim/issues/365)
+* **log:** batch error notifications into one per burst ([#546](https://github.com/nvim-flutter/flutter-tools.nvim/issues/546)) ([35d42df](https://github.com/nvim-flutter/flutter-tools.nvim/commit/35d42dfaf8985ffc248d331a6b21801954383235))
+* **log:** stop the dev log reopening after it is closed ([#545](https://github.com/nvim-flutter/flutter-tools.nvim/issues/545)) ([ca5feef](https://github.com/nvim-flutter/flutter-tools.nvim/commit/ca5feefd57ba28fee96c6535b4f213a135cb6278))
+
 ## [3.1.0](https://github.com/nvim-flutter/flutter-tools.nvim/compare/v3.0.1...v3.1.0) (2026-09-25)
 
 
