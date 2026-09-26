@@ -26,7 +26,7 @@ local markers = {
   horizontal = "─",
 }
 
-local icons = setmetatable({
+local default_icons = {
   TOP_LEVEL_VARIABLE = "",
   CLASS = "",
   FIELD = "󰐾",
@@ -38,26 +38,37 @@ local icons = setmetatable({
   ENUM = "󰉺",
   ENUM_CONSTANT = "",
   DEFAULT = "",
-}, {
-  __index = function(t, _) return t.DEFAULT end,
-})
+}
 
 local HL_PREFIX = "FlutterToolsOutline"
 local MARKER_HL = "FlutterToolsOutlineIndentGuides"
 
 local icon_highlights = {
-  [icons.TOP_LEVEL_VARIABLE] = { name = "TopLevelVar", link = "Identifier" },
-  [icons.CLASS] = { name = "Class", link = "Type" },
-  [icons.FIELD] = { name = "Field", link = "Identifier" },
-  [icons.CONSTRUCTOR] = { name = "Constructor", link = "Identifier" },
-  [icons.CONSTRUCTOR_INVOCATION] = { name = "ConstructorInvocation", link = "Special" },
-  [icons.FUNCTION] = { name = "Function", link = "Function" },
-  [icons.METHOD] = { name = "Method", link = "Function" },
-  [icons.GETTER] = { name = "Getter", link = "Function" },
-  [icons.ENUM] = { name = "Enum", link = "Type" },
-  [icons.ENUM_CONSTANT] = { name = "EnumConstant", link = "Type" },
-  [icons.DEFAULT] = { name = "Default", link = ui.DIM_HL },
+  TOP_LEVEL_VARIABLE = { name = "TopLevelVar", link = "Identifier" },
+  CLASS = { name = "Class", link = "Type" },
+  FIELD = { name = "Field", link = "Identifier" },
+  CONSTRUCTOR = { name = "Constructor", link = "Identifier" },
+  CONSTRUCTOR_INVOCATION = { name = "ConstructorInvocation", link = "Special" },
+  FUNCTION = { name = "Function", link = "Function" },
+  METHOD = { name = "Method", link = "Function" },
+  GETTER = { name = "Getter", link = "Function" },
+  ENUM = { name = "Enum", link = "Type" },
+  ENUM_CONSTANT = { name = "EnumConstant", link = "Type" },
+  DEFAULT = { name = "Default", link = ui.DIM_HL },
 }
+
+---@param kind string?
+---@return string? icon
+---@return string? highlight
+local function get_icon(kind)
+  local opts = config.outline.icons
+  if opts == false then return end
+  local overrides = type(opts) == "table" and opts or {}
+  kind = kind or "DEFAULT"
+  local icon = overrides[kind] or default_icons[kind] or overrides.DEFAULT or default_icons.DEFAULT
+  if icon == "" then return end
+  return icon, HL_PREFIX .. (icon_highlights[kind] or icon_highlights.DEFAULT).name
+end
 
 api.nvim_set_hl(0, MARKER_HL, { default = true, link = "NonText" })
 
@@ -103,8 +114,8 @@ local function set_outline_highlights()
   for key, value in pairs(markers) do
     highlight_item(key:gsub("^%l", string.upper), value, MARKER_HL)
   end
-  for icon, hl in pairs(icon_highlights) do
-    highlight_item(hl.name, icon, hl.link)
+  for _, hl in pairs(icon_highlights) do
+    hl_link(hl.name, hl.link)
   end
 end
 
@@ -142,10 +153,11 @@ local function parse_outline(result, node, indent, marker)
   local range = node.codeRange
   local element = node.element or {}
   local text = {}
-  local icon = icons[element.kind]
-  local display_str = { indent, marker, icon }
-
+  local display_str = { indent, marker }
   local hl = {}
+
+  local icon, icon_hl = get_icon(element.kind)
+  if icon then add_segment(display_str, hl, icon, icon_hl, #table.concat(display_str, " ")) end
   local length = #table.concat(display_str, " ")
 
   local return_type = element.returnType and element.returnType .. " "
