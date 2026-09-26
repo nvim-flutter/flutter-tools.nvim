@@ -9,6 +9,7 @@ local dap = lazy.require("flutter-tools.dap") ---@module "flutter-tools.dap"
 local decorations = lazy.require("flutter-tools.decorations") ---@module "flutter-tools.decorations"
 local guides = lazy.require("flutter-tools.guides") ---@module "flutter-tools.guides"
 local log = lazy.require("flutter-tools.log") ---@module "flutter-tools.log"
+local menu = lazy.require("flutter-tools.menu") ---@module "flutter-tools.menu"
 local lsp = lazy.require("flutter-tools.lsp") ---@module "flutter-tools.lsp"
 local outline = lazy.require("flutter-tools.outline") ---@module "flutter-tools.outline"
 local devices = lazy.require("flutter-tools.devices") ---@module "flutter-tools.devices"
@@ -34,6 +35,8 @@ local function setup_commands()
   command("FlutterVisualDebug", commands.visual_debug)
   command("FlutterChangeTargetPlatform", commands.change_target_platform)
   command("FlutterToggleBrightness", commands.brightness)
+  command("FlutterCommands", menu.select_command)
+  command("FlutterFvm", menu.select_fvm)
   -- Lists
   command("FlutterDevices", devices.list_devices)
   command("FlutterEmulators", devices.list_emulators)

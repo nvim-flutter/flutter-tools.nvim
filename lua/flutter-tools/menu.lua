@@ -10,21 +10,23 @@ local commands = lazy.require("flutter-tools.commands") ---@module "flutter-tool
 local ui = lazy.require("flutter-tools.ui") ---@module "flutter-tools.ui"
 
 ---@alias TelescopeEntry {hint: string, label: string, command: fun(), id: integer}
----@alias CustomOptions {title: string, callback: fun(bufnr: integer)}
+---@alias CustomOptions {title: string}
 
 local M = {}
 
 -- Accounts for the vertical padding implicit in the dropdown.
 local MENU_PADDING = 4
 
+local function run(cmd, ...)
+  if not cmd then return end
+  local success, msg = pcall(cmd, ...)
+  if not success then ui.notify(msg, ui.ERROR) end
+end
+
 local function execute_command(bufnr)
   local selection = action_state.get_selected_entry()
   actions.close(bufnr)
-  local cmd = selection.command
-  if cmd then
-    local success, msg = pcall(cmd)
-    if not success then ui.notify(msg, ui.ERROR) end
-  end
+  run(selection.command)
 end
 
 local function command_entry_maker(max_width)
@@ -65,7 +67,6 @@ end
 ---@param opts CustomOptions
 ---@return table
 local function picker_opts(items, opts)
-  local callback = opts.callback or execute_command
   return {
     prompt_title = opts.title,
     finder = finders.new_table({
@@ -74,8 +75,8 @@ local function picker_opts(items, opts)
     }),
     sorter = sorters.get_generic_fuzzy_sorter(),
     attach_mappings = function(_, map)
-      map("i", "<CR>", callback)
-      map("n", "<CR>", callback)
+      map("i", "<CR>", execute_command)
+      map("n", "<CR>", execute_command)
       -- If the return value of `attach_mappings` is true, then the other
       -- default mappings are still applies.
       -- Return false if you don't want any other mappings applied.
@@ -97,7 +98,8 @@ function M.get_config(items, user_opts, opts)
   }))
 end
 
-function M.commands(opts)
+---@return TelescopeEntry[]
+local function command_items()
   local cmds = {}
 
   if commands.is_running() then
@@ -207,7 +209,7 @@ function M.commands(opts)
     },
     {
       id = "flutter-tools-generate",
-      label = "Generate ",
+      label = "Generate",
       hint = "Generate code",
       command = commands.generate,
     },
@@ -265,45 +267,49 @@ function M.commands(opts)
     })
   end
 
-  pickers.new(M.get_config(cmds, opts, { title = "Flutter tools commands" })):find()
+  return cmds
 end
 
-local function execute_fvm_use(bufnr)
-  local selection = action_state.get_selected_entry()
-  actions.close(bufnr)
-  local cmd = selection.command
-  if cmd then
-    local success, msg = pcall(cmd, selection.ordinal)
-    if not success then ui.notify(msg, ui.ERROR) end
+function M.commands(opts)
+  pickers.new(M.get_config(command_items(), opts, { title = "Flutter tools commands" })):find()
+end
+
+---@param items TelescopeEntry[]
+---@param prompt string
+---@param on_choice fun(item: TelescopeEntry)
+local function select(items, prompt, on_choice)
+  local width = 0
+  for _, item in ipairs(items) do
+    width = math.max(width, vim.api.nvim_strwidth(item.label))
   end
+  vim.ui.select(items, {
+    prompt = prompt,
+    kind = "flutter-tools",
+    format_item = function(item)
+      if not item.hint or item.hint == "" then return item.label end
+      local padding = string.rep(" ", width - vim.api.nvim_strwidth(item.label))
+      return item.label .. padding .. " • " .. item.hint
+    end,
+  }, function(item)
+    if item then on_choice(item) end
+  end)
 end
 
-function M.fvm(opts)
-  commands.fvm_list(function(sdks)
-    opts = opts and not vim.tbl_isempty(opts) and opts
-      or themes.get_dropdown({
-        previewer = false,
-        layout_config = {
-          height = #sdks + MENU_PADDING,
-        },
-      })
+function M.select_command()
+  select(command_items(), "Flutter tools commands", function(item) run(item.command) end)
+end
 
-    local sdk_entries = {}
+function M.select_fvm()
+  commands.fvm_list(function(sdks)
+    local items = {}
     for _, sdk in pairs(sdks) do
-      table.insert(sdk_entries, {
+      table.insert(items, {
         id = sdk.name,
         label = sdk.name,
         hint = sdk.dart_sdk_version and "(Dart SDK " .. sdk.dart_sdk_version .. ")" or "",
-        command = commands.fvm_use,
       })
     end
-
-    pickers
-      .new(M.get_config(sdk_entries, opts, {
-        title = "Change Flutter SDK",
-        callback = execute_fvm_use,
-      }))
-      :find()
+    select(items, "Change Flutter SDK", function(item) run(commands.fvm_use, item.id) end)
   end)
 end
 

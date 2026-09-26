@@ -56,7 +56,6 @@ using `lazy.nvim`
     lazy = false,
     dependencies = {
         'nvim-lua/plenary.nvim',
-        'stevearc/dressing.nvim', -- optional for vim.ui.select
     },
     config = true,
 }
@@ -67,7 +66,6 @@ using `vim.pack` (built into Neovim 0.12+, see `:h vim.pack`)
 ```lua
 vim.pack.add({
     'https://github.com/nvim-lua/plenary.nvim',
-    'https://github.com/stevearc/dressing.nvim', -- optional for vim.ui.select
     'https://github.com/nvim-flutter/flutter-tools.nvim',
 })
 
@@ -77,8 +75,10 @@ require('flutter-tools').setup {}
 This plugin depends on [plenary.nvim](https://github.com/nvim-lua/plenary.nvim), please make sure it is installed.
 
 This plugin depends on `vim.ui.select` which allows users to control what UI is used for selecting
-from a list of options. If you don't have a UI configured for `vim.ui.select` then I highly recommend
-the excellent [dressing.nvim](https://github.com/stevearc/dressing.nvim).
+from a list of options. If you don't have a UI configured for `vim.ui.select`, pickers such as
+[snacks.nvim](https://github.com/folke/snacks.nvim), [fzf-lua](https://github.com/ibhagwan/fzf-lua),
+[mini.pick](https://github.com/echasnovski/mini.pick) or
+[telescope-ui-select](https://github.com/nvim-telescope/telescope-ui-select.nvim) can provide one.
 
 ## Warning
 
@@ -143,6 +143,8 @@ require("flutter-tools").setup {} -- use defaults
 
 # Usage
 
+- `FlutterCommands` - Pick a flutter-tools command from a list, shown with your `vim.ui.select` UI (e.g. snacks.nvim, fzf-lua or mini.pick).
+- `FlutterFvm` - Pick a Flutter SDK installed with [fvm](https://fvm.app/) and switch the project to it.
 - `FlutterRun` - Run the current project. Respects `config.debugger.enabled` setting.
 - `FlutterDebug` - Force run current project in debug mode.
 - `FlutterDevices` - Brings up a list of connected devices to select from.
@@ -474,6 +476,7 @@ see `:h statusline` for more information on how to create a statusline.
 ![telescope picker](https://user-images.githubusercontent.com/22454918/113897929-495a3e80-97c3-11eb-959f-9574319cd93c.png)
 
 You can list available commands in this plugin using [telescope.nvim](https://github.com/nvim-telescope/telescope.nvim).
+`FlutterCommands` shows the same list with whatever `vim.ui.select` UI you use.
 
 In order to set this up, you can explicitly load the extension.
 
@@ -484,14 +487,6 @@ require("telescope").load_extension("flutter")
 Or alternatively telescope can lazy load extension but the `Telescope` command will not autocomplete lazy loaded modules.
 
 This can be accessed using `Telescope flutter commands` or `require('telescope').extensions.flutter.commands()`
-
-#### FVM
-
-![telescope fvm](https://user-images.githubusercontent.com/35163478/137667084-98c00c4b-ff8c-4d1e-869e-d2d51cf86f7e.png)
-
-If you have [fvm](https://fvm.app/) installed and enabled in your config, you can change your Flutter SDK via a Telescope picker.
-
-This can be accessed using `Telescope flutter fvm` or `require('telescope').extensions.flutter.fvm()`
 
 ## Debugging
 
