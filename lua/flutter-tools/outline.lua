@@ -384,6 +384,7 @@ function M.open(opts)
       filetype = outline_filetype,
       filename = outline_filename,
       focus_on_open = true,
+      win_opts = options.win_opts,
     }, function(buf, win)
       setup_outline_window(buf, win, lines, highlights, opts.go_back)
       vim.b[buf].outline_uri = outline.uri

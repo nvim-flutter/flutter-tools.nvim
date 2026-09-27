@@ -16,6 +16,7 @@ local entry_type = {
 ---@field filename? string Name to give the buffer
 ---@field filetype string Filetype to set for the buffer
 ---@field focus_on_open? boolean Whether to focus the window after opening
+---@field win_opts? table<string, any> Window-local options to set on the window
 
 ---@enum
 local M = {
@@ -129,6 +130,10 @@ function M.open_win(opts, on_open)
   vim.bo[buf].buftype = "nofile"
   vim.bo[buf].buflisted = false
   if on_open then on_open(buf, win) end
+  for name, value in pairs(opts.win_opts or {}) do
+    local ok, err = pcall(api.nvim_set_option_value, name, value, { scope = "local", win = win })
+    if not ok then M.notify(fmt("Invalid window option %q: %s", name, err), M.WARN) end
+  end
   if not opts.focus_on_open then
     -- Switch back to the previous window
     vim.cmd("wincmd p")
