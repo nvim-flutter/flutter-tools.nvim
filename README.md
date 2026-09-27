@@ -148,6 +148,8 @@ require("flutter-tools").setup {} -- use defaults
 - `FlutterRun` - Run the current project. Respects `config.debugger.enabled` setting.
 - `FlutterDebug` - Force run current project in debug mode.
 - `FlutterDevices` - Brings up a list of connected devices to select from.
+  Set `devices.args` to pass extra arguments to `flutter devices`, e.g. `{ "--device-connection", "attached" }`
+  to skip the slow wireless device scan.
 - `FlutterEmulators` - Similar to devices but shows a list of emulators to choose from.
   Set `emulators.launcher` to start the selected emulator with your own command instead of
   `flutter emulator --launch`, see the [full configuration](#full-configuration).
@@ -287,6 +289,11 @@ require("flutter-tools").setup {
   },
   widget_preview = {
     web_server = true, -- open the widget previewer with vim.ui.open; false lets Flutter launch its own Chrome
+  },
+  devices = {
+    -- extra arguments for `flutter devices` in `FlutterDevices`, e.g. { "--device-connection", "attached" }
+    -- skips the slow wireless device scan (mostly iOS on macOS) if you never deploy wirelessly
+    args = {},
   },
   emulators = {
     -- optional function to launch the emulator picked in `FlutterEmulators` with your own command,

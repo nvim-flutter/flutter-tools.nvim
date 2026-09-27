@@ -145,7 +145,7 @@ INFO    | Storing crashdata in: /tmp/android-ts/emu-crash-34.2.14.db, detection 
     end)
   end)
 
-  describe("emulator launch - ", function()
+  describe("flutter jobs - ", function()
     local devices
     local config
     local jobs
@@ -192,6 +192,7 @@ INFO    | Storing crashdata in: /tmp/android-ts/emu-crash-34.2.14.db, detection 
       }
       package.loaded["flutter-tools.executable"] = {
         get = function(callback) callback(paths) end,
+        flutter = function(callback) callback(paths.flutter_bin) end,
       }
       config = require("flutter-tools.config")
       devices = require("flutter-tools.devices")
@@ -268,6 +269,20 @@ INFO    | Storing crashdata in: /tmp/android-ts/emu-crash-34.2.14.db, detection 
 
       assert.equal("/sdk/bin/flutter", jobs[1].opts.command)
       assert.same({ "emulator", "--launch", "Pixel_8" }, jobs[1].opts.args)
+    end)
+
+    it("should list devices with only the devices subcommand by default", function()
+      devices.list_devices()
+
+      assert.same({ "devices" }, jobs[1].opts.args)
+    end)
+
+    it("should pass configured arguments to flutter devices", function()
+      config.set({ devices = { args = { "--device-connection", "attached" } } })
+
+      devices.list_devices()
+
+      assert.same({ "devices", "--device-connection", "attached" }, jobs[1].opts.args)
     end)
   end)
 end)

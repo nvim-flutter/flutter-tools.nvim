@@ -6,6 +6,7 @@ local commands = lazy.require("flutter-tools.commands") ---@module "flutter-tool
 local executable = lazy.require("flutter-tools.executable") ---@module "flutter-tools.executable"
 local config = lazy.require("flutter-tools.config") ---@module "flutter-tools.config"
 local fmt = string.format
+local api = vim.api
 
 ---@alias Device {name: string, id: string, platform: string, system: string, type: integer, cold_boot: boolean}
 
@@ -171,6 +172,24 @@ function M.get_default_device(project_root, callback)
   end)
 end
 
+---@param title string
+---@return fun(status: "success"|"failed")
+local function start_progress(title)
+  if vim.fn.has("nvim-0.12") == 0 then
+    return function() end
+  end
+  local opts = { kind = "progress", source = "flutter-tools", title = title, status = "running" }
+  local id = api.nvim_echo({ { "Loading" } }, false, opts)
+  return function(status)
+    local message = status == "success" and "Done" or "Failed"
+    api.nvim_echo(
+      { { message } },
+      false,
+      vim.tbl_extend("force", opts, { id = id, status = status })
+    )
+  end
+end
+
 -----------------------------------------------------------------------------//
 -- Emulators
 -----------------------------------------------------------------------------//
@@ -230,13 +249,16 @@ end
 
 function M.list_emulators()
   executable.flutter(function(cmd)
+    local finish = start_progress("Flutter emulators")
     local job = Job:new({ command = cmd, args = { "emulators" } })
-    job:after_success(vim.schedule_wrap(function(j) show_emulators(j:result()) end))
-    job:after_failure(
-      vim.schedule_wrap(
-        function(j) return ui.notify(utils.join(j:stderr_result()), ui.ERROR, { timeout = 5000 }) end
-      )
-    )
+    job:after_success(vim.schedule_wrap(function(j)
+      finish("success")
+      show_emulators(j:result())
+    end))
+    job:after_failure(vim.schedule_wrap(function(j)
+      finish("failed")
+      ui.notify(utils.join(j:stderr_result()), ui.ERROR, { timeout = 5000 })
+    end))
     job:start()
   end)
 end
@@ -258,9 +280,15 @@ end
 
 function M.list_devices()
   executable.flutter(function(cmd)
-    local job = Job:new({ command = cmd, args = { "devices" } })
-    job:after_success(vim.schedule_wrap(show_devices))
+    local finish = start_progress("Flutter devices")
+    local args = vim.list_extend({ "devices" }, config.devices.args or {})
+    local job = Job:new({ command = cmd, args = args })
+    job:after_success(vim.schedule_wrap(function(j)
+      finish("success")
+      show_devices(j)
+    end))
     job:after_failure(vim.schedule_wrap(function(j)
+      finish("failed")
       local result = j:result()
       local message = not vim.tbl_isempty(result) and result or j:stderr_result()
       ui.notify(utils.join(message), ui.ERROR)

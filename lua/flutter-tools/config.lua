@@ -34,6 +34,9 @@ local utils = lazy.require("flutter-tools.utils") ---@module "flutter-tools.util
 ---@class flutter.EmulatorsOpts
 ---@field launcher? fun(emulator: Device, paths: flutter.Paths): flutter.EmulatorLaunchSpec?
 ---
+---@class flutter.DevicesOpts
+---@field args? string[] extra arguments passed to `flutter devices`
+---
 ---@class flutter.Config
 ---@field flutter_path? string Path to the Flutter SDK
 ---@field flutter_lookup_cmd? string Command to find Flutter SDK
@@ -51,6 +54,7 @@ local utils = lazy.require("flutter-tools.utils") ---@module "flutter-tools.util
 ---@field dev_log? flutter.DevLogOpts
 ---@field dev_tools? {autostart: boolean, auto_open_browser: boolean}
 ---@field widget_preview? {web_server: boolean}
+---@field devices? flutter.DevicesOpts
 ---@field emulators? flutter.EmulatorsOpts
 ---@field analyzer_web_port? number
 
@@ -163,6 +167,9 @@ local config = {
   },
   widget_preview = {
     web_server = true,
+  },
+  devices = {
+    args = {},
   },
   emulators = {
     launcher = nil,
