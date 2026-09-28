@@ -6,7 +6,6 @@ local commands = lazy.require("flutter-tools.commands") ---@module "flutter-tool
 local executable = lazy.require("flutter-tools.executable") ---@module "flutter-tools.executable"
 local config = lazy.require("flutter-tools.config") ---@module "flutter-tools.config"
 local fmt = string.format
-local api = vim.api
 
 ---@alias Device {name: string, id: string, platform: string, system: string, type: integer, cold_boot: boolean}
 
@@ -175,19 +174,9 @@ end
 ---@param title string
 ---@return fun(status: "success"|"failed")
 local function start_progress(title)
-  if vim.fn.has("nvim-0.12") == 0 then
-    return function() end
-  end
-  local opts = { kind = "progress", source = "flutter-tools", title = title, status = "running" }
-  local id = api.nvim_echo({ { "Loading" } }, false, opts)
-  return function(status)
-    local message = status == "success" and "Done" or "Failed"
-    api.nvim_echo(
-      { { message } },
-      false,
-      vim.tbl_extend("force", opts, { id = id, status = status })
-    )
-  end
+  local progress = ui.progress(title)
+  progress:report("Loading", "running")
+  return function(status) progress:report(status == "success" and "Done" or "Failed", status) end
 end
 
 -----------------------------------------------------------------------------//

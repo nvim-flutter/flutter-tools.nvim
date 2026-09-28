@@ -17,6 +17,9 @@ describe("debugger runner", function()
     dap.adapters.dart = nil
     dap.configurations.dart = nil
     dap.listeners.after["event_output"]["flutter-tools"] = nil
+    for _, event in ipairs({ "event_progressStart", "event_progressUpdate", "event_progressEnd" }) do
+      dap.listeners.before[event]["flutter-tools"] = nil
+    end
     runner.on_untracked_session(function() end)
     package.loaded["flutter-tools.runners.debugger_runner"] = nil
   end)
@@ -57,7 +60,10 @@ describe("debugger runner", function()
       }
     end)
 
-    dap.listeners.on_session["flutter-tools"](nil, { id = 1, config = { type = "dart" } })
+    dap.listeners.on_session["flutter-tools"](
+      nil,
+      { id = 1, config = { type = "dart" }, on_close = {} }
+    )
     dap.listeners.after["event_output"]["flutter-tools"](nil, {
       category = "stderr",
       output = "first\nsecond",
@@ -73,5 +79,60 @@ describe("debugger runner", function()
     dap.listeners.on_session["flutter-tools"](nil, { id = 2, config = { type = "python" } })
 
     assert.is_false(called)
+  end)
+
+  it("reports adapter progress as native progress messages", function()
+    local reported = {}
+    local autocmd = vim.api.nvim_create_autocmd("Progress", {
+      callback = function(ev)
+        table.insert(reported, { ev.data.title, ev.data.status, ev.data.percent })
+      end,
+    })
+    runner.on_untracked_session(function()
+      return { on_run_data = function() end, on_run_exit = function() end }
+    end)
+    dap.listeners.on_session["flutter-tools"](
+      nil,
+      { id = 3, config = { type = "dart" }, on_close = {} }
+    )
+
+    local before = dap.listeners.before
+    before["event_progressStart"]["flutter-tools"](nil, {
+      progressId = "launch",
+      title = "Flutter",
+      message = "Launching…",
+    })
+    before["event_progressUpdate"]["flutter-tools"](nil, { progressId = "launch", percentage = 50 })
+    before["event_progressUpdate"]["flutter-tools"](nil, { progressId = "unknown", message = "x" })
+    before["event_progressEnd"]["flutter-tools"](nil, { progressId = "launch" })
+    vim.api.nvim_del_autocmd(autocmd)
+
+    assert.are.same({
+      { "Flutter", "running" },
+      { "Flutter", "running", 50 },
+      { "Flutter", "success" },
+    }, reported)
+  end)
+
+  it("fails running progress when the session closes without ending it", function()
+    local statuses = {}
+    local autocmd = vim.api.nvim_create_autocmd("Progress", {
+      callback = function(ev) table.insert(statuses, ev.data.status) end,
+    })
+    runner.on_untracked_session(function()
+      return { on_run_data = function() end, on_run_exit = function() end }
+    end)
+    local session = { id = 4, config = { type = "dart" }, on_close = {} }
+    dap.listeners.on_session["flutter-tools"](nil, session)
+
+    dap.listeners.before["event_progressStart"]["flutter-tools"](nil, {
+      progressId = "launch",
+      title = "Flutter",
+      message = "Launching…",
+    })
+    session.on_close["flutter-tools"](session)
+    vim.api.nvim_del_autocmd(autocmd)
+
+    assert.are.same({ "running", "failed" }, statuses)
   end)
 end)

@@ -177,6 +177,9 @@ INFO    | Storing crashdata in: /tmp/android-ts/emu-crash-34.2.14.db, detection 
         notify = function(msg, level)
           if msg ~= "" then table.insert(notifications, { msg = msg, level = level }) end
         end,
+        progress = function()
+          return { report = function() end }
+        end,
       }
       package.loaded["plenary.job"] = {
         new = function(_, opts)
