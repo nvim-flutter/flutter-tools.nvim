@@ -140,4 +140,66 @@ function M.open_win(opts, on_open)
   end
 end
 
+M.progress_timing = {
+  -- Ghostty drops an OSC 9;4 progress bar after 15s without an update.
+  keepalive_ms = 10000,
+  -- Give up on a progress with no real update in this long, so a hung or crashed process cannot
+  -- keep the bar alive forever.
+  stall_ms = 2 * 60 * 1000,
+}
+
+---@alias flutter.ProgressStatus "running"|"success"|"failed"
+
+---@class flutter.Progress
+---@field report fun(self: flutter.Progress, message: string?, status: flutter.ProgressStatus, opts: {percent?: number, history?: boolean}?)
+
+---A native progress message (Neovim 0.12+) that stays visible in terminals which expire idle
+---progress bars. Reporting keeps one message id, so later reports update it in place.
+---@param title string
+---@return flutter.Progress
+function M.progress(title)
+  if vim.fn.has("nvim-0.12") == 0 then return { report = function() end } end
+  local id, message, percent, timer
+  local last_update = 0
+
+  local function stop_keepalive()
+    if not timer then return end
+    timer:stop()
+    timer:close()
+    timer = nil
+  end
+
+  local function echo(status, history)
+    id = api.nvim_echo({ { message or title } }, history or false, {
+      id = id,
+      kind = "progress",
+      source = "flutter-tools",
+      title = title,
+      status = status,
+      percent = percent,
+    })
+  end
+
+  local function keepalive()
+    if not timer then return end
+    if vim.uv.now() - last_update > M.progress_timing.stall_ms then return stop_keepalive() end
+    echo("running")
+  end
+
+  return {
+    report = function(_, new_message, status, opts)
+      opts = opts or {}
+      message = new_message or message
+      percent = opts.percent and math.floor(opts.percent)
+      last_update = vim.uv.now()
+      echo(status, opts.history)
+      if status ~= "running" then return stop_keepalive() end
+      if timer then return end
+      timer = assert(vim.uv.new_timer())
+      local interval = M.progress_timing.keepalive_ms
+      timer:start(interval, interval, vim.schedule_wrap(keepalive))
+    end,
+  }
+end
+
 return M

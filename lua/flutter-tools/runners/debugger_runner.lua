@@ -167,8 +167,21 @@ local function handle_inspect_event(isolate_id)
   end)
 end
 
+---@type table<string, flutter.Progress>
+local active_progress = {}
+
+local function end_all_progress()
+  for progress_id, progress in pairs(active_progress) do
+    progress:report("Stopped", "failed")
+    active_progress[progress_id] = nil
+  end
+end
+
 local listened_events = {
   { "after", "event_output" },
+  { "before", "event_progressStart" },
+  { "before", "event_progressUpdate" },
+  { "before", "event_progressEnd" },
   { "before", "event_exited" },
   { "before", "event_terminated" },
   { "before", "event_app.started" },
@@ -197,7 +210,24 @@ local function register_dap_listeners(on_run_data, on_run_exit)
     end
   end
 
+  dap.listeners.before["event_progressStart"][plugin_identifier] = function(_, body)
+    local progress = active_progress[body.progressId] or ui.progress(body.title)
+    active_progress[body.progressId] = progress
+    progress:report(body.message, "running", { percent = body.percentage })
+  end
+  dap.listeners.before["event_progressUpdate"][plugin_identifier] = function(_, body)
+    local progress = active_progress[body.progressId]
+    if progress then progress:report(body.message, "running", { percent = body.percentage }) end
+  end
+  dap.listeners.before["event_progressEnd"][plugin_identifier] = function(_, body)
+    local progress = active_progress[body.progressId]
+    if not progress then return end
+    progress:report(body.message or "Done", "success")
+    active_progress[body.progressId] = nil
+  end
+
   local handle_termination = function()
+    end_all_progress()
     if next(before_start_logs) ~= nil then on_run_exit(before_start_logs) end
     if vm_service.is_connected() then vm_service.disconnect() end
   end
@@ -271,6 +301,7 @@ dap.listeners.on_session[plugin_identifier] = function(_, session)
     return
   end
   tracked_session_id = session.id
+  session.on_close[plugin_identifier] = end_all_progress
   local listeners = pending_listeners or get_untracked_session_listeners()
   pending_listeners = nil
   if listeners then

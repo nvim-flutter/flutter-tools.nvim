@@ -23,7 +23,7 @@ local OUTPUT_LINES_ON_FAILURE = 15
 ---@field cancelled boolean
 ---@field output string[] recent output, shown if the previewer fails
 ---@field dir string
----@field progress_id (integer|string)?
+---@field progress flutter.Progress
 
 ---@type flutter.WidgetPreviewState?
 local state = nil
@@ -58,13 +58,7 @@ end
 ---@param message string
 ---@param status "running"|"success"|"failed"
 local function report(current, message, status)
-  current.progress_id = api.nvim_echo({ { message } }, status ~= "running", {
-    id = current.progress_id,
-    kind = "progress",
-    source = "flutter-tools",
-    title = "Widget preview",
-    status = status,
-  })
+  current.progress:report(message, status, { history = status ~= "running" })
 end
 
 ---@param current flutter.WidgetPreviewState
@@ -208,7 +202,13 @@ function M.show(dir)
   if not project_dir then return ui.notify("Unable to find a Flutter project", ui.ERROR) end
 
   ---@type flutter.WidgetPreviewState
-  local current = { started = false, cancelled = false, output = {}, dir = project_dir }
+  local current = {
+    started = false,
+    cancelled = false,
+    output = {},
+    dir = project_dir,
+    progress = ui.progress("Widget preview"),
+  }
   state = current
   report(current, "Starting", "running")
   dtd.start(function(err)
