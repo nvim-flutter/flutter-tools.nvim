@@ -44,7 +44,7 @@ local utils = lazy.require("flutter-tools.utils") ---@module "flutter-tools.util
 ---@field root_patterns? string[] Patterns to find project root
 ---@field fvm? boolean Whether to use FVM (Flutter Version Manager)
 ---@field default_run_args? flutter.RunArgsOpts Default options for run command
----@field widget_guides? {enabled: boolean, debug: boolean}
+---@field widget_guides? {enabled: boolean, debug: boolean, markers?: {bottom?: string, middle?: string, vertical?: string, horizontal?: string}}
 ---@field ui? {border: string}
 ---@field decorations? {statusline: {app_version: boolean, device: boolean, project_config: boolean}}
 ---@field debugger? {enabled: boolean, exception_breakpoints?: table, evaluate_to_string_in_debug_views?: boolean, register_configurations?: fun(paths: table)}
@@ -116,6 +116,12 @@ local config = {
   widget_guides = {
     enabled = false,
     debug = false,
+    markers = {
+      bottom = "└",
+      middle = "├",
+      vertical = "│",
+      horizontal = "─",
+    },
   },
   ui = {
     border = "single",

@@ -265,6 +265,9 @@ require("flutter-tools").setup {
   analyzer_web_port = nil, -- if set, the analysis server is started with `--port=<value>` so it can be inspected in the browser
   widget_guides = {
     enabled = false,
+    -- characters used to draw the guides, each must be a single cell wide
+    -- e.g. `{ vertical = "┆", horizontal = "┄" }` for dashed lines
+    markers = { bottom = "└", middle = "├", vertical = "│", horizontal = "─" },
   },
   closing_tags = {
     highlight = "ErrorMsg", -- highlight for the closing tag

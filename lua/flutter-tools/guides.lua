@@ -12,13 +12,6 @@ local widget_kind = "NEW_INSTANCE"
 local hl_group = "FlutterWidgetGuides"
 local widget_outline_ns_id = api.nvim_create_namespace("flutter_tools_outline_guides")
 
-local markers = {
-  bottom = "└",
-  middle = "├",
-  vertical = "│",
-  horizontal = "─",
-}
-
 -- These offsets represent the points at which each character
 -- should should be added relative to the symbol it is for
 --
@@ -53,6 +46,7 @@ end
 ---@param children table[]
 ---@return string
 local function get_guide_character(lnum, end_line, parent_start, indent_size, children, lines)
+  local markers = config.widget_guides.markers
   for index, child in ipairs(children) do
     -- if the child is within the parent range but not at the end
     local child_lnum = child.range.start.line
