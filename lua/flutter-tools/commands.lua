@@ -28,6 +28,7 @@ local current_device = nil
 ---@field cleanup fun(funner: flutter.Runner)
 ---@field send fun(runner: flutter.Runner, cmd:string, quiet: boolean?, on_response: fun(response: any)|nil)
 ---@field attach fun(runner: flutter.Runner, paths:table, args:table, cwd:string, on_run_data:fun(is_err:boolean, data:string), on_run_exit:fun(data:string[], args: table, project_conf: flutter.ProjectConfig?,launch_config: dap.Configuration?))
+---@field stop? fun(runner: flutter.Runner)
 
 ---@type flutter.Runner?
 local runner = nil
@@ -64,6 +65,10 @@ end
 function M.current_device() return current_device end
 
 function M.is_running() return runner ~= nil and runner:is_running() end
+
+function M.on_exit()
+  if runner and runner.stop then runner:stop() end
+end
 
 local function match_error_string(line)
   if not line then return false end

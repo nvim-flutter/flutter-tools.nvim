@@ -74,6 +74,14 @@ end
 
 function JobRunner:cleanup() run_job = nil end
 
+-- SIGTERM lets the flutter tool stop the app (or only detach, when attached)
+-- before exiting; closing stdin alone leaves it running.
+function JobRunner:stop()
+  if not run_job or not run_job.pid then return end
+  vim.uv.kill(run_job.pid, vim.uv.constants.SIGTERM)
+  vim.wait(3000, function() return run_job == nil or run_job.is_shutdown end)
+end
+
 function JobRunner:attach(paths, args, cwd, on_run_data, on_run_exit)
   local command = paths.flutter_bin
   local command_args = args

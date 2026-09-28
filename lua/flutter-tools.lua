@@ -130,6 +130,7 @@ local function setup_autocommands()
     pattern = { "*" },
     callback = function()
       dev_tools.stop()
+      if package.loaded["flutter-tools.commands"] then commands.on_exit() end
       if package.loaded["flutter-tools.widget_preview"] then widget_preview.on_exit() end
     end,
   })
