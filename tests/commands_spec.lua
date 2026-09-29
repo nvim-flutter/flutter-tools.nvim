@@ -110,6 +110,10 @@ describe("commands", function()
     assert.is_nil(commands.current_device())
   end)
 
+  it("should not crash when output line is nil", function()
+    assert.has_no.errors(function() commands.__update_device_from_output(nil) end)
+  end)
+
   it("should batch consecutive error lines into one notification", function()
     local config = require("flutter-tools.config")
     local ui = require("flutter-tools.ui")

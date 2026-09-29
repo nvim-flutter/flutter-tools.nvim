@@ -54,8 +54,9 @@ local function set_current_device(device)
 end
 
 ---Resolve the device name from the `Launching ... on <device> in <mode> mode` output line
----@param line string
+---@param line string|nil
 local function update_device_from_output(line)
+  if not line then return end
   local name = line:match("^Launching .+ on (.+) in %w+ mode")
   if not name then return end
   local device = vim.tbl_extend("force", current_device or {}, { name = vim.trim(name) })
