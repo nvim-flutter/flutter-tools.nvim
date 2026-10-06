@@ -1,5 +1,28 @@
 # Changelog
 
+## [3.2.0](https://github.com/nvim-flutter/flutter-tools.nvim/compare/v3.1.0...v3.2.0) (2026-10-06)
+
+
+### Features
+
+* **dap:** show debug adapter progress natively and keep it alive ([#553](https://github.com/nvim-flutter/flutter-tools.nvim/issues/553)) ([2929775](https://github.com/nvim-flutter/flutter-tools.nvim/commit/2929775e2d932b83ece216e0e01b12331ed8b6dd))
+* **devices:** show progress while listing devices and allow extra args ([#552](https://github.com/nvim-flutter/flutter-tools.nvim/issues/552)) ([1f1cd01](https://github.com/nvim-flutter/flutter-tools.nvim/commit/1f1cd01ed5928d838e416b08416f60aaf530f81b)), closes [#334](https://github.com/nvim-flutter/flutter-tools.nvim/issues/334)
+* **emulators:** add emulators.launcher to override the emulator launch command ([#544](https://github.com/nvim-flutter/flutter-tools.nvim/issues/544)) ([9f6009d](https://github.com/nvim-flutter/flutter-tools.nvim/commit/9f6009d1f805ec1ae26767c62d4e87c6d28b1769))
+* **guides:** allow configuring widget guide characters ([#556](https://github.com/nvim-flutter/flutter-tools.nvim/issues/556)) ([f5242b5](https://github.com/nvim-flutter/flutter-tools.nvim/commit/f5242b5206e4e4e8f3361f0caf703a8a9547b053)), closes [#555](https://github.com/nvim-flutter/flutter-tools.nvim/issues/555)
+* **menu:** add FlutterCommands and FlutterFvm pickers using vim.ui.select ([#547](https://github.com/nvim-flutter/flutter-tools.nvim/issues/547)) ([f7abf1d](https://github.com/nvim-flutter/flutter-tools.nvim/commit/f7abf1d2e80ef874d29b6a2fcab5ffc23258af88))
+* **outline:** allow disabling or overriding outline icons ([#549](https://github.com/nvim-flutter/flutter-tools.nvim/issues/549)) ([1b24928](https://github.com/nvim-flutter/flutter-tools.nvim/commit/1b24928241fc1fb1018c3238f666497dd3568529)), closes [#90](https://github.com/nvim-flutter/flutter-tools.nvim/issues/90)
+* **run:** stop the flutter process when exiting nvim ([#554](https://github.com/nvim-flutter/flutter-tools.nvim/issues/554)) ([8d11074](https://github.com/nvim-flutter/flutter-tools.nvim/commit/8d1107444321eb7d2d67757b3266bbaf68103878)), closes [#401](https://github.com/nvim-flutter/flutter-tools.nvim/issues/401)
+* **ui:** add win_opts for dev log and outline windows ([#551](https://github.com/nvim-flutter/flutter-tools.nvim/issues/551)) ([09ca6cb](https://github.com/nvim-flutter/flutter-tools.nvim/commit/09ca6cb161267b4622af458bea1d20f4c9459aed)), closes [#474](https://github.com/nvim-flutter/flutter-tools.nvim/issues/474)
+
+
+### Bug Fixes
+
+* **commands:** ignore the nil line sent when the run output closes ([#560](https://github.com/nvim-flutter/flutter-tools.nvim/issues/560)) ([13c24f3](https://github.com/nvim-flutter/flutter-tools.nvim/commit/13c24f3c0824c1e07a0848276f1b84e6d53bd893))
+* **dap:** register adapter and configurations at startup ([#475](https://github.com/nvim-flutter/flutter-tools.nvim/issues/475)) ([#550](https://github.com/nvim-flutter/flutter-tools.nvim/issues/550)) ([294fa80](https://github.com/nvim-flutter/flutter-tools.nvim/commit/294fa80c0c59c3eacb5b47d00dda02fe8b42aec7))
+* **emulators:** show errors when an emulator fails to start ([#548](https://github.com/nvim-flutter/flutter-tools.nvim/issues/548)) ([c0f6a14](https://github.com/nvim-flutter/flutter-tools.nvim/commit/c0f6a145842f38bce74b5eb3e4f2806205d8dd8c)), closes [#365](https://github.com/nvim-flutter/flutter-tools.nvim/issues/365)
+* **log:** batch error notifications into one per burst ([#546](https://github.com/nvim-flutter/flutter-tools.nvim/issues/546)) ([35d42df](https://github.com/nvim-flutter/flutter-tools.nvim/commit/35d42dfaf8985ffc248d331a6b21801954383235))
+* **log:** stop the dev log reopening after it is closed ([#545](https://github.com/nvim-flutter/flutter-tools.nvim/issues/545)) ([ca5feef](https://github.com/nvim-flutter/flutter-tools.nvim/commit/ca5feefd57ba28fee96c6535b4f213a135cb6278))
+
 ## [3.1.0](https://github.com/nvim-flutter/flutter-tools.nvim/compare/v3.0.1...v3.1.0) (2026-09-25)
 
 
