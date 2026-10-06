@@ -110,8 +110,19 @@ describe("commands", function()
     assert.is_nil(commands.current_device())
   end)
 
-  it("should not crash when output line is nil", function()
-    assert.has_no.errors(function() commands.__update_device_from_output(nil) end)
+  it("should ignore the nil line sent when the run output closes", function()
+    local config = require("flutter-tools.config")
+    config.dev_log.notify_errors = true
+    config.dev_log.filter = function(line) return not line:match("^D/") end
+
+    local ok, err = pcall(function()
+      commands.__on_run_data(false, nil)
+      commands.__on_run_data(true, nil)
+    end)
+
+    config.dev_log.notify_errors = false
+    config.dev_log.filter = nil
+    assert.is_true(ok, err)
   end)
 
   it("should batch consecutive error lines into one notification", function()

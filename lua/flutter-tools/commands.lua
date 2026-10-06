@@ -54,9 +54,8 @@ local function set_current_device(device)
 end
 
 ---Resolve the device name from the `Launching ... on <device> in <mode> mode` output line
----@param line string|nil
+---@param line string
 local function update_device_from_output(line)
-  if not line then return end
   local name = line:match("^Launching .+ on (.+) in %w+ mode")
   if not name then return end
   local device = vim.tbl_extend("force", current_device or {}, { name = vim.trim(name) })
@@ -115,7 +114,9 @@ end
 
 ---Handle output from flutter run command
 ---@param is_err boolean if this is stdout or stderr
+---@param data string? nil once the job's output stream closes
 local function on_run_data(is_err, data)
+  if not data then return end
   if is_err and config.dev_log.notify_errors then queue_error_notification(data) end
   update_device_from_output(data)
   dev_log.log(data)
