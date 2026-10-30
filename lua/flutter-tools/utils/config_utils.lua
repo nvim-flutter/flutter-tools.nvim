@@ -20,6 +20,17 @@ function M.get_cwd(project_conf)
   return lsp.get_project_root_dir()
 end
 
+---@param project_conf flutter.ProjectConfig?
+---@return {[string]: string}?
+function M.get_env(project_conf)
+  if not project_conf or not project_conf.env then return nil end
+  local env = {}
+  for key, value in pairs(project_conf.env) do
+    env[key] = tostring(value)
+  end
+  return env
+end
+
 --@return table?
 local function parse_yaml(str)
   local ok, yaml = pcall(parser.parse, str)

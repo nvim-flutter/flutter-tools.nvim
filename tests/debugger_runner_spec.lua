@@ -164,4 +164,28 @@ describe("debugger runner", function()
     assert.are.equal(1, started_events)
     assert.is_nil(exit_logs)
   end)
+
+  it("passes the project configuration env to the launch configuration", function()
+    local debugger = require("flutter-tools.config").debugger
+    local run, register_configurations = dap.run, debugger.register_configurations
+    local launched
+    dap.run = function(c) launched = c end
+    debugger.register_configurations = function()
+      dap.configurations.dart = {
+        {
+          type = "dart",
+          request = "launch",
+          name = "Mine",
+          env = { KEEP = "1", LOG_LEVEL = "info" },
+        },
+      }
+    end
+
+    runner:run({}, paths, {}, "/project", function() end, function() end, true, {
+      env = { LOG_LEVEL = "debug", RETRIES = 3 },
+    })
+    dap.run, debugger.register_configurations = run, register_configurations
+
+    assert.are.same({ KEEP = "1", LOG_LEVEL = "debug", RETRIES = "3" }, launched.env)
+  end)
 end)

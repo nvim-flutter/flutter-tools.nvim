@@ -6,6 +6,7 @@ local utils = lazy.require("flutter-tools.utils") ---@module "flutter-tools.util
 local path = lazy.require("flutter-tools.utils.path") ---@module "flutter-tools.utils.path"
 local vm_service_extensions = lazy.require("flutter-tools.runners.vm_service_extensions") ---@module "flutter-tools.runners.vm_service_extensions"
 local vm_service = lazy.require("flutter-tools.vm_service") ---@module "flutter-tools.vm_service"
+local config_utils = lazy.require("flutter-tools.utils.config_utils") ---@module "flutter-tools.utils.config_utils"
 local success, dap = pcall(require, "dap")
 if not success then
   ui.notify(string.format("nvim-dap is not installed!\n%s", dap), ui.ERROR)
@@ -394,6 +395,8 @@ function DebuggerRunner:run(
         launch_config.args = vim.list_extend(launch_config.args or {}, args or {})
         launch_config.dartSdkPath = paths.dart_sdk
         launch_config.flutterSdkPath = paths.flutter_sdk
+        local env = config_utils.get_env(project_config)
+        if env then launch_config.env = vim.tbl_extend("force", launch_config.env or {}, env) end
         if config.debugger.evaluate_to_string_in_debug_views then
           launch_config.evaluateToStringInDebugViews = true
         end

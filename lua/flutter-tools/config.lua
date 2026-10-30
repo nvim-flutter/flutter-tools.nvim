@@ -15,6 +15,7 @@ local utils = lazy.require("flutter-tools.utils") ---@module "flutter-tools.util
 ---@field web_port? string
 ---@field cwd? string full path of current working directory, defaults to LSP root
 ---@field additional_args? string[] additional arguments to pass to the flutter run command
+---@field env? {[string]: string} environment variables for the run process, on top of Neovim's
 ---
 ---@class flutter.DevLogOpts
 ---@field filter? fun(data: string): boolean
