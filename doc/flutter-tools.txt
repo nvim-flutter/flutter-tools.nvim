@@ -454,7 +454,8 @@ _conceptually_ to vscode’s `launch.json` file.
         },
         pre_run_callback = nil, -- optional callback to run before the configuration
         -- exposes a table containing name, target, flavor and device in the arguments
-        dart_define_from_file = 'config.json' -- the path to a JSON configuration file
+        dart_define_from_file = 'config.json', -- the path to a JSON configuration file
+        env = { API_KEY = 'abc' }, -- environment variables for the run process, added to Neovim's
       },
       {
         name = 'Web',
