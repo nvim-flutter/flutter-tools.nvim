@@ -1,5 +1,17 @@
 # Changelog
 
+## [3.3.0](https://github.com/nvim-flutter/flutter-tools.nvim/compare/v3.2.0...v3.3.0) (2026-10-30)
+
+
+### Features
+
+* **config:** support env variables in project configurations ([#565](https://github.com/nvim-flutter/flutter-tools.nvim/issues/565)) ([917a00e](https://github.com/nvim-flutter/flutter-tools.nvim/commit/917a00ed6ece9686de2b605d5ea2d8d57bb54e70))
+
+
+### Bug Fixes
+
+* **debugger:** listen for flutter.appStarted from the debug adapter ([#564](https://github.com/nvim-flutter/flutter-tools.nvim/issues/564)) ([0ef43df](https://github.com/nvim-flutter/flutter-tools.nvim/commit/0ef43df05396d5287d180b2f2a962c43f7e498b4)), closes [#563](https://github.com/nvim-flutter/flutter-tools.nvim/issues/563)
+
 ## [3.2.0](https://github.com/nvim-flutter/flutter-tools.nvim/compare/v3.1.0...v3.2.0) (2026-10-06)
 
 
