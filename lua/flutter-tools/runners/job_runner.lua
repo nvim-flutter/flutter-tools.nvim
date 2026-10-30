@@ -2,6 +2,7 @@ local Job = require("plenary.job")
 local ui = require("flutter-tools.ui")
 local dev_tools = require("flutter-tools.dev_tools")
 local utils = require("flutter-tools.utils") ---@module "flutter-tools.utils"
+local config_utils = require("flutter-tools.utils.config_utils") ---@module "flutter-tools.utils.config_utils"
 
 ---@type flutter.Runner
 local JobRunner = {}
@@ -46,10 +47,12 @@ function JobRunner:run(
       table.insert(command_args, project_config.target)
     end
   end
+  local env = config_utils.get_env(project_config)
   run_job = Job:new({
     command = command,
     args = command_args,
     cwd = cwd,
+    env = env and vim.tbl_extend("force", vim.fn.environ(), env),
     on_start = function() utils.emit_event(utils.events.APP_STARTED) end,
     on_stdout = vim.schedule_wrap(function(_, data, _)
       on_run_data(false, data)
