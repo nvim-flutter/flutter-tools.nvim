@@ -135,4 +135,33 @@ describe("debugger runner", function()
 
     assert.are.same({ "running", "failed" }, statuses)
   end)
+
+  it("marks the app started on the adapter's flutter.appStarted event", function()
+    local started_events = 0
+    local autocmd = vim.api.nvim_create_autocmd("User", {
+      pattern = "FlutterToolsAppStarted",
+      callback = function() started_events = started_events + 1 end,
+    })
+    local exit_logs
+    runner.on_untracked_session(function()
+      return {
+        on_run_data = function() end,
+        on_run_exit = function(logs) exit_logs = logs end,
+      }
+    end)
+    dap.listeners.on_session["flutter-tools"](
+      nil,
+      { id = 5, config = { type = "dart" }, on_close = {} }
+    )
+
+    local before = dap.listeners.before
+    dap.listeners.after["event_output"]["flutter-tools"](nil, { output = "Launching…" })
+    before["event_flutter.appStarted"]["flutter-tools"](nil, {})
+    dap.listeners.after["event_output"]["flutter-tools"](nil, { output = "app output" })
+    before["event_terminated"]["flutter-tools"](nil, {})
+    vim.api.nvim_del_autocmd(autocmd)
+
+    assert.are.equal(1, started_events)
+    assert.is_nil(exit_logs)
+  end)
 end)

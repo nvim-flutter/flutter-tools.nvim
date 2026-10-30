@@ -184,7 +184,7 @@ local listened_events = {
   { "before", "event_progressEnd" },
   { "before", "event_exited" },
   { "before", "event_terminated" },
-  { "before", "event_app.started" },
+  { "before", "event_flutter.appStarted" },
   { "before", "event_dart.debuggerUris" },
   { "before", "event_dart.serviceExtensionAdded" },
   { "before", "event_flutter.serviceExtensionStateChanged" },
@@ -235,7 +235,7 @@ local function register_dap_listeners(on_run_data, on_run_exit)
   dap.listeners.before["event_exited"][plugin_identifier] = function(_, _) handle_termination() end
   dap.listeners.before["event_terminated"][plugin_identifier] = function(_, _) handle_termination() end
 
-  dap.listeners.before["event_app.started"][plugin_identifier] = function(_, _)
+  dap.listeners.before["event_flutter.appStarted"][plugin_identifier] = function(_, _)
     started = true
     before_start_logs = {}
     utils.emit_event(utils.events.APP_STARTED)
