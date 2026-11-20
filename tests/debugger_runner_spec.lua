@@ -188,4 +188,22 @@ describe("debugger runner", function()
 
     assert.are.same({ KEEP = "1", LOG_LEVEL = "debug", RETRIES = "3" }, launched.env)
   end)
+
+  it("disconnects from the VM service before asking the adapter to quit", function()
+    local calls = {}
+    local vm_service, session = package.loaded["flutter-tools.vm_service"], dap.session
+    package.loaded["flutter-tools.vm_service"] = {
+      disconnect = function() table.insert(calls, "disconnect") end,
+    }
+    dap.session = function()
+      return { request = function(_, command) table.insert(calls, command) end }
+    end
+
+    local ok, err = pcall(runner.send, runner, "quit")
+    package.loaded["flutter-tools.vm_service"], dap.session = vm_service, session
+
+    assert(ok, err)
+
+    assert.are.same({ "disconnect", "terminate" }, calls)
+  end)
 end)
