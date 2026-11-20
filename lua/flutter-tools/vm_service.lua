@@ -1,123 +1,36 @@
 --- VM Service WebSocket client for Flutter/Dart debugging
---- WebSocket framing per RFC 6455:
---- Client frames must be masked with a 4-byte key
---- Frame format: [FIN/opcode][mask/length][mask-key][payload]
-local uv = vim.uv
+local lazy = require("flutter-tools.lazy")
+local websocket = require("flutter-tools.utils.websocket")
+local ui = lazy.require("flutter-tools.ui") ---@module "flutter-tools.ui"
 
 local M = {}
 
-local OPCODE_TEXT = 1
-local OPCODE_CLOSE = 8
-local OPCODE_PING = 9
+local MAX_RECONNECT_ATTEMPTS = 10
+local RECONNECT_DELAYS_MS = { 300, 600, 1200, 2500, 5000 }
 
-local tcp = nil
+---@type flutter.WebSocket?
+local socket = nil
 local connected = false
-local handshake_complete = false
 local request_id = 0
 local pending_requests = {}
 local event_handlers = {}
-local read_buffer = ""
 
-local function generate_handshake(host, port, path)
-  local lines = {
-    "GET " .. path .. " HTTP/1.1",
-    "Host: " .. host .. ":" .. port,
-    "Upgrade: websocket",
-    "Connection: Upgrade",
-    "Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==",
-    "Sec-WebSocket-Version: 13",
-    "",
-    "",
-  }
-  return table.concat(lines, "\r\n")
-end
+-- Bumped every time the socket changes so callbacks of an old socket are ignored
+local generation = 0
 
-local function generate_mask_key()
-  return {
-    math.random(0, 255),
-    math.random(0, 255),
-    math.random(0, 255),
-    math.random(0, 255),
-  }
-end
+---@class flutter.VmServiceTarget
+---@field url string
+---@field on_connect fun()?
+---@field on_error fun(err: string)?
+---@field attempts integer
+---@field opened boolean
 
-local function mask_payload(payload, key)
-  local masked = {}
-  for i = 1, #payload do
-    local byte = string.byte(payload, i, i)
-    local mask_byte = key[((i - 1) % 4) + 1]
-    table.insert(masked, string.char(bit.bxor(byte, mask_byte)))
-  end
-  return table.concat(masked, "")
-end
-
-local function create_frame(payload)
-  local key = generate_mask_key()
-  local len = #payload
-  local frame = {}
-
-  table.insert(frame, string.char(0x81))
-
-  if len < 126 then
-    table.insert(frame, string.char(0x80 + len))
-  elseif len < 65536 then
-    table.insert(frame, string.char(0x80 + 126))
-    table.insert(frame, string.char(bit.rshift(len, 8)))
-    table.insert(frame, string.char(bit.band(len, 0xFF)))
-  else
-    table.insert(frame, string.char(0x80 + 127))
-    for i = 7, 0, -1 do
-      table.insert(frame, string.char(bit.band(bit.rshift(len, i * 8), 0xFF)))
-    end
-  end
-
-  for _, k in ipairs(key) do
-    table.insert(frame, string.char(k))
-  end
-
-  table.insert(frame, mask_payload(payload, key))
-
-  return table.concat(frame, "")
-end
-
-local function parse_frame(data)
-  if #data < 2 then return nil, data end
-
-  local b1 = string.byte(data, 1)
-  local b2 = string.byte(data, 2)
-
-  local opcode = bit.band(b1, 0x0F)
-  local payload_len = bit.band(b2, 0x7F)
-
-  local header_len = 2
-  if payload_len == 126 then
-    if #data < 4 then return nil, data end
-    payload_len = bit.lshift(string.byte(data, 3), 8) + string.byte(data, 4)
-    header_len = 4
-  elseif payload_len == 127 then
-    if #data < 10 then return nil, data end
-    payload_len = 0
-    for i = 3, 10 do
-      payload_len = bit.lshift(payload_len, 8) + string.byte(data, i)
-    end
-    header_len = 10
-  end
-
-  local has_mask = bit.band(b2, 0x80) > 0
-  if has_mask then header_len = header_len + 4 end
-
-  local total_len = header_len + payload_len
-  if #data < total_len then return nil, data end
-
-  local payload = data:sub(header_len + 1, total_len)
-  local remaining = data:sub(total_len + 1)
-
-  return { opcode = opcode, payload = payload }, remaining
-end
+---@type flutter.VmServiceTarget?
+local target = nil
 
 local function handle_message(message)
   local ok, data = pcall(vim.json.decode, message)
-  if not ok then return end
+  if not ok or type(data) ~= "table" then return end
 
   if data.id and pending_requests[data.id] then
     local callback = pending_requests[data.id]
@@ -159,8 +72,91 @@ local function parse_uri(uri)
   return host, tonumber(port), path
 end
 
+local function fail_pending_requests()
+  local callbacks = pending_requests
+  pending_requests = {}
+  for _, callback in pairs(callbacks) do
+    vim.schedule(function() callback("Service connection closed", nil) end)
+  end
+end
+
+local function close_socket()
+  generation = generation + 1
+  connected = false
+  if socket then socket:close() end
+  socket = nil
+  fail_pending_requests()
+end
+
+local open_socket
+
+-- Retry after losing the connection; once the attempts run out, give up and report the error
+local function schedule_reconnect(reason)
+  target.attempts = target.attempts + 1
+  if target.attempts > MAX_RECONNECT_ATTEMPTS then
+    local on_error = target.on_error
+    target = nil
+    event_handlers = {}
+    ui.notify("Lost the connection to the VM service: " .. reason, ui.WARN)
+    if on_error then on_error(reason) end
+    return
+  end
+  if target.attempts == 1 then
+    ui.notify("Lost the connection to the VM service (" .. reason .. "), reconnecting", ui.WARN)
+  end
+  local gen = generation
+  local delay = RECONNECT_DELAYS_MS[math.min(target.attempts, #RECONNECT_DELAYS_MS)]
+  vim.defer_fn(function()
+    if target and gen == generation and not socket then open_socket() end
+  end, delay)
+end
+
+local function on_closed(gen, err)
+  if gen ~= generation or not target then return end
+  local reason = err or "connection closed"
+  close_socket()
+  -- Never connected: report the error right away instead of retrying
+  if not target.opened then
+    local on_error = target.on_error
+    target = nil
+    if on_error then on_error(reason) end
+    return
+  end
+  schedule_reconnect(reason)
+end
+
+local function on_opened(gen, ws)
+  if gen ~= generation or not target then return ws:close() end
+  socket, connected = ws, true
+  target.attempts = 0
+  -- Listen again to the streams that were registered before the connection was lost
+  for stream_id in pairs(event_handlers) do
+    M.request("streamListen", { streamId = stream_id })
+  end
+  if target.opened then return ui.notify("Reconnected to the VM service", ui.INFO) end
+  target.opened = true
+  if target.on_connect then target.on_connect() end
+end
+
+function open_socket()
+  generation = generation + 1
+  local gen = generation
+  websocket.connect(target.url, {
+    on_open = function(ws) on_opened(gen, ws) end,
+    on_message = function(text)
+      if gen == generation then handle_message(text) end
+    end,
+    on_close = function(err) on_closed(gen, err) end,
+  })
+end
+
+---Connects to the VM service and keeps the connection alive: when it drops the client reconnects
+---and listens again to every stream registered with `stream_listen`.
+---@param uri string
+---@param on_connect fun()?
+---@param on_error fun(err: string)?
 function M.connect(uri, on_connect, on_error)
-  if connected then M.disconnect() end
+  M.disconnect()
 
   local host, port, path = parse_uri(uri)
   if not host or not port then
@@ -168,68 +164,18 @@ function M.connect(uri, on_connect, on_error)
     return
   end
 
-  tcp = uv.new_tcp()
-  handshake_complete = false
-  read_buffer = ""
-
-  tcp:connect(host, port, function(err)
-    if err then
-      vim.schedule(function()
-        if on_error then on_error("Connection failed: " .. tostring(err)) end
-      end)
-      return
-    end
-
-    tcp:write(generate_handshake(host, port, path))
-
-    tcp:read_start(function(read_err, chunk)
-      if read_err then
-        vim.schedule(function()
-          if on_error then on_error("Read error: " .. tostring(read_err)) end
-        end)
-        M.disconnect()
-        return
-      end
-
-      if not chunk then
-        M.disconnect()
-        return
-      end
-
-      if not handshake_complete then
-        if chunk:match("HTTP/1.1 101") then
-          handshake_complete = true
-          connected = true
-          vim.schedule(function()
-            if on_connect then on_connect() end
-          end)
-        end
-        return
-      end
-
-      read_buffer = read_buffer .. chunk
-      while true do
-        local frame, remaining = parse_frame(read_buffer)
-        if not frame then break end
-        read_buffer = remaining
-
-        if frame.opcode == OPCODE_TEXT then
-          handle_message(frame.payload)
-        elseif frame.opcode == OPCODE_PING then
-          local pong = string.char(0x8A, 0x80 + #frame.payload)
-            .. mask_payload(frame.payload, generate_mask_key())
-          tcp:write(pong)
-        elseif frame.opcode == OPCODE_CLOSE then
-          M.disconnect()
-          return
-        end
-      end
-    end)
-  end)
+  target = {
+    url = ("ws://%s:%d%s"):format(host, port, path),
+    on_connect = on_connect,
+    on_error = on_error,
+    attempts = 0,
+    opened = false,
+  }
+  open_socket()
 end
 
 function M.request(method, params, callback)
-  if not connected or not tcp then
+  if not connected or not socket then
     if callback then callback("Not connected", nil) end
     return
   end
@@ -246,7 +192,7 @@ function M.request(method, params, callback)
 
   if callback then pending_requests[id] = callback end
 
-  tcp:write(create_frame(message))
+  socket:send(message)
 end
 
 function M.stream_listen(stream_id, handler, callback)
@@ -257,23 +203,9 @@ end
 function M.is_connected() return connected end
 
 function M.disconnect()
-  connected = false
-  handshake_complete = false
-
-  for _, callback in pairs(pending_requests) do
-    vim.schedule(function() callback("Service connection closed", nil) end)
-  end
-  pending_requests = {}
+  target = nil
   event_handlers = {}
-  read_buffer = ""
-
-  if tcp then
-    if not tcp:is_closing() then
-      tcp:read_stop()
-      tcp:close()
-    end
-    tcp = nil
-  end
+  close_socket()
 end
 
 return M

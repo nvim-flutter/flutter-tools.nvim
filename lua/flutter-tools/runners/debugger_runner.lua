@@ -230,7 +230,7 @@ local function register_dap_listeners(on_run_data, on_run_exit)
   local handle_termination = function()
     end_all_progress()
     if next(before_start_logs) ~= nil then on_run_exit(before_start_logs) end
-    if vm_service.is_connected() then vm_service.disconnect() end
+    vm_service.disconnect()
   end
 
   dap.listeners.before["event_exited"][plugin_identifier] = function(_, _) handle_termination() end
