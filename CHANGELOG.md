@@ -1,5 +1,19 @@
 # Changelog
 
+## [3.3.0](https://github.com/nvim-flutter/flutter-tools.nvim/compare/v3.2.0...v3.3.0) (2026-11-20)
+
+
+### Features
+
+* **config:** support env variables in project configurations ([#565](https://github.com/nvim-flutter/flutter-tools.nvim/issues/565)) ([917a00e](https://github.com/nvim-flutter/flutter-tools.nvim/commit/917a00ed6ece9686de2b605d5ea2d8d57bb54e70))
+
+
+### Bug Fixes
+
+* **debugger:** listen for flutter.appStarted from the debug adapter ([#564](https://github.com/nvim-flutter/flutter-tools.nvim/issues/564)) ([0ef43df](https://github.com/nvim-flutter/flutter-tools.nvim/commit/0ef43df05396d5287d180b2f2a962c43f7e498b4)), closes [#563](https://github.com/nvim-flutter/flutter-tools.nvim/issues/563)
+* **vm_service:** don't warn about a lost connection when the app quits ([#567](https://github.com/nvim-flutter/flutter-tools.nvim/issues/567)) ([2d7b894](https://github.com/nvim-flutter/flutter-tools.nvim/commit/2d7b8948c78877518e4102a2e3f86916f5fa3870))
+* **vm_service:** reconnect when the connection to the VM service drops ([#566](https://github.com/nvim-flutter/flutter-tools.nvim/issues/566)) ([d6ba801](https://github.com/nvim-flutter/flutter-tools.nvim/commit/d6ba801b59e90abd2013346fbba0015673e1b641))
+
 ## [3.2.0](https://github.com/nvim-flutter/flutter-tools.nvim/compare/v3.1.0...v3.2.0) (2026-10-06)
 
 
