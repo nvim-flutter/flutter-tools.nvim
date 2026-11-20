@@ -101,7 +101,9 @@ local function schedule_reconnect(reason)
     if on_error then on_error(reason) end
     return
   end
-  if target.attempts == 1 then
+  -- A drop is also how a debug session ends, before the adapter reports it: warn only once the first
+  -- reconnect attempt has failed
+  if target.attempts == 2 then
     ui.notify("Lost the connection to the VM service (" .. reason .. "), reconnecting", ui.WARN)
   end
   local gen = generation
@@ -128,12 +130,16 @@ end
 local function on_opened(gen, ws)
   if gen ~= generation or not target then return ws:close() end
   socket, connected = ws, true
+  local warned = target.attempts >= 2
   target.attempts = 0
   -- Listen again to the streams that were registered before the connection was lost
   for stream_id in pairs(event_handlers) do
     M.request("streamListen", { streamId = stream_id })
   end
-  if target.opened then return ui.notify("Reconnected to the VM service", ui.INFO) end
+  if target.opened then
+    if warned then ui.notify("Reconnected to the VM service", ui.INFO) end
+    return
+  end
   target.opened = true
   if target.on_connect then target.on_connect() end
 end

@@ -464,6 +464,8 @@ function DebuggerRunner:send(cmd, quiet, on_response)
   end
   local request = command_requests[cmd]
   if request ~= nil then
+    -- The adapter reports the end of the session only after the VM service has gone away
+    if request == "terminate" then vm_service.disconnect() end
     dap.session():request(request, nil, function() end)
     return
   end
@@ -483,6 +485,7 @@ function DebuggerRunner:send(cmd, quiet, on_response)
 end
 
 function DebuggerRunner:cleanup()
+  vm_service.disconnect()
   if dap.session() then dap.terminate() end
 end
 

@@ -171,6 +171,56 @@ describe("vm_service", function()
     assert.is_false(vm_service.is_connected())
   end)
 
+  describe("warnings", function()
+    local ui = require("flutter-tools.ui")
+    local notify, warnings, infos
+
+    before_each(function()
+      notify, warnings, infos = ui.notify, {}, {}
+      ui.notify = function(msg, level)
+        table.insert(level == ui.WARN and warnings or infos, msg)
+      end
+    end)
+
+    after_each(function() ui.notify = notify end)
+
+    local function connect()
+      local connected = false
+      vm_service.connect(uri(server), function() connected = true end)
+      assert.is_true(vim.wait(2000, function() return connected end))
+    end
+
+    it("stay quiet when the dropped connection comes back at once", function()
+      server = start_server()
+      connect()
+      server.connections[1].client:close()
+      assert.is_true(vim.wait(5000, function() return #server.connections == 2 end))
+      assert.is_true(vim.wait(2000, function() return vm_service.is_connected() end))
+      assert.are.same({}, warnings)
+      assert.are.same({}, infos)
+    end)
+
+    it("stay quiet when the session ends right after the service goes away", function()
+      server = start_server()
+      connect()
+      server.stop()
+      server = nil
+      vim.wait(100)
+      vm_service.disconnect()
+      vim.wait(1000)
+      assert.are.same({}, warnings)
+    end)
+
+    it("report the lost connection once the first reconnect attempt fails", function()
+      server = start_server()
+      connect()
+      server.stop()
+      server = nil
+      assert.is_true(vim.wait(2000, function() return #warnings > 0 end))
+      assert.are.equal(1, #warnings)
+    end)
+  end)
+
   it("reports an error instead of retrying when it never managed to connect", function()
     server = start_server()
     local port = server.port
